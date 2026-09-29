@@ -2,6 +2,7 @@
 
 > Status: concept locked, all numbers **provisional** (to be tuned by simulation later).
 > This document describes the game only — not the technical implementation.
+> Design risks to validate in sim: §14. Engine / art / Steam stack: see `TECH_STACK.md`.
 
 ---
 
@@ -340,11 +341,43 @@ Might = 30 + 5 + 5 + 2 + 2 = 44. Momentum = 3 + 1 + 1 = 5. **220 damage.**
 
 ---
 
-## 14. Open Questions / Parking Lot
+## 14. Design Risks (to validate before / during simulation)
+
+These are known tension points from the concept review. Do not treat them as bugs — they are the first things the balance sim and early prototypes should stress-test.
+
+### 14.1 Run length (~24 settlements)
+A full run is **8 eras × 3 settlements = 24 fights**, roughly 3× a typical Balatro run. If each fight takes too long, the mid-run will drag even when the power curve feels good.
+- **Mitigation to try:** keep Assault/Regroup resolution snappy; allow fast-forward / skip animations; consider shorter early eras or optional skip of weak Villages once overpowered.
+- **Validate:** time-to-clear for a Prince run; quit rate after era 3–4 in playtests.
+
+### 14.2 Doctrine / Missionary snowball
+Missionaries cost a formation slot and Doctrines pay out **only on victory**. When you are behind, you cannot afford to play them; when you are ahead, they print free resources. Faith builds can feel like victory-lap engines rather than catch-up tools.
+- **Mitigation to try:** a weak always-on Faith drip; at least one Doctrine (or Prophet) that helps *during* the fight; Missionary tier bonuses that add a small in-fight effect.
+- **Validate:** Faith income curves for winning vs struggling runs; win rate of High Priest vs Warlord on Prince.
+
+### 14.3 Science death spiral
+Falling behind Science means **outdated unit tiers** and **loss of Imperial Guard** (requires current-era tier). That double penalty may be fine on Deity but frustrating on Prince.
+- **Mitigation to try:** soft floor (shop always sells at least era−1 tiers); Imperial Guard uses “highest tier you own”; Scholar cities / Rationalism strong enough to recover one era behind.
+- **Validate:** win rate when deliberately delaying Science by one era; frequency of Imperial Guard availability on Prince clears.
+
+### 14.4 Deck bloat vs formation consistency
+Starting deck is 20 cards with hand size 8. Buying units freely dilutes class density and makes high-rank formations (Vanguard, Legion, Grand Army) unreliable. Disband exists but may be underused if priced wrong.
+- **Mitigation to try:** make Disband cheap early; shop sometimes offers “upgrade in place” instead of adding a card; Policies that reward thin decks or specific class counts.
+- **Validate:** deck size and formation-hit rate by era for winning runs; Gold spent on Disband vs unit buys.
+
+### 14.5 Formation auto-pick clarity
+The game auto-selects the **highest-ranking** formation; non-scoring combat units contribute nothing. Correct for clarity, but easy to misread (“I thought that Cavalry counted”).
+- **Mitigation to try:** hard UI teaching — highlight scoring vs dead cards before confirm; preview Might × Momentum live; optional “lock formation rank” toggle later if needed.
+- **Validate:** misplay rate in first 3 settlements; whether players understand scoring after the Ancient Capital.
+
+---
+
+## 15. Open Questions / Parking Lot
 
 - Exact tech and civic trees (names, costs, era gating).
-- Final numbers for all stats, costs, rewards and Defence targets (simulation-tuned).
+- Final numbers for all stats, costs, rewards and Defence targets (simulation-tuned) — **after** §14 risks have provisional mitigations.
 - Formation positioning/ordering as a future depth layer.
 - Unit promotions (individual cards gaining permanent bonuses) — possible future feature.
 - Endless Mode scaling formula.
 - Art direction, name, and meta-progression (unlocks between runs).
+- See `TECH_STACK.md` for engine, art pipeline, and Steam packaging (out of scope for this document).
