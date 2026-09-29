@@ -1,99 +1,83 @@
-# Simulation Plan — readiness & phases
+# Simulation Plan
 
-How we turn provisional numbers into tuned ones. Newest decisions live here; results go in `progress.md`.
+How we tune numbers. Results of actual runs go in `progress.md`.
 
 ---
 
-## Verdict: are we ready?
+## Current order of work (locked 2026-09-29)
 
-| Phase | Ready now? | Needs first |
+**Content → strategies → rough power estimates → then simulation.**
+
+Heavy Monte Carlo on the naked starting deck is **deferred**. Adding Blueprints / Policies / techs later would void those medians. Fill the joker-like catalogs and expected builds first; sim against those builds.
+
+| Step | What | Status |
 |---|---|---|
-| **A — Round 1 combat only** (Ancient Village, starting deck) | **Yes** | A play bot (not pure random) |
-| **B — Post-Village rewards → Town** | **Almost** | Stub reward + shop tables (not full trees) |
-| **C — Full era / tech / policy variation** | **No** | Minimal Ancient tech/civic list + Policies |
+| **0** | Formation bases + unit tier table (already in GDD) | Done (provisional) |
+| **1** | Expand Policies, Blueprints, Doctrines, Prophets, Ancient techs/civics | **Now** — see `CONTENT_CATALOG.md` |
+| **2** | Name expected player strategies / archetypes | **Now** (catalog) |
+| **3** | Assign provisional numbers via a shared **power budget** (rarity + era) | **Now** (estimates OK if coherent, not perfect) |
+| **4** | Spot-check: does Strategy X clear Era N Capital on paper? | Next |
+| **5** | Code sim against those strategies (not pure random) | After catalogs feel dense enough |
 
-Do **not** wait for complete tech trees before Phase A. Combat math + starting deck are already locked enough.
-
----
-
-## Method: measure damage, then set Defence
-
-Yes — invert the problem:
-
-1. Fix formation bases + unit stats (already in `GAME_DESIGN.md`).
-2. Simulate many Round‑1 fights **with no Defence cap** (or a huge cap).
-3. Record **total damage over 4 Assaults** (and per-Assault distribution).
-4. Set Village Defence from percentiles of *skilled* play, not from a lucky mean.
-
-**Do not use pure random card plays as the balance target.** Random understates damage badly (plays supports for nothing, splits bad shapes). Use at least:
-
-| Bot | Role |
-|---|---|
-| **Greedy** | Enumerate legal plays (1–5 cards); pick max expected Might×Momentum; Regroup when no play beats a threshold | **Primary balance target** |
-| **Random-legal** | Sanity floor — “how bad can it go?” |
-| **Heuristic / “thoughtful”** (later) | Prefer saving Siege for walls, hold for Phalanx, etc. |
-
-Suggested Village tuning (Prince): Defence ≈ **p40–p50** of Greedy total damage → “mild struggle.” Town / Capital multipliers stay ×1.5 / ×2.5 until Phase B says otherwise.
+Phase A “Round‑1 greedy damage → set Village HP” remains valid as a *later* calibration tool, not the gate before content.
 
 ---
 
-## Phase A — Round 1 only (do this first)
+## Why estimates before sim still matter
 
-**Locked inputs (enough to code):**
-- Deck: 6M / 5R / 3C / 2S / 2 Builder / 2 Missionary, all tier I
-- Hand 8, 4 Assaults, 3 Regroups, reshuffle on empty
-- Formation table + auto highest rank; supports never score
-- Tier‑I unit stats; Militia; **no walls**; no Policies / Blueprints / Doctrines equipped
-- Formation levels = 0 extras beyond the base table
+When you add *Bronze Working* (Melee I → II), that is not a free vibe number. It has to sit in a **relationship**:
 
-**Outputs to report:**
-- Mean / p25 / p50 / p75 / p90 of **total damage** (4 Assaults)
-- Same for **damage per Assault**
-- Formation hit rates (how often Pair vs Battle Line vs Phalanx, etc.)
-- Share of hands where Greedy Regroups
+- Tier bumps multiply the unit contribution inside Might × Momentum.
+- Formation level bumps add flat Might/Momentum to shapes players actually hit.
+- Policies/Blueprints are the Balatro jokers — they dominate late damage more than base unit stats.
+- Defence per era should track an **expected onboard power** for a competent build, not the naked deck.
 
-**Deliberately out of scope:** shop, techs, leaders, garrisons other than Militia, walls.
-
-That answers: “what average (and spread) does Round 1 actually deal?” → then set Village HP. Town HP waits until Village feels right, or use ×1.5 as a placeholder only.
+So: design the cards with a budget; use light spreadsheet / formula checks; full Monte Carlo only once the card pool and 4–6 strategies exist.
 
 ---
 
-## Phase B — after Village, into Town (stubs, not full design)
+## Power budget (working model)
 
-Still **no** full tech tree. Add **provisional stubs**:
+Target: a **thoughtful Prince build** clears the era Capital with ~1 Assault of margin; a careless build fails Town or Capital.
 
-| Stub | Why |
-|---|---|
-| Base Gold / Science / Culture / Faith for a Village win | Resource inflow |
-| +Gold per unused Assault; interest (+1 / 5 Gold, cap +5) | Already designed |
-| Raze vs Occupy: one Gold lump vs +yield next fight | Branching |
-| Tiny Ancient shop: unit costs, 1–2 common Blueprints, Disband cost | Deck change before Town |
-| Town: ×1.5 Defence, optional walls 50%, random garrison | Real second fight |
+Use **Relative Power Units (RPU)** — rough, for designers/agents, not shown to players.
 
-Simulate: Village → reward → one shop policy (buy best unit / Blueprint / disband / save) → Town fight. Report clear rate and damage vs placeholder Town HP.
+| Era | Naked starting-deck RPU (reference) | Target onboard RPU to clear Capital | Defence (GDD provisional) |
+|---|---|---|---|
+| 1 Ancient | ~1.0 | ~2–2.5× naked | Cap 750 |
+| 2 Classical | — | ~2× Ancient clear | Cap 2,000 |
+| 3 Medieval | — | ~2× prior | Cap 5,000 |
+| … | … | keep ~2× per era Capital | … |
 
-**“First boss”** = Ancient **Capital** (settlement 3), not Village. Phase B′ after Town stubs: Capital ×2.5 + one boss rule stub.
+**Rarity budgets** (fight-local Blueprint / permanent Policy guidance):
 
----
+| Rarity | Typical fight impact | Example shapes |
+|---|---|---|
+| Common | +10–20% to one Assault or small economy | +flat Might to one class; draw 2; +15 Gold on win |
+| Uncommon | +25–40% to a fight or sticky economy | +50% next formation Might; +1 Regroup; double city yield |
+| Rare | +50%+ fight swing or run-defining | +1 Assault; retrigger; permanent scaling Doctrine |
 
-## Phase C — variation explosion (later)
+**Tech: class tier up** (whole class): aim ~**+1.5–2×** that class’s contribution when it scores — not +1.5× total damage (deck is mixed).  
+**Tech: formation +1 level**: small flat (e.g. +5 Might / +1 Momentum on that shape) so stacking levels matters but doesn’t outrun tier ups alone.  
+**Builder/Missionary tier**: scales Blueprint/Doctrine numeric fields ~**+50–100%** per tier step (as in GDD Battering Ram example).
 
-Only after A/B numbers feel sane:
-
-- Minimal **Ancient** tech list (class tier ups, formation levels, Builder tier)
-- Minimal civics → 3–5 Policies
-- Doctrine / Faith paths
-- Leaders
-
-Here Monte Carlo over *build paths* matters. Until then, path variance is noise we cannot interpret.
+These are **estimates to stay near** while drafting cards. Simulation later moves the decimals; it should not invent the fantasy of each card.
 
 ---
 
-## What we still must decide before coding Phase A
+## What blocks a useful sim (still)
 
-1. **Bot:** Greedy as balance voice — confirmed?
-2. **Supports in Round 1:** dead cards (no Blueprint/Doctrine) — yes, model as slot-eaters only.
-3. **Leader:** none (default deck) for baseline.
-4. **Sim language:** Python twin for speed is fine for Phase A **if** we delete it once Godot rules exist; prefer one implementation long-term (`TECH_STACK.md`). For a first spike, Python is acceptable to get numbers tomorrow.
+Without: a denser card pool, rarity costs, and 4–6 named strategies with “what they buy first,” path variation is noise.  
+With those: sim compares builds to Defence targets and answers “is Rare X broken?” instead of “what’s average random damage?”
 
-Nothing else blocks Phase A.
+---
+
+## Old Phase A/B/C notes
+
+Kept for later calibration only:
+
+- **A:** Round‑1 combat distribution (Greedy bot) → refine Village HP  
+- **B:** Stub rewards/shop → Town  
+- **C:** Full path Monte Carlo over techs/policies  
+
+Do not start A until Step 1–3 in the table above are “good enough,” unless we explicitly want a naked-deck sanity check.

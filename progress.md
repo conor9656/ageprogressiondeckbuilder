@@ -4,10 +4,15 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-09-29 — Content-first before heavy sim
+- Locked order: expand joker-like cards/techs → name strategies → rough power budgets → then simulate.
+- Naked Round‑1 Monte Carlo deferred (would be voided by new cards).
+- Added `CONTENT_CATALOG.md` (strategies S1–S6, Policies/Blueprints/Doctrines/Prophets, Ancient techs/civics, shop stubs, paper clear check).
+- Rewrote `SIMULATION.md` around that order + RPU/rarity budgets.
+
 ## 2026-09-29 — Simulation readiness
-- Round‑1 damage-first method approved: measure Greedy bot total damage, *then* set Village Defence (not the reverse).
-- Ready for **Phase A** now (combat only, starting deck). Not ready for full tech/policy variation.
-- Phase B needs stub rewards/shop only — not complete trees. See `SIMULATION.md`.
+- Round‑1 damage-first method noted; then superseded by content-first decision above.
+- See `SIMULATION.md` for current order.
 
 ## 2026-09-29 — Design risks + tech stack
 - Added §14 design risks to `GAME_DESIGN.md` (run length, Doctrine snowball, Science spiral, deck bloat, formation clarity).

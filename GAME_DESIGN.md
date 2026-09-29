@@ -2,7 +2,7 @@
 
 > Status: concept locked, all numbers **provisional** (to be tuned by simulation later).
 > This document describes the game only — not the technical implementation.
-> Design risks to validate in sim: §14. Engine / art / Steam stack: see `TECH_STACK.md`.
+> Design risks: §14. Stack: `TECH_STACK.md`. Content drafts: `CONTENT_CATALOG.md`. Sim order: `SIMULATION.md` (content → strategies → estimates → sim).
 
 ---
 
@@ -374,9 +374,10 @@ The game auto-selects the **highest-ranking** formation; non-scoring combat unit
 
 ## 15. Open Questions / Parking Lot
 
-- Exact tech and civic trees (names, costs, era gating) — **not required** before Round‑1 combat sim; see `SIMULATION.md` Phase A vs C.
-- Final numbers for all stats, costs, rewards and Defence targets (simulation-tuned) — **after** §14 risks have provisional mitigations. Defence should be derived from measured damage percentiles, not guessed first.
-- Stub Village reward / Ancient shop costs before Phase B (post-Village → Town) sims.
+- Exact tech and civic trees (names, costs, era gating) — drafting in `CONTENT_CATALOG.md` (Ancient first); full trees before path Monte Carlo.
+- Final numbers for all stats, costs, rewards and Defence targets — after catalogs + strategy paper checks; Defence from measured damage later, not before content.
+- Stub Village reward / Ancient shop costs — provisional stubs now in `CONTENT_CATALOG.md` §10.
+- Expand Policies / Blueprints / Doctrines toward fuller pools (catalog §12).
 - Formation positioning/ordering as a future depth layer.
 - Unit promotions (individual cards gaining permanent bonuses) — possible future feature.
 - Endless Mode scaling formula.
