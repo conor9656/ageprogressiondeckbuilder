@@ -175,19 +175,51 @@ Keep Classical+ trees to a later pass; Ancient alone must support strategies thr
 
 ---
 
-## 10. Shop cost stubs (Gold / Faith)
+## 10. Shop — packs, editions, promotions
+
+See `GAME_DESIGN.md` §8 for rules. Stubs below.
+
+### Pack layout (provisional)
+
+| Pack | Offers per visit | Reroll |
+|---|---|---|
+| Treasury (Gold) | 3 from: Unit (Standard/Edition), Promotion, Blueprint; tiny chance Wonder | 1× / visit for Gold |
+| Synod (Faith) | 3 from: Doctrine, Great Prophet; tiny chance Wonder | 1× / visit for Faith |
+| Disband | Always available, not a pack offer | — |
+
+Weights (Treasury, rough): Unit 40% · Blueprint 35% · Promotion 20% · Wonder 5% (then Wonder usually still fails a second rarity check).  
+Weights (Synod): Doctrine 55% · Prophet 40% · Wonder 5%.
+
+### Item costs (provisional)
 
 | Item | Cost idea |
 |---|---|
-| Unit (current tier) | 8 / 12 / 18 / 28 / 40 by tier |
+| Unit Standard (by tier) | 8 / 12 / 18 / 28 / 40 Gold |
+| Unit Edition U / R | ×1.5 / ×2.0 of Standard |
+| Promotion C / U / R | 10 / 20 / 40 Gold |
 | Blueprint C / U / R | 10 / 22 / 45 Gold |
 | Doctrine C / U / R | 8 / 18 / 35 Faith |
-| Great Prophet | 12 Faith |
-| Disband | 5 Gold (rises +1 each disband in run?) |
-| Reroll | 2 Gold, +1 per reroll this visit |
-| Wonder | 80–120 Gold, appears rarely |
+| Great Prophet | 15–20 Faith (only if rolled — not a fixed catalogue) |
+| Disband | 5 Gold (+1 each disband this run) |
+| Reroll Treasury / Synod | 3 Gold / 3 Faith (once each per visit) |
+| Wonder | 80–120 Gold **or** 60–90 Faith depending on which pack showed it |
 
 Village win stub: **+25 Gold, +8 Science, +8 Culture, +5 Faith**, +1 Gold per unused Assault, then interest.
+
+### Edition / Promotion design notes
+
+- **Science tier** = all units of a class get stronger. **Edition/Promotion** = this one card is special. Both should coexist; Promotions must not obsolete tier ups (tier ups are bigger raw Might; editions add identity + economy hooks).
+- On-score victory bonuses stay **small** so they don’t replace Doctrines or Occupy yields.
+- Thin Legion (S2) loves Promotions/Heroic on the kept class; Science rush (S6) loves Scholarly / Thinking Soldier; Faith snowball (S5) loves Devout / Zealot's Mark.
+
+### Strategy hooks (additions)
+
+| Strategy | Shop behaviour |
+|---|---|
+| S2 Thin Legion | Disband often; buy Standard copies of one class; spend Gold on Promotions not Blueprints |
+| S4 Builder burst | Prioritise Blueprint rolls; reroll Treasury for Blueprints |
+| S5 Faith snowball | Spend Faith reroll hunting Zeal / Missionary Zeal / Prophets |
+| S6 Science rush | Prefer Scholarly editions + Thinking Soldier promotions; Occupy Scholars |
 
 ---
 
@@ -211,8 +243,10 @@ Use checks like these while adding cards; full Monte Carlo later.
 - Classical → Information tech/civic names and costs  
 - More Policies toward ~25–30 (Balatro-like breadth)  
 - Blueprint/Doctrine pools toward ~20 each  
+- Fuller Edition + Promotion lists and stack rules  
 - Wonder rival-boss rules when skipped  
 - Leader starting loadouts tied to S1–S6  
 - Exact Science/Culture bar sizes per era  
+- Pack weight tuning after first playable shop
 
 When those feel dense, implement strategy bots and simulate.

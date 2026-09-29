@@ -4,6 +4,12 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-09-29 — Shop packs + unit editions/promotions
+- Shop redesigned: **Treasury (Gold)** vs **Synod (Faith)** packs — random offers, not an open catalogue.
+- 1 reroll per pack per visit; Disband always available; Wonders can appear in either pack.
+- Added **Editions** (stamped shop units) and **Promotions** (upgrade a card already in deck), separate from Science class tiers.
+- Docs: `GAME_DESIGN.md` §8, `CONTENT_CATALOG.md` §10.
+
 ## 2026-09-29 — Content-first before heavy sim
 - Locked order: expand joker-like cards/techs → name strategies → rough power budgets → then simulate.
 - Naked Round‑1 Monte Carlo deferred (would be voided by new cards).

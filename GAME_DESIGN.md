@@ -235,17 +235,71 @@ Rarities: Common, Uncommon, Rare.
 
 ## 8. Shop
 
-Opens after every conquered settlement. Stock is **random** and restocks each visit.
+Opens after every conquered settlement. The shop is **not** an open catalogue — stock is random and split into two **packs** so spending always involves luck (Balatro-pack feel), not perfect free will.
 
-- **Units** of any class, at the currently researched tier.
-- **Blueprints** (Gold) and **Doctrines** (Faith).
-- **Great Prophets** (Faith).
-- **Disband:** pay Gold to remove a card from the deck.
-- **Reroll:** pay Gold (cost rises each reroll per visit).
-- **Wonders:** see below.
+### Two packs
+
+| Pack | Currency | Typical stock | Reroll |
+|---|---|---|---|
+| **Treasury (Gold pack)** | Gold | Units (incl. **Editions**), **Promotions**, Blueprints | 1× per visit, costs Gold |
+| **Synod (Faith pack)** | Faith | Doctrines, Great Prophets | 1× per visit, costs Faith |
+
+- Each pack shows a small random row (e.g. **3 offers**). Buy what you want from the row; unbought offers vanish when you leave.
+- **You cannot buy a named Great Prophet / Blueprint à la carte from a fixed price list.** You buy (or skip) whatever the pack rolled.
+- **Disband** sits outside both packs: pay Gold to remove a card from the deck (always available).
+- **Reroll:** each pack can be rerolled **once per shop visit** (once per settlement). Gold rerolls Treasury; Faith rerolls Synod. No second reroll that visit.
+- **Wonders:** super-rare; may appear as an extra slot in **either** pack. Same Wonder rules as below (one per run; skip → rival builds it).
+
+Provisional pack costs (pay to *refresh into view* is wrong — the visit is free; you pay per item). Optional later: small fee to open a second packed row — not required for v1.
+
+### Units in the Treasury
+
+Buying a unit **adds that card to your deck** at the current researched **class tier** (Science).
+
+On top of base units, Treasury can roll:
+
+1. **Editions** — the unit card already has a baked-in bonus (like Balatro editions).
+2. **Promotions** — offers that apply an upgrade to a unit **already in your deck** (not a new card).
+
+Science **class tier ups** (all Melee I → II) remain global. **Promotions / Editions** are the per-card axis.
+
+### Editions (unit variants in shop)
+
+When a unit offer appears, it may be stamped:
+
+| Edition | Rarity weight | Effect (provisional) |
+|---|---|---|---|
+| **Standard** | Common | No extra — base unit at current tier |
+| **Gilded** | Uncommon | This card +2 Might permanently (or +1 Momentum for Ranged) |
+| **Scholarly** | Uncommon | If this card **scored** at least once this settlement, +10% Science from this victory |
+| **Devout** | Uncommon | If scored at least once, +10% Faith from this victory |
+| **Mercantile** | Uncommon | If scored at least once, +5 Gold on victory |
+| **Veteran** | Rare | This card scores twice the first time it scores each settlement |
+| **Relic** | Rare | This card +1 Momentum and counts as any class for **formation shape** only |
+
+Edition units cost more than Standard (roughly +50% / +100% for U / R stamps).
+
+### Promotions (upgrade a card you already own)
+
+Separate Treasury offers: pick one unit in your deck and apply a promotion. A card may hold a limited number of promotions (provisional: **1**, or **2** if a civic allows).
+
+| Promotion | Rarity | Effect (provisional) |
+|---|---|---|
+| Master Drill | C | +2 Might on this card |
+| Skirmish Doctrine | C | +1 Momentum on this card |
+| Thinking Soldier | U | If this card scored this settlement → +10% Science on victory |
+| Tithe Sergeant | U | If scored → +8 Gold on victory |
+| Zealot's Mark | U | If scored → +8 Faith on victory |
+| Banner Carrier | U | While this card is in the scoring formation, formation +5 Might |
+| Wallbreaker Bit | U | If this card is Siege and scores, ignore walls this Assault |
+| Heroic | R | This card permanently ×1.5 Might |
+| Mentor | R | When this card scores, a random other scoring unit gains +1 Might permanently |
+
+End-of-fight bonuses on Editions/Promotions are **on-score economy**, distinct from Doctrines (which need a Missionary play and a Doctrine slot). Doctrines stay the big Faith-engine; Scholarly/Thinking Soldier are thin sticky rewards for using that body.
 
 ### Wonders
-- **Very rare** in the shop, **very expensive**, and **only one Wonder can be owned per run**.
+
+- **Very rare** in either pack, **very expensive**, and **only one Wonder can be owned per run**.
 - **If a Wonder is skipped, a rival builds it — it never appears again this run.** (It may later be used against you by that rival's Capital.)
 - Creates the key dilemma: buy the Colosseum now, or hold out for the Great Library?
 
@@ -257,7 +311,7 @@ Opens after every conquered settlement. Stock is **random** and restocks each vi
 | Hanging Gardens | +1 hand size |
 | Stonehenge | Free Great Prophet each era |
 | Forbidden Palace | +1 Policy slot |
-| Terracotta Army | Units in the shop cost 50% less |
+| Terracotta Army | Unit offers in Treasury cost 50% less |
 | Big Ben | Interest cap doubled |
 
 ---
@@ -338,6 +392,9 @@ Might = 30 + 5 + 5 + 2 + 2 = 44. Momentum = 3 + 1 + 1 = 5. **220 damage.**
 | Great Prophet | One-use Faith consumable |
 | Policy | Permanent passive modifier from Culture |
 | Wonder | Unique, rare, one-per-run super-modifier |
+| Treasury / Synod | Gold pack / Faith pack in the shop |
+| Edition | Baked-in bonus on a unit bought from Treasury |
+| Promotion | Shop upgrade applied to a unit already in the deck |
 
 ---
 
@@ -379,7 +436,8 @@ The game auto-selects the **highest-ranking** formation; non-scoring combat unit
 - Stub Village reward / Ancient shop costs — provisional stubs now in `CONTENT_CATALOG.md` §10.
 - Expand Policies / Blueprints / Doctrines toward fuller pools (catalog §12).
 - Formation positioning/ordering as a future depth layer.
-- Unit promotions (individual cards gaining permanent bonuses) — possible future feature.
+- Unit **Promotions / Editions** — now in §8; still need full pool size, stack rules (1 vs 2 promotions), and rarity weights.
+- Exact pack row size (3?), Wonder appearance rate per pack, reroll costs.
 - Endless Mode scaling formula.
 - Art direction, name, and meta-progression (unlocks between runs).
 - See `TECH_STACK.md` for engine, art pipeline, and Steam packaging. See `SIMULATION.md` for sim phases.
