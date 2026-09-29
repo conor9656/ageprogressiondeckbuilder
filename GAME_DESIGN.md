@@ -374,10 +374,11 @@ The game auto-selects the **highest-ranking** formation; non-scoring combat unit
 
 ## 15. Open Questions / Parking Lot
 
-- Exact tech and civic trees (names, costs, era gating).
-- Final numbers for all stats, costs, rewards and Defence targets (simulation-tuned) — **after** §14 risks have provisional mitigations.
+- Exact tech and civic trees (names, costs, era gating) — **not required** before Round‑1 combat sim; see `SIMULATION.md` Phase A vs C.
+- Final numbers for all stats, costs, rewards and Defence targets (simulation-tuned) — **after** §14 risks have provisional mitigations. Defence should be derived from measured damage percentiles, not guessed first.
+- Stub Village reward / Ancient shop costs before Phase B (post-Village → Town) sims.
 - Formation positioning/ordering as a future depth layer.
 - Unit promotions (individual cards gaining permanent bonuses) — possible future feature.
 - Endless Mode scaling formula.
 - Art direction, name, and meta-progression (unlocks between runs).
-- See `TECH_STACK.md` for engine, art pipeline, and Steam packaging (out of scope for this document).
+- See `TECH_STACK.md` for engine, art pipeline, and Steam packaging. See `SIMULATION.md` for sim phases.
