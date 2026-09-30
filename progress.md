@@ -4,6 +4,11 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-09-30 — Full Policy / Blueprint / Doctrine pools
+- Studied Balatro joker *patterns* only (flat / conditional / ×mult / scaling) — no copied card text.
+- Added `CARD_MODES.md`, `POLICIES.md` (40), `BLUEPRINTS.md` (40), `DOCTRINES.md` (40) with modes, caps, OP notes.
+- Catalog points at the new files; scaling prefers once-per-settlement or capped growth.
+
 ## 2026-09-29 — Shop packs + unit editions/promotions
 - Shop redesigned: **Treasury (Gold)** vs **Synod (Faith)** packs — random offers, not an open catalogue.
 - 1 reroll per pack per visit; Disband always available; Wonders can appear in either pack.

@@ -2,7 +2,7 @@
 
 > Status: concept locked, all numbers **provisional** (to be tuned by simulation later).
 > This document describes the game only — not the technical implementation.
-> Design risks: §14. Stack: `TECH_STACK.md`. Content drafts: `CONTENT_CATALOG.md`. Sim order: `SIMULATION.md` (content → strategies → estimates → sim).
+> Design risks: §14. Stack: `TECH_STACK.md`. Modes: `CARD_MODES.md`. Pools: `POLICIES.md`, `BLUEPRINTS.md`, `DOCTRINES.md`. Sim order: `SIMULATION.md`.
 
 ---
 
@@ -181,34 +181,11 @@ Four systems, distinguished by **timing**:
 
 Rarities: Common, Uncommon, Rare.
 
-### Blueprints (examples)
+**Full pools (flat + scaling + OP notes):** `POLICIES.md`, `BLUEPRINTS.md`, `DOCTRINES.md`. Pattern primer: `CARD_MODES.md`.
 
-| Blueprint | Rarity | Effect |
-|---|---|---|
-| Battering Ram | Common | Siege units +10 Might for the rest of this settlement |
-| Scaffolding | Common | Next formation ignores walls |
-| Supply Lines | Common | Draw 2 cards |
-| Barracks | Uncommon | Draw 3 cards |
-| Siege Tower | Uncommon | Walls removed for the rest of this settlement |
-| Forge | Uncommon | Next formation's units +50% Might |
-| Roads | Uncommon | +1 Regroup this settlement |
-| Aqueduct | Rare | +1 Assault this settlement |
-| Great Works | Rare | Every Builder in this formation triggers an extra Blueprint |
+Include both **flat** cards (same bonus all run / fight) and **scaling** cards (grow with use — always capped; show `Currently: X` in UI).
 
-### Doctrines (examples) — pay out only on victory
-
-| Doctrine | Rarity | Reward |
-|---|---|---|
-| Tithe | Common | +15 Gold |
-| Scriptorium | Common | +Science equal to 10% of total damage dealt |
-| Pilgrimage | Common | +Faith; if occupied, this city yields double Faith |
-| Zeal | Uncommon | All units +15% Might for the next 2 settlements |
-| Peaceful Conversion | Uncommon | Occupied city yields double |
-| Relic Hunt | Uncommon | Gain a free Great Prophet |
-| Missionary Zeal | Rare | Reward grows permanently each time it triggers |
-| Holy War | Rare | Every Missionary in the winning formation retriggers all fired Doctrines |
-
-### Great Prophets (examples)
+### Great Prophets (examples — short list; expand later)
 
 | Prophet | Effect |
 |---|---|
@@ -217,19 +194,6 @@ Rarities: Common, Uncommon, Rare.
 | Holy Revolt | Remove walls |
 | Blessing | One chosen card permanently gains ×1.5 Might |
 | Revelation | Reveal and reroll the next route choice |
-
-### Policies (examples)
-
-| Policy | Effect |
-|---|---|
-| Agoge | Melee +4 Might |
-| Conscription | First scoring unit in each formation scores twice |
-| Professional Army | +1 Momentum per Ranged card in your deck (÷4, rounded down) |
-| Chivalry Code | Cavalry +1 Momentum each |
-| Siegecraft | Siege units count as any class for formation shapes |
-| Levée en Masse | Legion and Vanguard +3 Momentum |
-| Mercantilism | +1 interest cap |
-| Rationalism | +25% Science from all sources |
 
 ---
 

@@ -13,9 +13,9 @@ Heavy Monte Carlo on the naked starting deck is **deferred**. Adding Blueprints 
 | Step | What | Status |
 |---|---|---|
 | **0** | Formation bases + unit tier table (already in GDD) | Done (provisional) |
-| **1** | Expand Policies, Blueprints, Doctrines, Prophets, Ancient techs/civics | **Now** — see `CONTENT_CATALOG.md` |
-| **2** | Name expected player strategies / archetypes | **Now** (catalog) |
-| **3** | Assign provisional numbers via a shared **power budget** (rarity + era) | **Now** (estimates OK if coherent, not perfect) |
+| **1** | Expand Policies, Blueprints, Doctrines (flat + scaling) | **Done (draft)** — `POLICIES.md` / `BLUEPRINTS.md` / `DOCTRINES.md` + `CARD_MODES.md` |
+| **2** | Name expected player strategies / archetypes | **Done** (catalog S1–S6) |
+| **3** | Assign provisional numbers via a shared **power budget** (rarity + era) | **In progress** (estimates in pool files) |
 | **4** | Spot-check: does Strategy X clear Era N Capital on paper? | Next |
 | **5** | Code sim against those strategies (not pure random) | After catalogs feel dense enough |
 

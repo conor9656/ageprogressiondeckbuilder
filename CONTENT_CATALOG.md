@@ -61,70 +61,16 @@ Stacking 3–4 levels on your main shape ≈ one solid Policy; shouldn’t alone
 
 ## 4. Policies (Culture — always on)
 
-Expand from GDD examples. Shop/civic reward: pick 1 of 3.
-
-| Policy | Rarity | Effect (provisional) | Serves |
-|---|---|---|---|
-| Agoge | C | Melee +4 Might | S3 |
-| Drill Manual | C | Ranged +1 Momentum | S3 |
-| Horse Breeding | C | Cavalry +5 Might | S2 |
-| Camp Followers | C | +1 Gold interest step (every 4 Gold instead of 5) | econ |
-| Conscription | U | First scoring unit in each formation scores twice | S2 S3 |
-| Professional Army | U | +1 Momentum per 4 Ranged cards in deck (⌊n/4⌋) | S3 |
-| Chivalry Code | U | Cavalry +1 Momentum each | S2 |
-| Siegecraft | U | Siege counts as any class for **shape** (Might still Siege) | S1 |
-| Logistics | U | +1 hand size | all |
-| Levée en Masse | R | Legion & Vanguard +3 Momentum | S2 |
-| Mercantilism | R | Interest cap +1 (or +2) | econ |
-| Rationalism | R | +25% Science from all sources | S6 |
-| Patronage | R | +25% Culture from all sources | slots |
-| Total War | R | +10% Might on Capitals | bosses |
-| Militia Act | C | Skirmish and Pair +5 Might | early |
-| Combined Doctrine | U | Combined Arms & Grand Army +2 Momentum | S3 |
-| Corps of Engineers | U | Blueprints numeric effects +25% | S4 |
-| State Religion | U | Doctrines numeric rewards +25% | S5 |
-
----
+Full draft pool (**40**): **`POLICIES.md`** — flat / conditional / scaling / multiplier, with OP notes.  
+Civics: choose 1 of 3 Policies, or +slot. Modes primer: **`CARD_MODES.md`**.
 
 ## 5. Blueprints (Gold — Builder, once per settlement)
 
-| Blueprint | Rarity | Effect (provisional) | Serves |
-|---|---|---|---|
-| Battering Ram | C | Siege +10 Might rest of settlement | S1 |
-| Scaffolding | C | Next formation ignores walls | S1 |
-| Supply Lines | C | Draw 2 | all |
-| Watchtower | C | Next formation +10 Might | all |
-| Barracks | U | Draw 3 | all |
-| Siege Tower | U | Remove walls for rest of settlement | S1 |
-| Forge | U | Next formation’s **unit** Might +50% | S4 |
-| Roads | U | +1 Regroup this settlement | all |
-| Magazine | U | Next formation +2 Momentum | S3 |
-| Aqueduct | R | +1 Assault this settlement | S4 |
-| Great Works | R | Each Builder in this formation triggers an extra Blueprint | S4 |
-| Arsenal | R | All combat units in next formation +25% Might | S4 |
-| Field Hospital | C | Discard up to 3, draw that many | all |
-| Ballista Yard | U | Siege +1 Momentum rest of settlement | S1 |
-
-Builder tiers multiply numeric Blueprint fields (e.g. Ram +10 → +25 → +50) per GDD.
-
----
+Full draft pool (**40**): **`BLUEPRINTS.md`**. Treasury pack; Builder tier scales numeric fields.
 
 ## 6. Doctrines (Faith — Missionary, pay on victory)
 
-| Doctrine | Rarity | Reward (provisional) | Serves |
-|---|---|---|---|
-| Tithe | C | +15 Gold | S5 |
-| Scriptorium | C | +Science = 10% of damage dealt this settlement | S6 |
-| Pilgrimage | C | +10 Faith; if Occupy, this city Faith yield ×2 | S5 |
-| Alms | C | +8 Culture | slots |
-| Zeal | U | All units +15% Might for next **2** settlements | S5 |
-| Peaceful Conversion | U | Occupied city yields ×2 (all resources) | S5 |
-| Relic Hunt | U | Gain 1 free Great Prophet | S5 |
-| Census | U | +Gold equal to cards in deck | econ |
-| Missionary Zeal | R | This Doctrine’s Gold/Faith reward +5 permanently each trigger | S5 |
-| Holy War | R | Each Missionary in winning formation retriggers fired Doctrines | S5 |
-| Indulgence | R | +1 Missionary slot | S5 |
-| Crusade Charter | U | Next Capital: +20% Might | bosses |
+Full draft pool (**40**): **`DOCTRINES.md`**. Synod pack; primary home for capped run snowballs.
 
 ---
 
@@ -241,12 +187,12 @@ Use checks like these while adding cards; full Monte Carlo later.
 ## 12. Still to fill (next content passes)
 
 - Classical → Information tech/civic names and costs  
-- More Policies toward ~25–30 (Balatro-like breadth)  
-- Blueprint/Doctrine pools toward ~20 each  
+- Trim / merge weak commons after playtest (see cut notes in pool files)  
 - Fuller Edition + Promotion lists and stack rules  
 - Wonder rival-boss rules when skipped  
 - Leader starting loadouts tied to S1–S6  
 - Exact Science/Culture bar sizes per era  
-- Pack weight tuning after first playable shop
+- Pack weight tuning after first playable shop  
+- Might% buff stacking rule (prefer **max**, not sum) — flagged in `DOCTRINES.md`
 
-When those feel dense, implement strategy bots and simulate.
+When pools feel stable, paper-check strategies, then simulate.
