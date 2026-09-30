@@ -16,8 +16,8 @@ Heavy Monte Carlo on the naked starting deck is **deferred**. Adding Blueprints 
 | **1** | Expand Policies, Blueprints, Doctrines (flat + scaling) | **Done (draft)** — `POLICIES.md` / `BLUEPRINTS.md` / `DOCTRINES.md` + `CARD_MODES.md` |
 | **2** | Name expected player strategies / archetypes | **Done** (catalog S1–S6) |
 | **3** | Assign provisional numbers via a shared **power budget** (rarity + era) | **In progress** (estimates in pool files) |
-| **4** | Spot-check: does Strategy X clear Era N Capital on paper? | Next |
-| **5** | Code sim against those strategies (not pure random) | After catalogs feel dense enough |
+| **4** | Spot-check: does Strategy X clear Era N Capital on paper? | **Era 1 Monte Carlo done** — see `sim/results/ERA1_REPORT.md` |
+| **5** | Code sim against those strategies (not pure random) | **Started** — `sim/era1_sim.py` (Python twin) |
 
 Phase A “Round‑1 greedy damage → set Village HP” remains valid as a *later* calibration tool, not the gate before content.
 

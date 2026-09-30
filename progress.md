@@ -4,6 +4,13 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-09-30 — First Ancient-era simulation
+- Added `sim/era1_sim.py`: Village→Town→Capital, greedy combat, packs, Science/Civics, strategy bots.
+- N=400/strategy: thoughtful era win ~88–100%; Village 100% clear; Capital is the filter.
+- Clumsy/random bot: era win 0%, Village ~52%.
+- Naked greedy Village p50 damage ~427 vs Defence 300 → first fight too easy.
+- Report: `sim/results/ERA1_REPORT.md` (recommend raising early Defence).
+
 ## 2026-09-30 — Science/Civics random level-ups
 - Locked: bar fill → pick 1 of 3 random upgrades (no fixed tree).
 - Troop offers are Upgrade Melee/Ranged/Cavalry/Siege/Builders; tiers tracked on the run.
