@@ -100,7 +100,7 @@ Full draft pool (**40**): **`DOCTRINES.md`**. Synod pack; primary home for cappe
 
 Ancient non-troop / civic starters live in that file; pools still need fattening.
 
-## 10. Shop — packs, editions, promotions
+## 9. Shop — packs, editions, promotions
 
 See `GAME_DESIGN.md` §8 for rules. Stubs below.
 
@@ -148,7 +148,7 @@ Village win stub: **+25 Gold, +8 Science, +8 Culture, +5 Faith**, +1 Gold per un
 
 ---
 
-## 11. Paper clear check (era 1 Capital)
+## 10. Paper clear check (era 1 Capital)
 
 Defence target: **750** (300 × 2.5).
 
@@ -163,7 +163,7 @@ Use checks like these while adding cards; full Monte Carlo later.
 
 ---
 
-## 12. Still to fill (next content passes)
+## 11. Still to fill (next content passes)
 
 - Classical → Information tech/civic names and costs  
 - Trim / merge weak commons after playtest (see cut notes in pool files)  

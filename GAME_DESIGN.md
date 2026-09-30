@@ -415,8 +415,8 @@ The game auto-selects the **highest-ranking** formation; non-scoring combat unit
 - Classical → Information **non-troop** Science + civic pool fattening (`SCIENCE_UPGRADES.md`).
 - Exact tech/civic **bar costs** and troop offer weights (T=1 vs T=2).
 - Final numbers for all stats, costs, rewards and Defence targets — after catalogs + strategy paper checks; Defence from measured damage later, not before content.
-- Stub Village reward / Ancient shop costs — provisional stubs now in `CONTENT_CATALOG.md` §10.
-- Expand Policies / Blueprints / Doctrines toward fuller pools (catalog §12) — draft 40s exist; trim weak commons.
+- Stub Village reward / Ancient shop costs — provisional stubs now in `CONTENT_CATALOG.md` §9.
+- Expand Policies / Blueprints / Doctrines toward fuller pools (catalog §11) — draft 40s exist; trim weak commons.
 - Unit **Promotions / Editions** — now in §8; still need full pool size, stack rules (1 vs 2 promotions), and rarity weights.
 - Exact pack row size (3?), Wonder appearance rate per pack, reroll costs.
 - Formation positioning/ordering as a future depth layer.
