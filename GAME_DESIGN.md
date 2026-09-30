@@ -2,7 +2,7 @@
 
 > Status: concept locked, all numbers **provisional** (to be tuned by simulation later).
 > This document describes the game only — not the technical implementation.
-> Design risks: §14. Stack: `TECH_STACK.md`. Modes: `CARD_MODES.md`. Pools: `POLICIES.md`, `BLUEPRINTS.md`, `DOCTRINES.md`. Sim order: `SIMULATION.md`.
+> Design risks: §14. Stack: `TECH_STACK.md`. Modes: `CARD_MODES.md`. Pools: `POLICIES.md`, `BLUEPRINTS.md`, `DOCTRINES.md`. Science/Civics offers: `SCIENCE_UPGRADES.md`. Sim: `SIMULATION.md`.
 
 ---
 
@@ -146,25 +146,42 @@ Provisional stats per tier (I / II / III / IV / V):
 | Resource | Earned from | Spent on / effect |
 |---|---|---|
 | **Gold** | Base reward per settlement won, +1 per unused Assault, interest (+1 per 5 held, max +5), razing, occupied Trade Ports | Shop: units, Blueprints, Wonders, rerolls, disbanding cards |
-| **Science** | Small base per victory, occupied Scholar cities, Doctrines, Policies | Fills research bar → **techs** (auto-applied, player chooses which tech to research next) |
-| **Culture** | Small base per victory, occupied Artisan cities, Doctrines, Policies | Fills civics bar → **civics** (player chooses which civic next) |
+| **Science** | Small base per victory, occupied Scholar cities, Doctrines, Policies | Fills research bar → **Science level-up** (pick 1 of 3 random offers) |
+| **Culture** | Small base per victory, occupied Artisan cities, Doctrines, Policies | Fills civics bar → **Civic level-up** (pick 1 of 3 random offers) |
 | **Faith** | Small base per victory, occupied Temple cities, Doctrines | Great Prophets, Doctrines, Missionary tier upgrades |
 
-### Techs (Science)
-Each tech does one of:
-- **Upgrade a class tier** (e.g. *Bronze Working*: all Melee I → II).
-- **Level up a formation** (e.g. *Military Tactics*: Battle Line +1 level).
-- **Upgrade the Builder tier.**
-- **Unlock new cards in the shop.**
+### Science level-ups (random offer of 3)
 
-Techs available = those of the current era and earlier. Falling behind in Science means outdated units (and losing access to Imperial Guard).
+There is **no fixed tech tree to click through**. When the Science bar fills, the player is shown **3 random upgrades** and picks one. Full offer rules + non-troop pool: `SCIENCE_UPGRADES.md`.
 
-### Civics (Culture)
+**Troop upgrades (class tiers)** — simple and tracked:
+- Offers are named **Upgrade Melee / Ranged / Cavalry / Siege / Builders** (not “Bronze Working”).
+- The run stores `MeleeTier`, `RangedTier`, `CavalryTier`, `SiegeTier`, `BuilderTier` (start at **I**).
+- Taking “Upgrade Melee” does `MeleeTier += 1` for **all** Melee cards (owned and future shop units).
+
+**Era soft-cap vs rare ahead-of-era:**
+- Each era has a **soft-cap** on class tier (e.g. Ancient soft-caps at II). Offers at or below soft-cap are normal weight.
+- A class **already at the soft-cap** can still appear as the *next* tier at **low** weight (rare Science spike — e.g. Melee III while still Ancient).
+- When the run **enters a new era**, soft-cap rises and **same-class upgrade weight resets upward**, so catching the next Melee bump becomes realistic again.
+
+**Composition of the 3 Science offers (hard rule):**
+- **Minimum 1** troop upgrade (Melee/Ranged/Cavalry/Siege — Builders count as troop-like for this quota).
+- **Maximum 2** troop upgrades.
+- Therefore **1–2** of the three are class/Builder tier bumps; the rest are **other Science upgrades** (formation levels, shop unlocks, rule bumps — pool still expanding).
+
+Falling behind Science still means outdated tiers (and Imperial Guard needs current-era soft-cap tier).
+
+### Civics level-ups (random offer of 3)
+
+Same presentation: bar fills → **3 random civic upgrades** → pick one. No troop mix rule (Culture doesn’t upgrade unit tiers).
+
 Each civic does one of:
 - **+1 Policy slot** (start 2, max 5).
-- **Choose 1 of 3 Policies** to gain.
-- **+1 Builder or Missionary slot** (each starts at 2 / 1, max 5 / 4).
+- **Gain a Policy** (often itself a nested 1-of-3 Policy draft).
+- **+1 Builder or Missionary slot** (start 2 / 1, max 5 / 4).
 - Small rule upgrades (e.g. +1 hand size, +1 Regroup).
+
+Era-weighting for civics mirrors Science (current-era pool + rare ahead-of-era). Details expand with the civic pool later.
 
 ---
 
@@ -377,8 +394,8 @@ Missionaries cost a formation slot and Doctrines pay out **only on victory**. Wh
 - **Validate:** Faith income curves for winning vs struggling runs; win rate of High Priest vs Warlord on Prince.
 
 ### 14.3 Science death spiral
-Falling behind Science means **outdated unit tiers** and **loss of Imperial Guard** (requires current-era tier). That double penalty may be fine on Deity but frustrating on Prince.
-- **Mitigation to try:** soft floor (shop always sells at least era−1 tiers); Imperial Guard uses “highest tier you own”; Scholar cities / Rationalism strong enough to recover one era behind.
+Falling behind Science means **outdated unit tiers** and **loss of Imperial Guard** (requires units at the **current era soft-cap** tier). That double penalty may be fine on Deity but frustrating on Prince.
+- **Mitigation to try:** soft floor (shop always sells at least soft-cap−1); Imperial Guard uses “highest tier you own”; Scholar cities / Rationalism strong enough to recover one era behind; ahead-of-era rare troop offers as a catch-up lottery.
 - **Validate:** win rate when deliberately delaying Science by one era; frequency of Imperial Guard availability on Prince clears.
 
 ### 14.4 Deck bloat vs formation consistency
@@ -395,13 +412,14 @@ The game auto-selects the **highest-ranking** formation; non-scoring combat unit
 
 ## 15. Open Questions / Parking Lot
 
-- Exact tech and civic trees (names, costs, era gating) — drafting in `CONTENT_CATALOG.md` (Ancient first); full trees before path Monte Carlo.
+- Classical → Information **non-troop** Science + civic pool fattening (`SCIENCE_UPGRADES.md`).
+- Exact tech/civic **bar costs** and troop offer weights (T=1 vs T=2).
 - Final numbers for all stats, costs, rewards and Defence targets — after catalogs + strategy paper checks; Defence from measured damage later, not before content.
 - Stub Village reward / Ancient shop costs — provisional stubs now in `CONTENT_CATALOG.md` §10.
-- Expand Policies / Blueprints / Doctrines toward fuller pools (catalog §12).
-- Formation positioning/ordering as a future depth layer.
+- Expand Policies / Blueprints / Doctrines toward fuller pools (catalog §12) — draft 40s exist; trim weak commons.
 - Unit **Promotions / Editions** — now in §8; still need full pool size, stack rules (1 vs 2 promotions), and rarity weights.
 - Exact pack row size (3?), Wonder appearance rate per pack, reroll costs.
+- Formation positioning/ordering as a future depth layer.
 - Endless Mode scaling formula.
 - Art direction, name, and meta-progression (unlocks between runs).
 - See `TECH_STACK.md` for engine, art pipeline, and Steam packaging. See `SIMULATION.md` for sim phases.

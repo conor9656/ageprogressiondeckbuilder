@@ -4,6 +4,12 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-09-30 — Science/Civics random level-ups
+- Locked: bar fill → pick 1 of 3 random upgrades (no fixed tree).
+- Troop offers are Upgrade Melee/Ranged/Cavalry/Siege/Builders; tiers tracked on the run.
+- Era soft-cap + rare ahead-of-era; same-class weight recovers next era.
+- Science offer mix: min 1 / max 2 troop-like of 3. Details in `SCIENCE_UPGRADES.md`.
+
 ## 2026-09-30 — Full Policy / Blueprint / Doctrine pools
 - Studied Balatro joker *patterns* only (flat / conditional / ×mult / scaling) — no copied card text.
 - Added `CARD_MODES.md`, `POLICIES.md` (40), `BLUEPRINTS.md` (40), `DOCTRINES.md` (40) with modes, caps, OP notes.

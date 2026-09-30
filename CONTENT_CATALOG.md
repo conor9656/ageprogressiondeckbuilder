@@ -89,37 +89,16 @@ Full draft pool (**40**): **`DOCTRINES.md`**. Synod pack; primary home for cappe
 
 ---
 
-## 8. Ancient techs (Science) — first pass list
+## 8. Science & Civics level-ups
 
-Player picks next research; costs provisional (Science points). Era-gated: Ancient list available in era 1+.
+**Random pick 1 of 3** — not a fixed tree. Full rules: **`SCIENCE_UPGRADES.md`**.
 
-| Tech | Cost | Effect | Notes |
-|---|---|---|---|
-| Bronze Working | 15 | Melee → tier II | Classic first spike |
-| Archery | 15 | Ranged → tier II | |
-| Horseback Riding | 20 | Cavalry → tier II | |
-| Masonry | 15 | Siege → tier II | |
-| Military Tactics | 20 | Battle Line +1 level | S3 |
-| Construction | 25 | Builder → Engineer (tier II) | Scales Blueprints |
-| Writing | 20 | Unlock Uncommon Blueprints in shop | |
-| Iron Working | 40 | Melee → tier III *(Classical gate — park if era-strict)* | move to Classical if needed |
+- Troop offers: Upgrade Melee / Ranged / Cavalry / Siege / Builders; run tracks tiers.
+- Soft-cap by era; rare ahead-of-era troop bumps; same-class weight recovers next era.
+- Science screen: **min 1 / max 2** of the three offers are troop-like; rest non-troop (formation drills, unlocks, …).
+- Civics: same 1-of-3 presentation; no troop quota.
 
-Keep Classical+ trees to a later pass; Ancient alone must support strategies through era‑1 Capital.
-
----
-
-## 9. Ancient civics (Culture) — first pass
-
-| Civic | Cost | Effect |
-|---|---|---|
-| Code of Laws | 15 | +1 Policy slot |
-| Craftsmanship | 15 | Choose 1 of 3 Policies |
-| Early Empire | 20 | +1 Builder slot |
-| Theology | 20 | +1 Missionary slot |
-| Military Training | 15 | +1 Regroup permanently |
-| Literacy | 25 | Choose 1 of 3 Policies (better uncommon weight) |
-
----
+Ancient non-troop / civic starters live in that file; pools still need fattening.
 
 ## 10. Shop — packs, editions, promotions
 
