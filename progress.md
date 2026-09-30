@@ -4,6 +4,11 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-09-30 — Defence retune + 3-era sim
+- Applied era‑1 Defence base **500** (V500/T750/C1250) in `GAME_DESIGN.md`.
+- Extended sim to eras 1–3 (`--eras 3`). **Nobody cleared Medieval**; Capital damage/HP ~0.5 by era 3.
+- Era‑1 clear dropped to ~22–43% (S2 86%). Report: `sim/results/ERA3_REPORT.md`.
+
 ## 2026-09-30 — First Ancient-era simulation
 - Added `sim/era1_sim.py`: Village→Town→Capital, greedy combat, packs, Science/Civics, strategy bots.
 - N=400/strategy: thoughtful era win ~88–100%; Village 100% clear; Capital is the filter.

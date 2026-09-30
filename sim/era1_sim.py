@@ -36,9 +36,11 @@ FORM_LEVEL_BONUS = {
     "vanguard": (8, 1), "imperial_guard": (8, 1), "legion": (8, 1),
 }
 
-ERA1_SOFT_CAP = 2
-SCIENCE_COSTS = [12, 18, 25, 35, 47, 59, 71, 83]
-CIVIC_COSTS = [12, 18, 25, 35, 47, 59, 71, 83]
+ERA_SOFT_CAP = {1: 2, 2: 3, 3: 3, 4: 4, 5: 4, 6: 5, 7: 5, 8: 5}
+# Era-1 base raised after first sim; 2+ still GDD provisional
+ERA_BASE_DEFENCE = {1: 500, 2: 800, 3: 2000, 4: 5000, 5: 12000, 6: 30000, 7: 75000, 8: 150000}
+SCIENCE_COSTS = [12, 18, 25, 35, 47, 59, 71, 83, 95, 107, 119, 131, 143, 155, 167]
+CIVIC_COSTS = [12, 18, 25, 35, 47, 59, 71, 83, 95, 107, 119, 131, 143, 155, 167]
 
 BLUEPRINTS = {
     "battering_ram": ("C", 10, "siege_might"),
@@ -87,6 +89,13 @@ NON_TROOP_SCI = [
     ("combined_arms_primer", 1),
     ("writing", 1),
     ("surveying", 1),
+    ("phalanx_drill", 2),
+    ("vanguard_primer", 2),
+    ("natural_philosophy", 2),
+    ("grand_army_drill", 3),
+    ("legion_primer", 3),
+    ("imperial_standards", 3),
+    ("machinery", 3),
 ]
 
 
@@ -123,6 +132,7 @@ class FightMods:
 class RunState:
     rng: random.Random
     strategy: str
+    era: int = 1
     deck: list[Card] = field(default_factory=list)
     next_cid: int = 0
     gold: int = 0
@@ -153,6 +163,10 @@ class RunState:
     settlement_index: int = 0
     damage_log: list = field(default_factory=list)
     events: list = field(default_factory=list)
+    era_just_began: bool = True
+
+    def soft_cap(self) -> int:
+        return ERA_SOFT_CAP.get(self.era, 5)
 
     def tier_of(self, kind: str) -> int:
         if kind in ("M", "R", "C", "S"):
@@ -295,7 +309,7 @@ def evaluate_play(run: RunState, cards: list[Card], fight: FightMods,
     tiers = [run.tier_of(c.kind) for _, c in combat]
     siegecraft = "siegecraft" in run.policies
 
-    form_id, rank, scoring_local = best_formation(kinds, tiers, ERA1_SOFT_CAP, siegecraft)
+    form_id, rank, scoring_local = best_formation(kinds, tiers, run.soft_cap(), siegecraft)
     scoring_cards = [combat[i][1] for i in scoring_local] if rank else []
 
     base_m, base_o = FORM_BASE[form_id]
@@ -811,7 +825,7 @@ def roll_science_offers(run: RunState) -> list[str]:
     t_count = 1 if rng.random() < 0.60 else 2
     troops = weighted_troop_offers(run, t_count)
     non = []
-    pool = [n for n, era in NON_TROOP_SCI if era <= 1 or rng.random() < 0.08]
+    pool = [n for n, e in NON_TROOP_SCI if e <= run.era or rng.random() < 0.08]
     rng.shuffle(pool)
     while len(troops) + len(non) < 3 and pool:
         non.append(pool.pop())
@@ -823,7 +837,7 @@ def roll_science_offers(run: RunState) -> list[str]:
 
 def weighted_troop_offers(run: RunState, n: int) -> list[str]:
     rng = run.rng
-    soft = ERA1_SOFT_CAP
+    soft = run.soft_cap()
     weights = []
     for cls, key in [("M", "M"), ("R", "R"), ("C", "C"), ("S", "S"), ("B", "B")]:
         cur = run.tiers[key]
@@ -831,17 +845,15 @@ def weighted_troop_offers(run: RunState, n: int) -> list[str]:
             continue
         if cur >= 5:
             continue
-        gap = soft - cur
-        if key == "B":
-            soft_b = 2
-            gap = soft_b - cur
+        soft_use = soft if key != "B" else (2 if run.era < 3 else 3)
+        gap = soft_use - cur
         if gap >= 1:
-            w = 10.0
-        elif gap == 0 and cur + 1 <= (3 if key != "B" else 3):
+            w = 14.0 if run.era_just_began else 10.0
+        elif gap == 0 and cur + 1 <= min(5, soft_use + 1):
             w = 1.0  # ahead of era
         else:
             continue
-        if run.last_troop_upgrade == key:
+        if run.last_troop_upgrade == key and not run.era_just_began:
             w *= 0.35
         weights.append((key, w))
     picks = []
@@ -892,6 +904,7 @@ def apply_science(run: RunState, pick: str) -> None:
         run.last_troop_upgrade = key
         if key == "B":
             run.builder_scale = {1: 1.0, 2: 1.5, 3: 2.0}[run.tiers["B"]]
+        run.era_just_began = False
         return
     if pick == "battle_line_drill":
         run.form_levels["battle_line"] += 1
@@ -900,10 +913,28 @@ def apply_science(run: RunState, pick: str) -> None:
         run.form_levels["pair"] += 1
     elif pick == "combined_arms_primer":
         run.form_levels["combined_arms"] += 1
+    elif pick == "phalanx_drill":
+        run.form_levels["phalanx"] += 1
+    elif pick == "vanguard_primer":
+        run.form_levels["vanguard"] += 1
+    elif pick == "grand_army_drill":
+        run.form_levels["grand_army"] += 1
+    elif pick == "legion_primer":
+        run.form_levels["legion"] += 1
+    elif pick == "imperial_standards":
+        run.form_levels["imperial_guard"] += 1
+    elif pick == "natural_philosophy":
+        if "rationalism" not in run.policies and len(run.policies) < run.policy_slots:
+            run.policies.append("rationalism")
+        else:
+            run.science += 8
+    elif pick == "machinery":
+        run.writing = True
     elif pick == "writing":
         run.writing = True
     elif pick == "surveying":
         run.base_regroups += 1
+    run.era_just_began = False
 
 
 def roll_civic_offers(run: RunState) -> list[str]:
@@ -1170,8 +1201,8 @@ def disband_supports(run: RunState) -> None:
 
 # --- Settlement generation ----------------------------------------------------
 
-def make_settlement(kind: str, rng: random.Random) -> dict:
-    base = 300
+def make_settlement(kind: str, rng: random.Random, era: int = 1) -> dict:
+    base = ERA_BASE_DEFENCE.get(era, 500)
     mult = {"village": 1.0, "town": 1.5, "capital": 2.5}[kind]
     defence = int(base * mult)
     if kind == "village":
@@ -1186,6 +1217,7 @@ def make_settlement(kind: str, rng: random.Random) -> dict:
     city_type = rng.choice(["scholar", "artisan", "temple", "trade"])
     return {
         "kind": kind,
+        "era": era,
         "defence": defence,
         "walls": walls,
         "garrison": garrison,
@@ -1195,37 +1227,49 @@ def make_settlement(kind: str, rng: random.Random) -> dict:
 
 # --- Run ----------------------------------------------------------------------
 
-def play_era1(seed: int, strategy: str) -> dict:
+def play_eras(seed: int, strategy: str, max_era: int = 1) -> dict:
     rng = random.Random(seed)
-    run = RunState(rng=rng, strategy=strategy)
+    run = RunState(rng=rng, strategy=strategy, era=1)
     starting_deck(run)
 
-    results = {"strategy": strategy, "seed": seed, "won_era": False, "failed_at": None,
-               "settlements": [], "tiers_end": None, "policies": None, "blueprints": None,
-               "doctrines": None, "gold_end": 0}
+    results = {
+        "strategy": strategy, "seed": seed, "max_era": max_era,
+        "won_through": 0, "failed_at": None, "failed_era": None,
+        "settlements": [], "tiers_end": None, "policies": None,
+        "blueprints": None, "doctrines": None, "gold_end": 0,
+        "damage_by_era_capital": {},
+    }
 
-    for kind in ("village", "town", "capital"):
-        run.settlement_index += 1
-        st = make_settlement(kind, rng)
-        # Need fight_docs — fight_settlement doesn't return FightMods; refactor lightly
-        won, dmg, used = fight_settlement_with_docs(run, st)
-        results["settlements"].append({
-            "kind": kind, "won": won, "damage": dmg, "defence": st["defence"],
-            "walls": st["walls"], "garrison": st["garrison"], "assaults_used": used,
-            "tiers": dict(run.tiers), "gold": run.gold,
-        })
-        if not won:
-            results["failed_at"] = kind
-            results["tiers_end"] = dict(run.tiers)
-            results["policies"] = list(run.policies)
-            results["blueprints"] = list(run.blueprints)
-            results["doctrines"] = list(run.doctrines)
-            results["gold_end"] = run.gold
-            return results
-        # after_victory needs docs from fight — stored on run temporarily
-        after_victory(run, st, dmg, used, run._last_fight)  # type: ignore
+    for era in range(1, max_era + 1):
+        run.era = era
+        run.era_just_began = True
+        for kind in ("village", "town", "capital"):
+            run.settlement_index += 1
+            st = make_settlement(kind, rng, era)
+            won, dmg, used = fight_settlement_with_docs(run, st)
+            results["settlements"].append({
+                "era": era, "kind": kind, "won": won, "damage": dmg,
+                "defence": st["defence"], "walls": st["walls"],
+                "garrison": st["garrison"], "assaults_used": used,
+                "tiers": dict(run.tiers), "gold": run.gold,
+                "overkill": max(0, dmg - st["defence"]) if won else None,
+                "shortfall": max(0, st["defence"] - dmg) if not won else None,
+            })
+            if kind == "capital" and won:
+                results["damage_by_era_capital"][era] = dmg
+            if not won:
+                results["failed_at"] = kind
+                results["failed_era"] = era
+                results["tiers_end"] = dict(run.tiers)
+                results["policies"] = list(run.policies)
+                results["blueprints"] = list(run.blueprints)
+                results["doctrines"] = list(run.doctrines)
+                results["gold_end"] = run.gold
+                results["deck_size"] = len(run.deck)
+                return results
+            after_victory(run, st, dmg, used, run._last_fight)  # type: ignore
+        results["won_through"] = era
 
-    results["won_era"] = True
     results["tiers_end"] = dict(run.tiers)
     results["policies"] = list(run.policies)
     results["blueprints"] = list(run.blueprints)
@@ -1233,6 +1277,12 @@ def play_era1(seed: int, strategy: str) -> dict:
     results["gold_end"] = run.gold
     results["deck_size"] = len(run.deck)
     return results
+
+
+def play_era1(seed: int, strategy: str) -> dict:
+    r = play_eras(seed, strategy, max_era=1)
+    r["won_era"] = r["won_through"] >= 1
+    return r
 
 
 def fight_settlement_with_docs(run: RunState, settlement: dict) -> tuple[bool, int, int]:
@@ -1305,18 +1355,10 @@ def fight_settlement_with_docs(run: RunState, settlement: dict) -> tuple[bool, i
     return won, total_damage, assaults_used
 
 
-def summarize(runs: list[dict]) -> dict:
+def summarize(runs: list[dict], max_era: int = 1) -> dict:
     n = len(runs)
-    wins = sum(1 for r in runs if r["won_era"])
-    fail = Counter(r["failed_at"] for r in runs if not r["won_era"])
-    # damage margins on wins
-    vill_dmg = [s["damage"] for r in runs for s in r["settlements"] if s["kind"] == "village"]
-    town_dmg = [s["damage"] for r in runs for s in r["settlements"] if s["kind"] == "town" and s["won"]]
-    cap_dmg = [s["damage"] for r in runs for s in r["settlements"] if s["kind"] == "capital" and s["won"]]
-    town_attempts = sum(1 for r in runs for s in r["settlements"] if s["kind"] == "town")
-    cap_attempts = sum(1 for r in runs for s in r["settlements"] if s["kind"] == "capital")
-    town_wins = sum(1 for r in runs for s in r["settlements"] if s["kind"] == "town" and s["won"])
-    cap_wins = sum(1 for r in runs for s in r["settlements"] if s["kind"] == "capital" and s["won"])
+    clear_era = {e: sum(1 for r in runs if r.get("won_through", 0) >= e) / n for e in range(1, max_era + 1)}
+    fail_era = Counter((r.get("failed_era"), r.get("failed_at")) for r in runs if r.get("won_through", 0) < max_era)
 
     def avg(xs):
         return round(sum(xs) / len(xs), 1) if xs else None
@@ -1327,56 +1369,100 @@ def summarize(runs: list[dict]) -> dict:
         ys = sorted(xs)
         return ys[min(len(ys) - 1, int(p / 100 * len(ys)))]
 
+    by_era = {}
+    for e in range(1, max_era + 1):
+        caps = [s for r in runs for s in r["settlements"]
+                if s.get("era", 1) == e and s["kind"] == "capital"]
+        vill = [s for r in runs for s in r["settlements"]
+                if s.get("era", 1) == e and s["kind"] == "village"]
+        towns = [s for r in runs for s in r["settlements"]
+                 if s.get("era", 1) == e and s["kind"] == "town"]
+        cap_won = [s for s in caps if s["won"]]
+        by_era[e] = {
+            "base_defence": ERA_BASE_DEFENCE[e],
+            "village_def": int(ERA_BASE_DEFENCE[e] * 1.0),
+            "town_def": int(ERA_BASE_DEFENCE[e] * 1.5),
+            "capital_def": int(ERA_BASE_DEFENCE[e] * 2.5),
+            "village_clear": round(sum(1 for s in vill if s["won"]) / len(vill), 3) if vill else 0,
+            "town_clear": round(sum(1 for s in towns if s["won"]) / len(towns), 3) if towns else 0,
+            "capital_clear": round(sum(1 for s in caps if s["won"]) / len(caps), 3) if caps else 0,
+            "avg_capital_damage_won": avg([s["damage"] for s in cap_won]),
+            "p50_capital_damage_won": pct([s["damage"] for s in cap_won], 50),
+            "avg_capital_overkill": avg([s.get("overkill") or 0 for s in cap_won]),
+            "avg_village_damage": avg([s["damage"] for s in vill]),
+            "attempts_capital": len(caps),
+        }
+
+    # Power vs HP: median capital damage among those who reached that capital
+    power_curve = {}
+    for e in range(1, max_era + 1):
+        dmg = [s["damage"] for r in runs for s in r["settlements"]
+               if s.get("era", 1) == e and s["kind"] == "capital"]
+        hp = int(ERA_BASE_DEFENCE[e] * 2.5)
+        power_curve[e] = {
+            "capital_hp": hp,
+            "p50_damage": pct(dmg, 50),
+            "mean_damage": avg(dmg),
+            "damage_to_hp_ratio_p50": round(pct(dmg, 50) / hp, 2) if dmg and pct(dmg, 50) else None,
+        }
+
     return {
         "n": n,
-        "era_win_rate": round(wins / n, 3),
-        "village_clear_rate": round(sum(1 for r in runs if r["settlements"][0]["won"]) / n, 3),
-        "town_clear_rate": round(town_wins / town_attempts, 3) if town_attempts else 0,
-        "capital_clear_rate": round(cap_wins / cap_attempts, 3) if cap_attempts else 0,
-        "fail_at": dict(fail),
-        "avg_damage_village": avg(vill_dmg),
-        "avg_damage_town_won": avg(town_dmg),
-        "avg_damage_capital_won": avg(cap_dmg),
-        "p50_village_damage": pct(vill_dmg, 50),
-        "p50_capital_damage_won": pct(cap_dmg, 50),
+        "max_era": max_era,
+        "clear_through_era": {str(k): round(v, 3) for k, v in clear_era.items()},
+        "fail_at": {f"{e}:{k}": v for (e, k), v in fail_era.items()},
+        "by_era": {str(k): v for k, v in by_era.items()},
+        "power_curve": {str(k): v for k, v in power_curve.items()},
+        # backward compat for era1 report tooling
+        "era_win_rate": round(clear_era.get(1, 0), 3),
+        "village_clear_rate": by_era.get(1, {}).get("village_clear", 0),
+        "town_clear_rate": by_era.get(1, {}).get("town_clear", 0),
+        "capital_clear_rate": by_era.get(1, {}).get("capital_clear", 0),
     }
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--runs", type=int, default=500)
+    ap.add_argument("--runs", type=int, default=300)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--eras", type=int, default=1)
     args = ap.parse_args()
 
     strategies = ["S1", "S2", "S3", "S4", "S5", "S6", "BALANCED"]
-    all_out = {}
+    all_out = {"defence_bases": ERA_BASE_DEFENCE, "eras": args.eras}
     for strat in strategies:
         runs = []
         for i in range(args.runs):
-            runs.append(play_era1(args.seed + i * 17 + hash(strat) % 10000, strat))
-        all_out[strat] = summarize(runs)
-        # sample failures
-        fails = [r for r in runs if not r["won_era"]][:3]
+            r = play_eras(args.seed + i * 17 + hash(strat) % 10000, strat, max_era=args.eras)
+            r["won_era"] = r["won_through"] >= 1
+            runs.append(r)
+        all_out[strat] = summarize(runs, max_era=args.eras)
+        fails = [r for r in runs if r["won_through"] < args.eras][:3]
         all_out[strat]["sample_failures"] = [
-            {"failed_at": f["failed_at"], "tiers": f["tiers_end"],
-             "policies": f["policies"], "blueprints": f["blueprints"],
-             "settlements": f["settlements"]}
+            {"failed_era": f.get("failed_era"), "failed_at": f["failed_at"],
+             "tiers": f["tiers_end"], "policies": f["policies"],
+             "blueprints": f["blueprints"],
+             "settlements": f["settlements"][-3:]}
             for f in fails
         ]
-        wins = [r for r in runs if r["won_era"]][:2]
+        wins = [r for r in runs if r["won_through"] >= args.eras][:2]
         all_out[strat]["sample_wins"] = [
             {"tiers": w["tiers_end"], "policies": w["policies"],
              "blueprints": w["blueprints"], "doctrines": w["doctrines"],
-             "deck_size": w.get("deck_size"), "settlements": w["settlements"]}
+             "deck_size": w.get("deck_size"),
+             "damage_by_era_capital": w.get("damage_by_era_capital"),
+             "settlements": [
+                 {k: s[k] for k in ("era", "kind", "won", "damage", "defence", "assaults_used")}
+                 for s in w["settlements"]
+             ]}
             for w in wins
         ]
-        print(f"{strat}: era_win={all_out[strat]['era_win_rate']} "
-              f"V={all_out[strat]['village_clear_rate']} "
-              f"T={all_out[strat]['town_clear_rate']} "
-              f"C={all_out[strat]['capital_clear_rate']} "
-              f"fail={all_out[strat]['fail_at']}")
+        pc = all_out[strat]["power_curve"]
+        print(f"{strat}: through={all_out[strat]['clear_through_era']} "
+              f"fail={all_out[strat]['fail_at']} "
+              f"cap_ratio={[pc[str(e)].get('damage_to_hp_ratio_p50') for e in range(1, args.eras+1)]}")
 
-    out_path = "/workspace/sim/results/era1_summary.json"
+    out_path = f"/workspace/sim/results/era{args.eras}_summary.json"
     with open(out_path, "w") as f:
         json.dump(all_out, f, indent=2)
     print(f"Wrote {out_path}")

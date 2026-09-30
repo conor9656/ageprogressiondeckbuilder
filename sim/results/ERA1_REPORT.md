@@ -1,7 +1,9 @@
 # Simulation Results — Ancient Era (Era 1)
 
 Date: 2026-09-30 · Code: `sim/era1_sim.py` · N=400 per strategy (seed 42)  
-Settlements: Village **300** · Town **450** · Capital **750** (GDD provisional).
+**Note:** Defence later raised to base **500** (Village 500 / Town 750 / Capital 1250) in GDD after this report. Figures below used the **old** base **300**. See `ERA3_REPORT.md` for retuned multi-era results.
+
+Settlements (this run): Village **300** · Town **450** · Capital **750**.
 
 Bots play greedy Assaults (enumerate 1–5 card plays), strategy-biased shop / Science / Civics, pack shops, level-ups. Not a full card-pool sim — subset of Blueprints/Doctrines/Policies.
 
@@ -44,9 +46,9 @@ Raw JSON: `sim/results/era1_summary.json`, `sim/results/era1_clumsy.json`.
 
 | Lever | Suggestion |
 |---|---|
-| Village Defence | Raise toward **450–550** (or ~p40 of naked greedy ≈ 400+) so first fight isn’t free |
-| Town Defence | Raise with Village (keep ~×1.5), e.g. base 400 → Town 600 |
-| Capital Defence | Mild bump (e.g. 750 → **900–1000**) if Village/Town get harder, so era win rate for good play lands nearer **70–85%** |
+| Village Defence | **Applied:** base **500** (Village 500 / Town 750 / Capital 1250) in `GAME_DESIGN.md` |
+| Town / Capital | Scale with base ×1.5 / ×2.5 |
+| Multi-era | See `ERA3_REPORT.md` — Medieval Capital outpaces damage; consider cutting era‑3 base |
 | Formation bases | Alternatively nerf early high shapes slightly (Vanguard/Legion bases) if Defence stays |
 | Supports | S2 shows Support-disband is very strong — keep Disband cost meaningful |
 

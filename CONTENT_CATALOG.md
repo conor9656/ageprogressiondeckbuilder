@@ -150,7 +150,7 @@ Village win stub: **+25 Gold, +8 Science, +8 Culture, +5 Faith**, +1 Gold per un
 
 ## 10. Paper clear check (era 1 Capital)
 
-Defence target: **750** (300 × 2.5).
+Defence target: **1,250** (500 × 2.5) after era‑1 retune.
 
 Example **S3 Battle Line engine** after Village+Town shops (illustrative, not sim):
 - Battle Line lvl 1, Agoge, one Forge used, Melee II + Ranged II on a 2+2  

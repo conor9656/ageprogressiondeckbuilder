@@ -37,11 +37,19 @@ A run is lost the first time you fail to conquer a settlement.
 
 ### Defence targets (provisional)
 
-| Era | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+Tuned after Ancient-era Monte Carlo (`sim/results/ERA1_REPORT.md`): era‑1 base raised so Village is no longer a free win for greedy play. Eras 2+ still provisional pending multi-era sims.
+
+| Era | 1 Ancient | 2 Classical | 3 Medieval | 4 Renaissance | 5 Industrial | 6 Modern | 7 Atomic | 8 Information |
 |---|---|---|---|---|---|---|---|---|
-| Base Defence | 300 | 800 | 2,000 | 5,000 | 12,000 | 30,000 | 75,000 | 150,000 |
+| Base Defence | **500** | 800 | 2,000 | 5,000 | 12,000 | 30,000 | 75,000 | 150,000 |
 
 Village = ×1, Town = ×1.5, Capital = ×2.5 of the era base.
+
+| Era 1 (Ancient) | Village | Town | Capital |
+|---|---|---|---|
+| Defence | 500 | 750 | 1,250 |
+
+Prior (sim v1) era‑1 base was 300 — naked greedy p50 damage ~427 cleared Village 100% of the time.
 
 ---
 
