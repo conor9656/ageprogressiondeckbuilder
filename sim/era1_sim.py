@@ -17,18 +17,17 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
-# --- Constants ----------------------------------------------------------------
+# --- Constants / Balance v2 (tuned for eras 1–3 viability) ---------------------
 
 CLASSES = ("M", "R", "C", "S")  # Melee, Ranged, Cavalry, Siege
 SUPPORTS = ("B", "Y")  # Builder, MissionarY
 
-UNIT_MIGHT = {"M": [0, 5, 12, 20, 32, 50], "R": [0, 2, 4, 7, 11, 16],
-              "C": [0, 8, 16, 26, 40, 60], "S": [0, 3, 6, 10, 16, 24]}
-UNIT_MOM = {"M": [0, 0, 0, 0, 0, 0], "R": [0, 1, 1, 2, 2, 3],
+# Early-weighted unit buff (~+30–40% at tier I, tapering at high tiers)
+UNIT_MIGHT = {"M": [0, 7, 15, 24, 36, 55], "R": [0, 3, 5, 8, 12, 18],
+              "C": [0, 11, 20, 30, 44, 65], "S": [0, 4, 8, 12, 18, 26]}
+UNIT_MOM = {"M": [0, 0, 0, 0, 0, 0], "R": [0, 1, 2, 2, 3, 3],
             "C": [0, 0, 0, 0, 0, 0], "S": [0, 0, 0, 0, 0, 0]}
 
-# formation_id -> (rank, name, base_might, base_mom)
-# level bonuses from CONTENT_CATALOG
 FORM_LEVEL_BONUS = {
     "skirmish": (3, 0), "pair": (3, 0), "triple": (3, 0),
     "battle_line": (5, 0), "combined_arms": (5, 0),
@@ -37,10 +36,21 @@ FORM_LEVEL_BONUS = {
 }
 
 ERA_SOFT_CAP = {1: 2, 2: 3, 3: 3, 4: 4, 5: 4, 6: 5, 7: 5, 8: 5}
-# Era-1 base raised after first sim; 2+ still GDD provisional
-ERA_BASE_DEFENCE = {1: 500, 2: 800, 3: 2000, 4: 5000, 5: 12000, 6: 30000, 7: 75000, 8: 150000}
-SCIENCE_COSTS = [12, 18, 25, 35, 47, 59, 71, 83, 95, 107, 119, 131, 143, 155, 167]
-CIVIC_COSTS = [12, 18, 25, 35, 47, 59, 71, 83, 95, 107, 119, 131, 143, 155, 167]
+ERA_BASE_DEFENCE = {1: 500, 2: 800, 3: 1400, 4: 4500, 5: 12000, 6: 30000, 7: 75000, 8: 150000}
+
+# Cheaper / earlier level-ups so stacks build before Medieval
+SCIENCE_COSTS = [8, 12, 16, 22, 28, 36, 46, 58, 72, 88, 106, 126, 148, 172, 198]
+CIVIC_COSTS = [8, 12, 16, 22, 28, 36, 46, 58, 72, 88, 106, 126, 148, 172, 198]
+
+# Settlement rewards (was 25/8/8/5)
+REWARD_GOLD = 38
+REWARD_SCIENCE = 16
+REWARD_CULTURE = 16
+REWARD_FAITH = 12
+RAZE_GOLD = 28
+CITY_YIELD = 7
+PACK_SIZE = 5  # was 3
+WONDER_SHOP_CHANCE = 0.04  # low chance per pack offer
 
 BLUEPRINTS = {
     "battering_ram": ("C", 10, "siege_might"),
@@ -53,6 +63,7 @@ BLUEPRINTS = {
     "magazine": ("U", 22, "next_mom2"),
     "aqueduct": ("R", 45, "plus_assault"),
     "arsenal": ("R", 45, "next_unit_might_25"),
+    "observatory": ("R", 45, "sci_mom_scale"),  # next formation Mom *= (1+0.1*sci_lv)
 }
 DOCTRINES = {
     "tithe": ("C", 8, "gold15"),
@@ -63,6 +74,7 @@ DOCTRINES = {
     "relic_hunt": ("U", 18, "prophet"),
     "crusade": ("U", 18, "capital_might20"),
     "missionary_zeal": ("R", 35, "scale_gold_faith"),
+    "scholastic_order": ("U", 18, "sci20_cul5"),
 }
 POLICIES = {
     "agoge": ("C", "melee_might4"),
@@ -81,6 +93,22 @@ POLICIES = {
     "leveee": ("R", "vg_legion_mom3"),
     "rationalism": ("R", "sci25"),
     "total_war": ("R", "capital_might15pct"),
+    # Scaling / exponential-style
+    "research_corps": ("C", "might_per_sci"),    # Might *= (1 + 0.05 * sci_levels) — common scaler
+    "workshop_network": ("U", "might_per_bp"),   # +6 Might per owned Blueprint
+    "liturgical_fire": ("U", "mom_per_doc"),     # +1 Mom per owned Doctrine
+    "academy_momentum": ("R", "mom_per_sci"),      # Mom *= (1 + 0.1 * sci_levels)
+}
+
+WONDERS = {
+    "colosseum": ("plus_assault", 90),
+    "great_library": ("free_sci_level", 90),
+    "pyramids": ("builder_scale", 90),
+    "hanging_gardens": ("hand_size", 85),
+    "stonehenge": ("faith_burst", 85),
+    "terracotta_army": ("cheap_units", 95),
+    "big_ben": ("interest", 95),
+    "forbidden_palace": ("policy_slot", 90),
 }
 
 NON_TROOP_SCI = [
@@ -164,6 +192,11 @@ class RunState:
     damage_log: list = field(default_factory=list)
     events: list = field(default_factory=list)
     era_just_began: bool = True
+    wonder: Optional[str] = None
+    era_wonder_available: Optional[str] = None  # forced offer once per era
+    era_wonder_offered: bool = False
+    cheap_units: bool = False
+    interest_cap: int = 5
 
     def soft_cap(self) -> int:
         return ERA_SOFT_CAP.get(self.era, 5)
@@ -372,6 +405,21 @@ def evaluate_play(run: RunState, cards: list[Card], fight: FightMods,
     if form_id in ("vanguard", "legion") and "leveee" in run.policies:
         mom += 3
 
+    # Baseline Tech Literacy — Science levels always scale Momentum slightly
+    # (stacks with Academy Momentum policy). At 5 sci levels: ×1.2 Mom.
+    mom *= 1.0 + 0.04 * run.sci_level
+
+    # Scaling / exponential-style policies (stack with sci levels & owned cards)
+    if "workshop_network" in run.policies:
+        might += 6 * len(run.blueprints)
+    if "liturgical_fire" in run.policies:
+        mom += 1 * len(run.doctrines)
+    if "research_corps" in run.policies:
+        might *= 1.0 + 0.05 * run.sci_level
+    if "academy_momentum" in run.policies:
+        # Mom *= (1 + 0.1 * science levels taken) — e.g. 10 Mom @ 7 sci → 17
+        mom *= 1.0 + 0.1 * run.sci_level
+
     # fight bursts
     might += fight.next_might
     mom += fight.next_mom
@@ -438,6 +486,8 @@ def trigger_blueprint(run: RunState, name: str, fight: FightMods, hand: list[Car
         fight.plus_assault += 1
     elif effect == "next_unit_might_25":
         fight.next_unit_might_pct = max(fight.next_unit_might_pct, 0.25)
+    elif effect == "sci_mom_scale":
+        fight.next_mom_mult = max(fight.next_mom_mult, 1.0 + 0.1 * run.sci_level)
 
 
 def trigger_doctrine(run: RunState, name: str, fight: FightMods) -> None:
@@ -470,6 +520,9 @@ def apply_doctrine_rewards(run: RunState, fight: FightMods, total_damage: int,
         elif effect == "scale_gold_faith":
             run.gold += 10
             run.faith += 5
+        elif effect == "sci20_cul5":
+            run.science += 20
+            run.culture += 5
 
 
 # --- Deck helpers -------------------------------------------------------------
@@ -543,7 +596,7 @@ def greedy_assault(run: RunState, hand: list[Card], fight: FightMods,
                 # pick best blueprint heuristically
                 pick = pick_blueprint(run, bps, settlement, fe)
                 # apply numeric to fe only for eval
-                apply_bp_to_fight(pick, fe, run.builder_scale)
+                apply_bp_to_fight(pick, fe, run.builder_scale, run.sci_level)
                 fe.blueprints_fired.add(pick)
                 bps = [b for b in bps if b != pick]
             if c.kind == "Y" and docs:
@@ -599,7 +652,7 @@ def pick_doctrine(run: RunState, available: list[str]) -> str:
     return available[0]
 
 
-def apply_bp_to_fight(name: str, fe: FightMods, scale: float) -> None:
+def apply_bp_to_fight(name: str, fe: FightMods, scale: float, sci_level: int = 0) -> None:
     effect = BLUEPRINTS[name][2]
     if effect == "siege_might":
         fe.siege_might += int(10 * scale)
@@ -619,6 +672,8 @@ def apply_bp_to_fight(name: str, fe: FightMods, scale: float) -> None:
         fe.plus_assault += 1
     elif effect == "next_unit_might_25":
         fe.next_unit_might_pct = max(fe.next_unit_might_pct, 0.25)
+    elif effect == "sci_mom_scale":
+        fe.next_mom_mult = max(fe.next_mom_mult, 1.0 + 0.1 * sci_level)
 
 
 def should_regroup(run: RunState, hand: list[Card], fight: FightMods,
@@ -743,19 +798,19 @@ def fight_settlement(run: RunState, settlement: dict) -> tuple[bool, int, int]:
 # --- Rewards / occupy / shop / level-ups --------------------------------------
 
 def interest(run: RunState) -> None:
-    run.gold += min(5, run.gold // 5)
+    run.gold += min(run.interest_cap, run.gold // 5)
 
 
 def city_yields(run: RunState) -> None:
     for t in run.occupied:
         if t == "scholar":
-            run.science += 4
+            run.science += CITY_YIELD
         elif t == "artisan":
-            run.culture += 4
+            run.culture += CITY_YIELD
         elif t == "temple":
-            run.faith += 4
+            run.faith += CITY_YIELD
         elif t == "trade":
-            run.gold += 4
+            run.gold += CITY_YIELD
 
 
 def snapshot_run(run: RunState) -> dict:
@@ -815,17 +870,17 @@ def after_victory(run: RunState, settlement: dict, total_damage: int,
     faith_before = run.faith
 
     unused = max(0, run.base_assaults - assaults_used)
-    base_gold = 25 + unused
+    base_gold = REWARD_GOLD + unused
     run.gold += base_gold
-    run.science += 8
-    run.culture += 8
-    run.faith += 5
+    run.science += REWARD_SCIENCE
+    run.culture += REWARD_CULTURE
+    run.faith += REWARD_FAITH
     if "rationalism" in run.policies:
-        run.science += 2
+        run.science += max(4, int(REWARD_SCIENCE * 0.25))
 
     choice = choose_occupy(run, settlement)
     if choice == "raze":
-        run.gold += 20
+        run.gold += RAZE_GOLD
         occupied_type = ""
     else:
         occupied_type = settlement["city_type"]
@@ -1080,13 +1135,14 @@ def draft_policy(run: RunState) -> None:
 def choose_policy(run: RunState, offers: list[str]) -> str:
     strat = run.strategy
     pref = {
-        "S3": ["agoge", "drill_manual", "line_officers", "conscription", "professional_army", "logistics"],
-        "S1": ["sappers", "siegecraft", "agoge", "conscription"],
-        "S2": ["conscription", "horse_breeding", "chivalry", "leveee", "militia_act"],
-        "S4": ["logistics", "agoge", "line_officers"],
-        "S5": ["logistics", "agoge", "rationalism"],
-        "S6": ["rationalism", "logistics", "agoge", "drill_manual"],
-    }.get(strat, ["agoge", "logistics", "conscription"])
+        "S3": ["academy_momentum", "research_corps", "agoge", "drill_manual", "line_officers",
+               "conscription", "professional_army", "workshop_network", "logistics"],
+        "S1": ["academy_momentum", "sappers", "siegecraft", "workshop_network", "agoge", "conscription"],
+        "S2": ["academy_momentum", "conscription", "leveee", "horse_breeding", "chivalry", "research_corps"],
+        "S4": ["academy_momentum", "workshop_network", "logistics", "research_corps", "agoge"],
+        "S5": ["academy_momentum", "liturgical_fire", "logistics", "agoge", "rationalism"],
+        "S6": ["academy_momentum", "research_corps", "rationalism", "logistics", "agoge", "drill_manual"],
+    }.get(strat, ["academy_momentum", "research_corps", "agoge", "logistics", "conscription"])
     for p in pref:
         if p in offers:
             return p
@@ -1095,62 +1151,68 @@ def choose_policy(run: RunState, offers: list[str]) -> str:
 
 def shop(run: RunState, settlement: dict) -> None:
     rng = run.rng
-    # Treasury 3 offers
-    treasury = []
-    for _ in range(3):
-        treasury.append(roll_treasury_offer(run))
-    synod = []
-    for _ in range(3):
-        synod.append(roll_synod_offer(run))
+    # Once per era: guarantee a Wonder purchase option
+    if not run.era_wonder_offered and run.wonder is None:
+        run.era_wonder_available = rng.choice(list(WONDERS.keys()))
+        run.era_wonder_offered = True
 
-    # One reroll each if strategy wants
+    treasury = [roll_treasury_offer(run) for _ in range(PACK_SIZE)]
+    synod = [roll_synod_offer(run) for _ in range(PACK_SIZE)]
+
+    # Append forced era wonder as an extra buyable row item
+    if run.era_wonder_available and run.wonder is None:
+        w = run.era_wonder_available
+        treasury.append(("wonder", w, WONDERS[w][1]))
+
     if run.strategy in ("S4", "S1") and run.gold >= 3:
         if not any(o[0] == "blueprint" for o in treasury):
             run.gold -= 3
-            treasury = [roll_treasury_offer(run) for _ in range(3)]
+            treasury = [roll_treasury_offer(run) for _ in range(PACK_SIZE)]
+            if run.era_wonder_available and run.wonder is None:
+                w = run.era_wonder_available
+                treasury.append(("wonder", w, WONDERS[w][1]))
     if run.strategy == "S5" and run.faith >= 3:
         if not any(o[0] == "doctrine" for o in synod):
             run.faith -= 3
-            synod = [roll_synod_offer(run) for _ in range(3)]
+            synod = [roll_synod_offer(run) for _ in range(PACK_SIZE)]
 
     buy_treasury(run, treasury)
     buy_synod(run, synod)
 
-    # Disband for S2
     if run.strategy == "S2":
         disband_supports(run)
 
 
 def roll_treasury_offer(run: RunState) -> tuple:
     rng = run.rng
+    if run.wonder is None and rng.random() < WONDER_SHOP_CHANCE:
+        name = rng.choice(list(WONDERS.keys()))
+        return ("wonder", name, WONDERS[name][1])
     r = rng.random()
-    if r < 0.40:
+    if r < 0.38:
         kind = rng.choice(["M", "R", "C", "S"])
-        cost = 8  # tier I price; scale lightly
         cost = {1: 8, 2: 12, 3: 18}.get(run.tiers[kind], 12)
+        if run.cheap_units:
+            cost = max(4, cost // 2)
         edition = "standard"
         er = rng.random()
-        if er < 0.12:
+        if er < 0.15:
             edition = rng.choice(["gilded", "scholarly", "devout", "mercantile"])
             cost = int(cost * 1.5)
         return ("unit", kind, cost, edition)
-    if r < 0.75:
-        # blueprint
-        pool = list(BLUEPRINTS.keys())
-        if not run.writing:
-            pool = [b for b in pool if BLUEPRINTS[b][0] == "C"] + \
-                   [b for b in pool if BLUEPRINTS[b][0] != "C" and rng.random() < 0.35]
-        name = rng.choice(list(BLUEPRINTS.keys()))
-        # rarity weight
+    if r < 0.72:
         rarities = [b for b, v in BLUEPRINTS.items() if v[0] == "C"] * 3 + \
                    [b for b, v in BLUEPRINTS.items() if v[0] == "U"] * 2 + \
                    [b for b, v in BLUEPRINTS.items() if v[0] == "R"]
         name = rng.choice(rarities)
         return ("blueprint", name, BLUEPRINTS[name][1])
-    if r < 0.95:
-        # promotion stub: +2 might on a random owned combat card
+    if r < 0.92:
         return ("promotion", "master_drill", 10)
-    return ("unit", rng.choice(["M", "R", "C", "S"]), 8, "standard")
+    kind = rng.choice(["M", "R", "C", "S"])
+    cost = 8
+    if run.cheap_units:
+        cost = 4
+    return ("unit", kind, cost, "standard")
 
 
 def roll_synod_offer(run: RunState) -> tuple:
@@ -1165,8 +1227,6 @@ def roll_synod_offer(run: RunState) -> tuple:
 
 
 def buy_treasury(run: RunState, offers: list) -> None:
-    strat = run.strategy
-    # Sort offers by preference score
     scored = []
     for o in offers:
         scored.append((treasury_score(run, o), o))
@@ -1194,13 +1254,18 @@ def buy_treasury(run: RunState, offers: list) -> None:
         elif o[0] == "promotion":
             _, name, cost = o
             if run.gold >= cost:
-                # apply to preferred class card
                 targets = [c for c in run.deck if c.combat()]
                 if targets and want_promotion(run):
                     run.gold -= cost
                     pref = preferred_class(run)
                     targets.sort(key=lambda c: (0 if c.kind == pref else 1))
                     targets[0].bonus_might += 2
+        elif o[0] == "wonder":
+            _, name, cost = o
+            if run.wonder is None and run.gold >= cost and want_wonder(run, name):
+                run.gold -= cost
+                apply_wonder(run, name)
+                run.era_wonder_available = None
 
 
 def buy_synod(run: RunState, offers: list) -> None:
@@ -1219,6 +1284,8 @@ def buy_synod(run: RunState, offers: list) -> None:
 
 
 def treasury_score(run: RunState, o: tuple) -> float:
+    if o[0] == "wonder":
+        return 8 if want_wonder(run, o[1]) else 0
     if o[0] == "blueprint":
         return 5 if want_blueprint(run, o[1]) else 0
     if o[0] == "unit":
@@ -1226,6 +1293,40 @@ def treasury_score(run: RunState, o: tuple) -> float:
     if o[0] == "promotion":
         return 2 if want_promotion(run) else 0
     return 0
+
+
+def want_wonder(run: RunState, name: str) -> bool:
+    if run.wonder is not None:
+        return False
+    # Buy if affordable with a small gold buffer for next fight
+    cost = WONDERS[name][1]
+    return run.gold >= cost + 10
+
+
+def apply_wonder(run: RunState, name: str) -> None:
+    run.wonder = name
+    effect = WONDERS[name][0]
+    if effect == "plus_assault":
+        run.base_assaults += 1
+    elif effect == "free_sci_level":
+        # immediate free science level-up pick
+        offers = roll_science_offers(run)
+        pick = choose_science(run, offers)
+        apply_science(run, pick)
+        run.sci_level += 1
+    elif effect == "builder_scale":
+        run.blueprint_slots = min(5, run.blueprint_slots + 1)
+        run.builder_scale = max(run.builder_scale, 1.5)
+    elif effect == "hand_size":
+        run.hand_size += 1
+    elif effect == "faith_burst":
+        run.faith += 25
+    elif effect == "cheap_units":
+        run.cheap_units = True
+    elif effect == "interest":
+        run.interest_cap = max(run.interest_cap, 10)
+    elif effect == "policy_slot":
+        run.policy_slots = min(5, run.policy_slots + 1)
 
 
 def want_unit(run: RunState, kind: str) -> bool:
@@ -1249,12 +1350,14 @@ def want_blueprint(run: RunState, name: str) -> bool:
         return False
     strat = run.strategy
     if strat == "S1":
-        return name in ("battering_ram", "siege_tower", "scaffolding", "forge", "aqueduct")
+        return name in ("battering_ram", "siege_tower", "scaffolding", "forge", "aqueduct", "observatory")
     if strat == "S4":
         return True
     if strat == "S3":
-        return name in ("forge", "magazine", "watchtower", "aqueduct", "supply_lines", "roads")
-    return name in ("forge", "watchtower", "supply_lines", "aqueduct", "siege_tower")
+        return name in ("forge", "magazine", "watchtower", "aqueduct", "supply_lines", "roads", "observatory", "arsenal")
+    if strat == "S6":
+        return name in ("observatory", "forge", "aqueduct", "watchtower", "supply_lines")
+    return name in ("forge", "watchtower", "supply_lines", "aqueduct", "siege_tower", "observatory")
 
 
 def want_doctrine(run: RunState, name: str) -> bool:
@@ -1329,6 +1432,8 @@ def play_eras(seed: int, strategy: str, max_era: int = 1) -> dict:
     for era in range(1, max_era + 1):
         run.era = era
         run.era_just_began = True
+        run.era_wonder_offered = False
+        run.era_wonder_available = None
         for kind in ("village", "town", "capital"):
             run.settlement_index += 1
             st = make_settlement(kind, rng, era)

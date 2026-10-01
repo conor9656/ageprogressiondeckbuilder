@@ -37,11 +37,11 @@ A run is lost the first time you fail to conquer a settlement.
 
 ### Defence targets (provisional)
 
-Tuned after Ancient-era Monte Carlo (`sim/results/ERA1_REPORT.md`): era‑1 base raised so Village is no longer a free win for greedy play. Eras 2+ still provisional pending multi-era sims.
+Tuned after Ancient-era Monte Carlo (`sim/results/ERA1_REPORT.md`) and balance‑v2 multi-era pass (`sim/results/BALANCE_V2_REPORT.md`).
 
 | Era | 1 Ancient | 2 Classical | 3 Medieval | 4 Renaissance | 5 Industrial | 6 Modern | 7 Atomic | 8 Information |
 |---|---|---|---|---|---|---|---|---|
-| Base Defence | **500** | 800 | 2,000 | 5,000 | 12,000 | 30,000 | 75,000 | 150,000 |
+| Base Defence | **500** | **800** | **1,400** | 4,500 | 12,000 | 30,000 | 75,000 | 150,000 |
 
 Village = ×1, Town = ×1.5, Capital = ×2.5 of the era base.
 
@@ -49,7 +49,11 @@ Village = ×1, Town = ×1.5, Capital = ×2.5 of the era base.
 |---|---|---|---|
 | Defence | 500 | 750 | 1,250 |
 
-Prior (sim v1) era‑1 base was 300 — naked greedy p50 damage ~427 cleared Village 100% of the time.
+| Era 3 (Medieval) | Village | Town | Capital |
+|---|---|---|---|
+| Defence | 1,400 | 2,100 | 3,500 |
+
+Prior era‑1 base was 300; prior era‑3 base was 2,000 (Cap 5,000) which outpaced multipliers before balance v2.
 
 ---
 
@@ -73,6 +77,8 @@ Damage = Might × Momentum   (then apply settlement modifiers, e.g. walls)
 - **Momentum** = formation's base Momentum + Momentum from scoring units (+ bonuses, multipliers).
 - The game automatically selects the **highest-ranking formation** the played cards make. Only the units that form it are **scoring**; other combat units played contribute nothing.
 - Modifiers resolve in a fixed order: units → Blueprints → Policies (left to right by slot) → Wonders → settlement modifiers.
+
+**Tech Literacy (balance v2):** all formations gain Momentum ×(1 + 0.04 × Science levels taken this run). Stacks with Policy/Blueprint scalers such as Academy Momentum (Mom ×(1 + 0.1 × sci levels)).
 
 ### Formations
 
@@ -121,14 +127,14 @@ All units simply contribute numbers to formations. There is no positioning and n
 | Cavalry | Highest Might | Horseman → Knight → Cuirassier → Cavalry → Tank |
 | Siege | Low Might, required to beat walls | Catapult → Trebuchet → Bombard → Artillery → Rocket Artillery |
 
-Provisional stats per tier (I / II / III / IV / V):
+Provisional stats per tier (I / II / III / IV / V) — **balance v2** early-weighted buff:
 
 | Class | Might | Momentum |
 |---|---|---|
-| Melee | 5 / 12 / 20 / 32 / 50 | — |
-| Ranged | 2 / 4 / 7 / 11 / 16 | +1 / +1 / +2 / +2 / +3 |
-| Cavalry | 8 / 16 / 26 / 40 / 60 | — |
-| Siege | 3 / 6 / 10 / 16 / 24 | — |
+| Melee | 7 / 15 / 24 / 36 / 55 | — |
+| Ranged | 3 / 5 / 8 / 12 / 18 | +1 / +2 / +2 / +3 / +3 |
+| Cavalry | 11 / 20 / 30 / 44 / 65 | — |
+| Siege | 4 / 8 / 12 / 18 / 26 | — |
 
 **Tier upgrades apply to the whole class**, including cards bought later (see Science).
 
@@ -153,10 +159,10 @@ Provisional stats per tier (I / II / III / IV / V):
 
 | Resource | Earned from | Spent on / effect |
 |---|---|---|
-| **Gold** | Base reward per settlement won, +1 per unused Assault, interest (+1 per 5 held, max +5), razing, occupied Trade Ports | Shop: units, Blueprints, Wonders, rerolls, disbanding cards |
-| **Science** | Small base per victory, occupied Scholar cities, Doctrines, Policies | Fills research bar → **Science level-up** (pick 1 of 3 random offers) |
-| **Culture** | Small base per victory, occupied Artisan cities, Doctrines, Policies | Fills civics bar → **Civic level-up** (pick 1 of 3 random offers) |
-| **Faith** | Small base per victory, occupied Temple cities, Doctrines | Great Prophets, Doctrines, Missionary tier upgrades |
+| **Gold** | Base **~38** per settlement won, +1 per unused Assault, interest (+1 per 5 held, max +5 / Wonder can raise), razing (~28), occupied Trade Ports | Shop: units, Blueprints, Wonders, rerolls, disbanding cards |
+| **Science** | Base **~16** per victory, occupied Scholar cities, Doctrines, Policies | Fills research bar → **Science level-up** (pick 1 of 3 random offers) |
+| **Culture** | Base **~16** per victory, occupied Artisan cities, Doctrines, Policies | Fills civics bar → **Civic level-up** (pick 1 of 3 random offers) |
+| **Faith** | Base **~12** per victory, occupied Temple cities, Doctrines | Great Prophets, Doctrines, Missionary tier upgrades |
 
 ### Science level-ups (random offer of 3)
 
@@ -233,11 +239,11 @@ Opens after every conquered settlement. The shop is **not** an open catalogue �
 | **Treasury (Gold pack)** | Gold | Units (incl. **Editions**), **Promotions**, Blueprints | 1× per visit, costs Gold |
 | **Synod (Faith pack)** | Faith | Doctrines, Great Prophets | 1× per visit, costs Faith |
 
-- Each pack shows a small random row (e.g. **3 offers**). Buy what you want from the row; unbought offers vanish when you leave.
+- Each pack shows a small random row (**5 offers**). Buy what you want from the row; unbought offers vanish when you leave.
 - **You cannot buy a named Great Prophet / Blueprint à la carte from a fixed price list.** You buy (or skip) whatever the pack rolled.
 - **Disband** sits outside both packs: pay Gold to remove a card from the deck (always available).
 - **Reroll:** each pack can be rerolled **once per shop visit** (once per settlement). Gold rerolls Treasury; Faith rerolls Synod. No second reroll that visit.
-- **Wonders:** super-rare; may appear as an extra slot in **either** pack. Same Wonder rules as below (one per run; skip → rival builds it).
+- **Wonders:** **one guaranteed Wonder offer per era** (random which Wonder), plus a **low chance (~4%)** to appear as a normal Treasury slot. Same Wonder rules as below (one per run; skip → rival builds it).
 
 Provisional pack costs (pay to *refresh into view* is wrong — the visit is free; you pay per item). Optional later: small fee to open a second packed row — not required for v1.
 

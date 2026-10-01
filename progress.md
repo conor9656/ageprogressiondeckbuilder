@@ -4,6 +4,11 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-01 — Balance v2 (stack denser + scalers + wonders)
+- Applied: early unit buffs, rewards 38/16/16/12, pack size 5, Tech Literacy + Academy-style Mom scalers, era Wonder offer, Medieval base 1400.
+- 3-era clear (mean): E1 ~85% · E2 ~73% · E3 ~39% (was 0%). Report: `BALANCE_V2_REPORT.md`.
+- Strategy evening deferred (S2 still strongest, S5 weakest).
+
 ## 2026-10-01 — Average-run trajectory report
 - Instrumented post-fight snapshots (gold/faith/sci/civ/tiers/BP/Doc/Pol/editions/promos).
 - `sim/avg_run_report.py` + `AVERAGE_RUN_REPORT.md`: after E1 Capital, typical stack is ~1.4 sci levels, ~1.4 BP, &lt;1 Doctrine/Policy, ~0.2 specials.

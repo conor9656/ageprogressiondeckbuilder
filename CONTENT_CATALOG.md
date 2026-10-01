@@ -108,8 +108,8 @@ See `GAME_DESIGN.md` §8 for rules. Stubs below.
 
 | Pack | Offers per visit | Reroll |
 |---|---|---|
-| Treasury (Gold) | 3 from: Unit (Standard/Edition), Promotion, Blueprint; tiny chance Wonder | 1× / visit for Gold |
-| Synod (Faith) | 3 from: Doctrine, Great Prophet; tiny chance Wonder | 1× / visit for Faith |
+| Treasury (Gold) | **5** from: Unit (Standard/Edition), Promotion, Blueprint; low-chance Wonder; **+1 guaranteed Wonder slot once per era** | 1× / visit for Gold |
+| Synod (Faith) | **5** from: Doctrine, Great Prophet; tiny chance Wonder | 1× / visit for Faith |
 | Disband | Always available, not a pack offer | — |
 
 Weights (Treasury, rough): Unit 40% · Blueprint 35% · Promotion 20% · Wonder 5% (then Wonder usually still fails a second rarity check).  
@@ -129,7 +129,7 @@ Weights (Synod): Doctrine 55% · Prophet 40% · Wonder 5%.
 | Reroll Treasury / Synod | 3 Gold / 3 Faith (once each per visit) |
 | Wonder | 80–120 Gold **or** 60–90 Faith depending on which pack showed it |
 
-Village win stub: **+25 Gold, +8 Science, +8 Culture, +5 Faith**, +1 Gold per unused Assault, then interest.
+Village win stub: **+38 Gold, +16 Science, +16 Culture, +12 Faith**, +1 Gold per unused Assault, then interest. (balance v2)
 
 ### Edition / Promotion design notes
 
