@@ -758,17 +758,71 @@ def city_yields(run: RunState) -> None:
             run.gold += 4
 
 
+def snapshot_run(run: RunState) -> dict:
+    editions = Counter(c.edition for c in run.deck if c.edition != "standard")
+    special_units = sum(1 for c in run.deck if c.edition != "standard")
+    promoted = sum(1 for c in run.deck if c.bonus_might > 0 or c.bonus_mom > 0)
+    class_counts = Counter(c.kind for c in run.deck)
+    return {
+        "gold": run.gold,
+        "science_bank": run.science,
+        "culture_bank": run.culture,
+        "faith": run.faith,
+        "sci_levels_taken": run.sci_level,
+        "civ_levels_taken": run.civ_level,
+        "tiers": dict(run.tiers),
+        "tier_sum": sum(run.tiers[k] for k in ("M", "R", "C", "S", "B")),
+        "form_levels": dict(run.form_levels),
+        "form_level_sum": sum(run.form_levels.values()),
+        "policies": list(run.policies),
+        "policy_count": len(run.policies),
+        "blueprints": list(run.blueprints),
+        "blueprint_count": len(run.blueprints),
+        "doctrines": list(run.doctrines),
+        "doctrine_count": len(run.doctrines),
+        "blueprint_slots": run.blueprint_slots,
+        "doctrine_slots": run.doctrine_slots,
+        "policy_slots": run.policy_slots,
+        "hand_size": run.hand_size,
+        "base_assaults": run.base_assaults,
+        "base_regroups": run.base_regroups,
+        "builder_scale": run.builder_scale,
+        "deck_size": len(run.deck),
+        "class_counts": dict(class_counts),
+        "special_unit_count": special_units,
+        "editions": dict(editions),
+        "promoted_card_count": promoted,
+        "occupied": list(run.occupied),
+        "occupy_count": len(run.occupied),
+        "zeal_left": run.zeal_settlements_left,
+        "writing": run.writing,
+    }
+
+
 def after_victory(run: RunState, settlement: dict, total_damage: int,
-                  assaults_used: int, fight_docs: FightMods) -> None:
+                  assaults_used: int, fight_docs: FightMods) -> dict:
+    before = snapshot_run(run)
+    sci_before = run.sci_level
+    civ_before = run.civ_level
+    tiers_before = dict(run.tiers)
+    policies_before = set(run.policies)
+    bp_before = set(run.blueprints)
+    doc_before = set(run.doctrines)
+    deck_before = len(run.deck)
+    special_before = sum(1 for c in run.deck if c.edition != "standard")
+    promoted_before = sum(1 for c in run.deck if c.bonus_might > 0 or c.bonus_mom > 0)
+    gold_before = run.gold
+    faith_before = run.faith
+
     unused = max(0, run.base_assaults - assaults_used)
-    run.gold += 25 + unused
+    base_gold = 25 + unused
+    run.gold += base_gold
     run.science += 8
     run.culture += 8
     run.faith += 5
     if "rationalism" in run.policies:
         run.science += 2
 
-    # Occupy vs Raze
     choice = choose_occupy(run, settlement)
     if choice == "raze":
         run.gold += 20
@@ -778,13 +832,38 @@ def after_victory(run: RunState, settlement: dict, total_damage: int,
         run.occupied.append(occupied_type)
 
     apply_doctrine_rewards(run, fight_docs, total_damage, settlement, occupied_type)
-    # edition bonuses
-    # simplified: skip per-card tracking of scored editions this fight
 
     interest(run)
     city_yields(run)
-    process_level_ups(run)
+    level_ups = process_level_ups(run)
     shop(run, settlement)
+
+    after = snapshot_run(run)
+    troop_ups = {
+        k: after["tiers"][k] - tiers_before[k]
+        for k in tiers_before
+        if after["tiers"][k] != tiers_before[k]
+    }
+    return {
+        "occupy_or_raze": choice,
+        "occupied_type": occupied_type or None,
+        "science_level_ups_this_fight": after["sci_levels_taken"] - sci_before,
+        "civic_level_ups_this_fight": after["civ_levels_taken"] - civ_before,
+        "science_picks": [x["pick"] for x in level_ups["science"]],
+        "civic_picks": [x["pick"] for x in level_ups["civics"]],
+        "science_offers": level_ups["science"],
+        "civic_offers": level_ups["civics"],
+        "troop_upgrades_this_fight": troop_ups,
+        "new_policies": [p for p in after["policies"] if p not in policies_before],
+        "new_blueprints": [b for b in after["blueprints"] if b not in bp_before],
+        "new_doctrines": [d for d in after["doctrines"] if d not in doc_before],
+        "units_bought": max(0, after["deck_size"] - deck_before),
+        "special_units_gained": max(0, after["special_unit_count"] - special_before),
+        "promotions_gained": max(0, after["promoted_card_count"] - promoted_before),
+        "gold_delta": after["gold"] - gold_before,
+        "faith_delta": after["faith"] - faith_before,
+        "snapshot": after,
+    }
 
 
 def choose_occupy(run: RunState, settlement: dict) -> str:
@@ -803,13 +882,16 @@ def choose_occupy(run: RunState, settlement: dict) -> str:
     return "raze"
 
 
-def process_level_ups(run: RunState) -> None:
+def process_level_ups(run: RunState) -> dict:
+    sci_picks = []
+    civ_picks = []
     while run.sci_level < len(SCIENCE_COSTS) and run.science >= SCIENCE_COSTS[run.sci_level]:
         run.science -= SCIENCE_COSTS[run.sci_level]
         offers = roll_science_offers(run)
         pick = choose_science(run, offers)
         apply_science(run, pick)
         run.sci_level += 1
+        sci_picks.append({"pick": pick, "offers": offers})
         run.events.append({"science_pick": pick, "offers": offers})
     while run.civ_level < len(CIVIC_COSTS) and run.culture >= CIVIC_COSTS[run.civ_level]:
         run.culture -= CIVIC_COSTS[run.civ_level]
@@ -817,7 +899,9 @@ def process_level_ups(run: RunState) -> None:
         pick = choose_civic(run, offers)
         apply_civic(run, pick)
         run.civ_level += 1
+        civ_picks.append({"pick": pick, "offers": offers})
         run.events.append({"civic_pick": pick, "offers": offers})
+    return {"science": sci_picks, "civics": civ_picks}
 
 
 def roll_science_offers(run: RunState) -> list[str]:
@@ -1098,6 +1182,8 @@ def buy_treasury(run: RunState, offers: list) -> None:
                 if edition == "gilded":
                     kw["bonus_might"] = 2
                 c = run.new_card(kind, edition=edition, **kw)
+                if edition != "standard":
+                    c.edition = edition
                 run.deck.append(c)
         elif o[0] == "blueprint":
             _, name, cost = o
@@ -1266,8 +1352,20 @@ def play_eras(seed: int, strategy: str, max_era: int = 1) -> dict:
                 results["doctrines"] = list(run.doctrines)
                 results["gold_end"] = run.gold
                 results["deck_size"] = len(run.deck)
+                results["trajectory"] = results.get("trajectory", [])
                 return results
-            after_victory(run, st, dmg, used, run._last_fight)  # type: ignore
+            post = after_victory(run, st, dmg, used, run._last_fight)  # type: ignore
+            results.setdefault("trajectory", []).append({
+                "fight_index": run.settlement_index,
+                "era": era,
+                "kind": kind,
+                "defence": st["defence"],
+                "damage": dmg,
+                "assaults_used": used,
+                "won": True,
+                **{k: post[k] for k in post if k != "snapshot"},
+                "after": post["snapshot"],
+            })
         results["won_through"] = era
 
     results["tiers_end"] = dict(run.tiers)

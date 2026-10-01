@@ -4,6 +4,11 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-01 — Average-run trajectory report
+- Instrumented post-fight snapshots (gold/faith/sci/civ/tiers/BP/Doc/Pol/editions/promos).
+- `sim/avg_run_report.py` + `AVERAGE_RUN_REPORT.md`: after E1 Capital, typical stack is ~1.4 sci levels, ~1.4 BP, &lt;1 Doctrine/Policy, ~0.2 specials.
+- Confirms need to increase Science/Faith/Builder/troop upgrade density before era 3.
+
 ## 2026-09-30 — Defence retune + 3-era sim
 - Applied era‑1 Defence base **500** (V500/T750/C1250) in `GAME_DESIGN.md`.
 - Extended sim to eras 1–3 (`--eras 3`). **Nobody cleared Medieval**; Capital damage/HP ~0.5 by era 3.
