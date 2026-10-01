@@ -66,8 +66,12 @@ Strategies: S1 Wallbreakers · S2 Thin Legion · S3 Battle Line · S4 Builder ·
 | P38 | Grain Dole | C | Utility | First Regroup each settlement discards/draws **one extra** card | all | Mild consistency |
 | P39 | Martial Law | R | Multiplier | ×1.25 Might on formations that include a **Support** (Builder or Missionary) | S4 S5 | Rewards paying the slot tax |
 | P40 | Archive of Victory | U | Scaling | +3 Culture on victory; **+1 Culture** to this each time you win without spending a Regroup (*cap +10*) | slots | Skill scaler |
+| P41 | Research Corps | C | Multiplier | Formation Might ×(1 + 0.05 × Science levels taken) | S6 S3 | Common sci scaler (balance v2) |
+| P42 | Academy Momentum | R | Multiplier | Formation Momentum ×(1 + 0.1 × Science levels) — e.g. 10 Mom @ 7 sci → 17 | all | Headline exponential (balance v2) |
+| P43 | Workshop Network | U | Flat | +6 Might per owned Blueprint | S4 | |
+| P44 | Liturgical Fire | U | Flat | +1 Momentum per owned Doctrine | S5 | |
 
-**Count: 40.** Cut candidates if playtests show clutter: P05, P10, P36 (too narrow / weak).
+**Count: 44** (P41–P44 added in balance v2). Cut candidates if playtests show clutter: P05, P10, P36 (too narrow / weak).
 
 ---
 
