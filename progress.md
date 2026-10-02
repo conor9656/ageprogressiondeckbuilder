@@ -4,6 +4,13 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-02 — Science progression trees (non-troop pool)
+- Designed era-gated stacking trees in `SCIENCE_UPGRADES.md` §6: **Education / Banking / Devotion / Arts** (currency %), **Engineering** (Builder line), **Prophecy** (Missionary line).
+- Rule: current-era node only; miss = gone forever; stacks additively across eras. Shop Science tree parked (§6.6).
+- Natural Philosophy one-off retired → Education tree.
+- Sim (`era1_sim.py`): PROG_* tables, reward/city/interest/doctrine % scaling, era-gated offers, eng/pro combat flags (float Builder/Missionary, draw-on-Builder, faith-on-Missionary, wall BP +50%, Workshop Relay, Evangelists free slot, free Prophet proxy).
+- Catalog §8 updated. Strategy evening still deferred; shop tree still parked.
+
 ## 2026-10-02 — New cards assessed + added
 - Helping Hand (Blueprint **Rare**), Last Stand (Policy **Rare**, +15 Mom clutch), Mercenaries (Doctrine **Rare**, nerfed to ⌊Gold/5⌋ Might cap 40), Three Musketeers (Policy **Rare**, Triple Mom×3), Terracotta Army Wonder (replace troop post-victory, 25% edition).
 - Raw +1 Might/Gold rejected as broken. Assessment: `CARD_ASSESSMENT_NEW.md`. Wired into pools + sim.

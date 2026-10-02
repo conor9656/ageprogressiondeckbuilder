@@ -94,11 +94,11 @@ Full draft pool (**40**): **`DOCTRINES.md`**. Synod pack; primary home for cappe
 **Random pick 1 of 3** — not a fixed tree. Full rules: **`SCIENCE_UPGRADES.md`**.
 
 - Troop offers: Upgrade Melee / Ranged / Cavalry / Siege / Builders; run tracks tiers.
-- Soft-cap by era; rare ahead-of-era troop bumps; same-class weight recovers next era.
-- Science screen: **min 1 / max 2** of the three offers are troop-like; rest non-troop (formation drills, unlocks, …).
+- Soft-cap by era; rare ahead-of-era; same-class weight recovers next era.
+- Science screen: **min 1 / max 2** of the three offers are troop-like; rest non-troop.
+- Non-troop now includes **progression trees** (Education / Banking / Devotion / Arts / Engineering / Prophecy) — **current-era node only**, stack if collected across eras; miss forever if skipped.
+- Shop Science tree **parked**.
 - Civics: same 1-of-3 presentation; no troop quota.
-
-Ancient non-troop / civic starters live in that file; pools still need fattening.
 
 ## 9. Shop — packs, editions, promotions
 

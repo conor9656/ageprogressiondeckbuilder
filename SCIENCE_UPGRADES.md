@@ -88,31 +88,166 @@ So: first settlement Melee→II is common; a second Melee→III in the same Anci
 
 ---
 
-## 6. Non-troop Science pool (expand later)
+## 6. Non-troop Science pool
 
-These fill the 1–2 non-troop slots. Era-tagged; rare ahead-of-era allowed at low weight.
+Fills the 1–2 non-troop slots. Two families:
 
-| ID | Era | Upgrade | Effect (provisional) |
+| Family | Era gating | Notes |
+|---|---|---|
+| **Formation drills / unlocks** | Current era **and earlier** (can re-roll drills; levels stack) | Military backbone |
+| **Progression trees** (Education, Banking, Devotion, Arts, Engineering, Prophecy) | **Current-era node only** — once you leave an era, that era’s node never appears again | Miss it → miss that stack forever |
+
+Rare ahead-of-era: **not** used for progression-tree nodes (keeps the miss-penalty honest). Formation drills may still rare-roll one era ahead at low weight.
+
+### 6.1 Progression stacking rule
+
+Each tree node adds its **own** % (or effect) when taken. Bonuses **stack additively** with other owned nodes of the same tree.
+
+Example — Education:
+- Take **Scribal Schools** in Era 1 (+10% Sci) then **Lyceum** in Era 2 (+12% Sci) → **+22% Science** from all sources.
+- Skip Schools, take only Lyceum in Era 2 → **+12% only** (no retroactive 10%).
+
+UI should show `Education +22%` on the run sheet.
+
+### 6.2 Currency trees (one node per era)
+
+Increments tuned so a **perfect** 8-node stack is strong but not automatic win (~+90–110% on that resource). Missing early nodes is a real cost.
+
+#### Education — Science % from all sources
+
+| Era | ID | Name | Effect |
+|---|---|---|---|
+| 1 | EDU1 | Scribal Schools | +10% Science |
+| 2 | EDU2 | Lyceum | +12% Science |
+| 3 | EDU3 | Cathedral Schools | +12% Science |
+| 4 | EDU4 | Colleges | +14% Science |
+| 5 | EDU5 | National Academies | +14% Science |
+| 6 | EDU6 | Polytechnics | +16% Science |
+| 7 | EDU7 | Research Institutes | +16% Science |
+| 8 | EDU8 | Global University Network | +18% Science |
+
+Max if all taken: **+112% Science**. Replaces old one-off “Natural Philosophy +10%”.
+
+#### Banking — Gold % from all sources (rewards, interest, city yields, Doctrines that grant Gold)
+
+| Era | ID | Name | Effect |
+|---|---|---|---|
+| 1 | BANK1 | Open Markets | +8% Gold |
+| 2 | BANK2 | Coinage | +10% Gold |
+| 3 | BANK3 | Merchant Guilds | +10% Gold |
+| 4 | BANK4 | Counting Houses | +12% Gold |
+| 5 | BANK5 | Joint-Stock Companies | +12% Gold |
+| 6 | BANK6 | Central Banks | +14% Gold |
+| 7 | BANK7 | Credit Networks | +14% Gold |
+| 8 | BANK8 | Global Markets | +16% Gold |
+
+Max: **+96% Gold**. Slightly leaner than Education (Gold converts directly to shop power).
+
+#### Devotion — Faith % from all sources
+
+| Era | ID | Name | Effect |
+|---|---|---|---|
+| 1 | DEV1 | Wayside Shrines | +8% Faith |
+| 2 | DEV2 | City Temples | +10% Faith |
+| 3 | DEV3 | Monasteries | +10% Faith |
+| 4 | DEV4 | Great Cathedrals | +12% Faith |
+| 5 | DEV5 | Mission Societies | +12% Faith |
+| 6 | DEV6 | Great Awakenings | +14% Faith |
+| 7 | DEV7 | Ecumenical Councils | +14% Faith |
+| 8 | DEV8 | World Faith Network | +16% Faith |
+
+Max: **+96% Faith**.
+
+#### Arts — Culture % from all sources
+
+| Era | ID | Name | Effect |
+|---|---|---|---|
+| 1 | ART1 | Festival Grounds | +8% Culture |
+| 2 | ART2 | Amphitheaters | +10% Culture |
+| 3 | ART3 | Patron Guilds | +10% Culture |
+| 4 | ART4 | Printing Houses | +12% Culture |
+| 5 | ART5 | Opera & Museums | +12% Culture |
+| 6 | ART6 | Broadcast Culture | +14% Culture |
+| 7 | ART7 | Culture Ministries | +14% Culture |
+| 8 | ART8 | Planetary Archive | +16% Culture |
+
+Max: **+96% Culture**.
+
+### 6.3 Engineering Line (Builder progression)
+
+Eight era nodes; **only three** grant +1 Builder slot (Eras **2, 5, 8**). Others are Builder-facing abilities that grow with the ages.
+
+| Era | ID | Name | Effect |
+|---|---|---|---|
+| 1 | ENG1 | Mason's Apprenticeship | First Builder played each settlement: **draw 1** |
+| 2 | ENG2 | Clerk of Works | **+1 Builder (Blueprint) slot** |
+| 3 | ENG3 | Siege Engineering | Wall-related Blueprints (Scaffolding, Siege Tower, Battering Ram, etc.) numeric **+50%** |
+| 4 | ENG4 | Master Builder's Retinue | Opening hand always includes a **floating Builder** that **does not count** toward hand size |
+| 5 | ENG5 | Corps of Engineers | **+1 Builder slot** |
+| 6 | ENG6 | Prefabrication | All Blueprint numeric effects **+25%** (stacks with Builder tier / Pyramids) |
+| 7 | ENG7 | Workshop Relay | Once per settlement: fire one equipped Blueprint **without** playing a Builder |
+| 8 | ENG8 | Planetary Engineering | **+1 Builder slot** (cap still 5 — if maxed, Blueprint numeric +25% instead) |
+
+### 6.4 Prophetic Line (Missionary / Doctrine / Prophet progression)
+
+Mirror of Engineering for Faith supports. Slot bumps on Eras **2, 5, 8**.
+
+| Era | ID | Name | Effect |
+|---|---|---|---|
+| 1 | PRO1 | Alms Circuit | When a Missionary is played: **+4 Faith** |
+| 2 | PRO2 | Ordination | **+1 Doctrine slot** |
+| 3 | PRO3 | Illuminated Canon | Doctrine numeric rewards **+20%** |
+| 4 | PRO4 | Chaplain's Guard | Opening hand always includes a **floating Missionary** (does not count toward hand size) |
+| 5 | PRO5 | Synod Seal | **+1 Doctrine slot** |
+| 6 | PRO6 | Prophetic Tradition | Gain a **free Great Prophet** at the start of each era |
+| 7 | PRO7 | Evangelists | Once per settlement: a played Missionary **does not consume a formation slot** (Helping Hand for Faith) |
+| 8 | PRO8 | World Communion | **+1 Doctrine slot** (if maxed, Doctrine numeric +20% instead) |
+
+### 6.5 Formation drills & misc unlocks (keep / expand)
+
+| ID | Era | Upgrade | Effect |
 |---|---|---|---|
 | NS01 | 1 | Battle Line Drill | Battle Line +1 level |
 | NS02 | 1 | Skirmish Drill | Skirmish & Pair +1 level |
 | NS03 | 1 | Combined Arms Primer | Combined Arms +1 level |
 | NS04 | 1 | Writing | Uncommon Blueprints can appear in Treasury |
 | NS05 | 1 | Surveying | +1 Regroup permanently |
-| NS06 | 1 | Fortification Studies | Scaffolding/Siege Tower numeric +25% (Blueprint family) |
+| NS06 | 1 | Fortification Studies | Scaffolding/Siege Tower family +25% |
 | NS07 | 2 | Phalanx Drill | Phalanx +1 level |
 | NS08 | 2 | Vanguard Primer | Vanguard +1 level |
-| NS09 | 2 | Engineering Corps | Builder slot +1 **or** Builder tier +1 if slot maxed (prefer tier if under soft-cap) — *park; may be too flexible* |
-| NS10 | 2 | Natural Philosophy | +10% Science from all sources (small, stacks diminishing) |
 | NS11 | 3 | Grand Army Drill | Grand Army +1 level |
 | NS12 | 3 | Legion Primer | Legion +1 level |
 | NS13 | 3 | Imperial Standards | Imperial Guard +1 level |
-| NS14 | 3 | Machinery | Rare Blueprints weight ↑ in Treasury |
-| NS15 | 4+ | General Staff Maps | All formations +1 level **or** pick one formation +2 — TBD |
+| NS14 | 3 | Machinery | Rare Blueprint weight ↑ in Treasury |
+| NS15 | 4 | General Staff Maps | Pick one formation +2 levels |
+| NS16 | 5 | Staff College | All formations +1 level |
+| NS17 | 6 | Combined Doctrine Manual | Combined Arms & Grand Army +1 level |
+| NS18 | 7 | Rapid Deployment | +1 Regroup permanently |
+| NS19 | 8 | Networked Command | +1 hand size |
 
-**Need many more** non-troop Science upgrades before sim — flagged in parking lot. Formation-level ups and shop unlocks are the backbone.
+Old **Natural Philosophy** one-off is retired in favour of the Education tree.
 
-Duplicate rule: don’t offer the same NS id twice in one screen; formation drills can reappear across level-ups (levels stack).
+### 6.6 Shop tree — parked (do not implement yet)
+
+Future non-troop Science line ideas (era-gated same way):
+
+| Idea | Example beats |
+|---|---|
+| Stall Permits → Bazaar Law → Department Stores → … | +1 visible shop offer |
+| Tariff Reform / Subsidies | −% cost on Units or Blueprints |
+| Faith Concession | −% Synod costs |
+| Bulk Contracts | First reroll each visit free |
+
+Keep out of the live pool until shop UX is stable.
+
+### 6.7 Offer weighting (non-troop fill)
+
+When picking non-troop cards for the 1–2 slots:
+1. Build candidate list = progression nodes for **this era only** (6 trees → up to 6 cards) + formation/misc unlocks for **era ≤ current** (and not already redundant if one-shot unlock owned).
+2. Prefer not offering two nodes from the **same** progression tree in one screen (only one exists per era anyway).
+3. Weight currency trees slightly below formation drills early (e.g. drill 1.2×, tree node 1.0×) so military stays visible; bump tree weight if player is resource-starved (optional later).
+
+Duplicate rule: don’t offer the same ID twice in one screen.
 
 ---
 
@@ -166,8 +301,10 @@ Tune so Ancient expects ~2–3 Science level-ups before Capital if player Occupi
 
 ## 10. Open follow-ups
 
-- Fatten non-troop Science list to ~25–30 across eras.
-- Fatten civics to ~20+.
+- Implement shop progression tree (§6.6) when shop UX is ready.
 - Exact weights for T=1 vs T=2 troop slots.
 - Whether Builders count toward the “troop” min/max (currently **yes**).
-- Missionary tier: stay Faith-only vs rare Science offer.
+- Missionary **class tier** (Faith) vs Prophetic Line (Science) — both can coexist.
+- Sim: apply % bonuses to reward helpers; gate progression offers to current era only. **Done** in `sim/era1_sim.py`.
+- Fatten civics to ~20+.
+- Retune Education/Banking caps if multi-era sims show resource explosion.

@@ -116,20 +116,61 @@ WONDERS = {
     "grand_bazaar": ("cheap_units", 95),
 }
 
+# Formation/misc: (id, era, family) family "drill" = era<=current; "prog" = era==current only
 NON_TROOP_SCI = [
-    ("battle_line_drill", 1),
-    ("skirmish_drill", 1),
-    ("combined_arms_primer", 1),
-    ("writing", 1),
-    ("surveying", 1),
-    ("phalanx_drill", 2),
-    ("vanguard_primer", 2),
-    ("natural_philosophy", 2),
-    ("grand_army_drill", 3),
-    ("legion_primer", 3),
-    ("imperial_standards", 3),
-    ("machinery", 3),
+    ("battle_line_drill", 1, "drill"),
+    ("skirmish_drill", 1, "drill"),
+    ("combined_arms_primer", 1, "drill"),
+    ("writing", 1, "drill"),
+    ("surveying", 1, "drill"),
+    ("phalanx_drill", 2, "drill"),
+    ("vanguard_primer", 2, "drill"),
+    ("grand_army_drill", 3, "drill"),
+    ("legion_primer", 3, "drill"),
+    ("imperial_standards", 3, "drill"),
+    ("machinery", 3, "drill"),
+    ("general_staff_maps", 4, "drill"),
+    ("staff_college", 5, "drill"),
+    ("combined_doctrine_manual", 6, "drill"),
+    ("rapid_deployment", 7, "drill"),
+    ("networked_command", 8, "drill"),
 ]
+
+WALL_BLUEPRINTS = {"battering_ram", "scaffolding", "siege_tower"}
+
+# Progression trees: era -> (id, effect_key, value)
+PROG_EDU = {1: ("edu_scribal_schools", "sci_pct", 0.10), 2: ("edu_lyceum", "sci_pct", 0.12),
+            3: ("edu_cathedral_schools", "sci_pct", 0.12), 4: ("edu_colleges", "sci_pct", 0.14),
+            5: ("edu_academies", "sci_pct", 0.14), 6: ("edu_polytechnics", "sci_pct", 0.16),
+            7: ("edu_institutes", "sci_pct", 0.16), 8: ("edu_global_uni", "sci_pct", 0.18)}
+PROG_BANK = {1: ("bank_markets", "gold_pct", 0.08), 2: ("bank_coinage", "gold_pct", 0.10),
+             3: ("bank_guilds", "gold_pct", 0.10), 4: ("bank_counting_houses", "gold_pct", 0.12),
+             5: ("bank_joint_stock", "gold_pct", 0.12), 6: ("bank_central", "gold_pct", 0.14),
+             7: ("bank_credit", "gold_pct", 0.14), 8: ("bank_global", "gold_pct", 0.16)}
+PROG_DEV = {1: ("dev_shrines", "faith_pct", 0.08), 2: ("dev_temples", "faith_pct", 0.10),
+            3: ("dev_monasteries", "faith_pct", 0.10), 4: ("dev_cathedrals", "faith_pct", 0.12),
+            5: ("dev_missions", "faith_pct", 0.12), 6: ("dev_awakenings", "faith_pct", 0.14),
+            7: ("dev_ecumenical", "faith_pct", 0.14), 8: ("dev_world_faith", "faith_pct", 0.16)}
+PROG_ART = {1: ("art_festivals", "cul_pct", 0.08), 2: ("art_amphitheaters", "cul_pct", 0.10),
+            3: ("art_patron_guilds", "cul_pct", 0.10), 4: ("art_printing", "cul_pct", 0.12),
+            5: ("art_museums", "cul_pct", 0.12), 6: ("art_broadcast", "cul_pct", 0.14),
+            7: ("art_ministries", "cul_pct", 0.14), 8: ("art_archive", "cul_pct", 0.16)}
+PROG_ENG = {1: ("eng_apprenticeship", "eng", "draw_on_builder"),
+            2: ("eng_clerk", "eng", "builder_slot"),
+            3: ("eng_siege", "eng", "wall_bp_bonus"),
+            4: ("eng_retinue", "eng", "float_builder"),
+            5: ("eng_corps", "eng", "builder_slot"),
+            6: ("eng_prefab", "eng", "bp_numeric"),
+            7: ("eng_relay", "eng", "bp_without_builder"),
+            8: ("eng_planetary", "eng", "builder_slot")}
+PROG_PRO = {1: ("pro_alms", "pro", "faith_on_missionary"),
+            2: ("pro_ordination", "pro", "doctrine_slot"),
+            3: ("pro_canon", "pro", "doctrine_numeric"),
+            4: ("pro_chaplain", "pro", "float_missionary"),
+            5: ("pro_synod", "pro", "doctrine_slot"),
+            6: ("pro_tradition", "pro", "free_prophet_era"),
+            7: ("pro_evangelists", "pro", "missionary_free_slot"),
+            8: ("pro_communion", "pro", "doctrine_slot")}
 
 
 @dataclass
@@ -161,6 +202,11 @@ class FightMods:
     doctrines_fired: list = field(default_factory=list)
     helping_hand: bool = False
     merc_might: int = 0  # flat Might per assault from Mercenaries
+    # Engineering / Prophecy settlement-scoped flags
+    builder_played: bool = False
+    draw_on_builder_used: bool = False
+    missionary_free_slot_used: bool = False
+    bp_without_builder_used: bool = False
 
 
 @dataclass
@@ -204,6 +250,13 @@ class RunState:
     era_wonder_offered: bool = False
     cheap_units: bool = False
     interest_cap: int = 5
+    sci_bonus_pct: float = 0.0
+    gold_bonus_pct: float = 0.0
+    faith_bonus_pct: float = 0.0
+    cul_bonus_pct: float = 0.0
+    eng_flags: set = field(default_factory=set)
+    pro_flags: set = field(default_factory=set)
+    owned_prog: set = field(default_factory=set)
 
     def soft_cap(self) -> int:
         return ERA_SOFT_CAP.get(self.era, 5)
@@ -471,13 +524,20 @@ def evaluate_play(run: RunState, cards: list[Card], fight: FightMods,
     }
 
 
+def _bp_scale(run: RunState, name: str) -> float:
+    sc = run.builder_scale
+    if name in WALL_BLUEPRINTS and "wall_bp_bonus" in run.eng_flags:
+        sc *= 1.5
+    return sc
+
+
 def trigger_blueprint(run: RunState, name: str, fight: FightMods, hand: list[Card],
                       draw: list[Card], discard: list[Card]) -> None:
     if name in fight.blueprints_fired or name not in run.blueprints:
         return
     fight.blueprints_fired.add(name)
     effect = BLUEPRINTS[name][2]
-    sc = run.builder_scale
+    sc = _bp_scale(run, name)
     if effect == "siege_might":
         fight.siege_might += int(10 * sc)
     elif effect == "ignore_walls_next":
@@ -487,7 +547,7 @@ def trigger_blueprint(run: RunState, name: str, fight: FightMods, hand: list[Car
     elif effect == "next_might10":
         fight.next_might += int(10 * sc)
     elif effect == "next_unit_might_50":
-        fight.next_unit_might_pct = max(fight.next_unit_might_pct, 0.5)
+        fight.next_unit_might_pct = max(fight.next_unit_might_pct, 0.5 * (sc / max(1.0, run.builder_scale)))
     elif effect == "remove_walls":
         fight.walls_removed = True
     elif effect == "plus_regroup":
@@ -515,31 +575,32 @@ def trigger_doctrine(run: RunState, name: str, fight: FightMods) -> None:
 
 def apply_doctrine_rewards(run: RunState, fight: FightMods, total_damage: int,
                            settlement: dict, occupied_choice: str) -> None:
+    doc_mult = 1.2 if "doctrine_numeric" in run.pro_flags else 1.0
     for name in fight.doctrines_fired:
         effect = DOCTRINES[name][2]
         if effect == "gold15":
-            run.gold += 15
+            run.gold += int(15 * doc_mult * (1 + run.gold_bonus_pct))
         elif effect == "sci_pct":
-            run.science += min(40, int(total_damage * 0.08))
+            run.science += min(40, int(total_damage * 0.08 * doc_mult * (1 + run.sci_bonus_pct)))
         elif effect == "faith10":
-            run.faith += 10
+            run.faith += int(10 * doc_mult * (1 + run.faith_bonus_pct))
             if occupied_choice == "temple":
                 pass  # yield handled in occupy
         elif effect == "cul8":
-            run.culture += 8
+            run.culture += int(8 * doc_mult * (1 + run.cul_bonus_pct))
         elif effect == "might15_2":
             run.zeal_settlements_left = max(run.zeal_settlements_left, 2)
         elif effect == "prophet":
             # Sow Dissent free next fight approx: store as capital bonus or gold
-            run.gold += 8  # stub prophet value
+            run.gold += int(8 * doc_mult * (1 + run.gold_bonus_pct))
         elif effect == "capital_might20":
             run.capital_might_bonus = max(run.capital_might_bonus, 0.20)
         elif effect == "scale_gold_faith":
-            run.gold += 10
-            run.faith += 5
+            run.gold += int(10 * doc_mult * (1 + run.gold_bonus_pct))
+            run.faith += int(5 * doc_mult * (1 + run.faith_bonus_pct))
         elif effect == "sci20_cul5":
-            run.science += 20
-            run.culture += 5
+            run.science += int(20 * doc_mult * (1 + run.sci_bonus_pct))
+            run.culture += int(5 * doc_mult * (1 + run.cul_bonus_pct))
 
 
 # --- Deck helpers -------------------------------------------------------------
@@ -573,13 +634,19 @@ def refill_hand(hand: list[Card], draw: list[Card], discard: list[Card],
 
 def greedy_assault(run: RunState, hand: list[Card], fight: FightMods,
                    settlement: dict) -> tuple[list[Card], dict]:
-    """Enumerate subsets size 1..5 (or 6 with Helping Hand + Builder) preferring damage."""
+    """Enumerate subsets size 1..5 (or 6 with Helping Hand / Evangelists free slot)."""
     best_dmg = -1
     best_play: list[Card] = []
     best_eval: dict = {"damage": 0, "form": "none"}
 
     max_k = 5
-    if (fight.helping_hand or "helping_hand" in run.blueprints) and any(c.kind == "B" for c in hand):
+    free_builder = (fight.helping_hand or "helping_hand" in run.blueprints) and any(c.kind == "B" for c in hand)
+    free_missionary = (
+        "missionary_free_slot" in run.pro_flags
+        and not fight.missionary_free_slot_used
+        and any(c.kind == "Y" for c in hand)
+    )
+    if free_builder or free_missionary:
         max_k = 6
 
     idxs = list(range(len(hand)))
@@ -593,13 +660,14 @@ def greedy_assault(run: RunState, hand: list[Card], fight: FightMods,
     for comb in candidates:
         play = [hand[i] for i in comb]
         builders = sum(1 for c in play if c.kind == "B")
+        missionaries = sum(1 for c in play if c.kind == "Y")
         combat_n = sum(1 for c in play if c.combat())
-        # Without helping hand, max 5 cards; with it, max 5 combat + builders that are "free"
+        # Without free-slot support, max 5 cards
         if combat_n > 5:
             continue
-        if len(play) > 5 and not (builders and (fight.helping_hand or "helping_hand" in [b for b in run.blueprints])):
-            # Allow 6 only if includes Builder and Helping Hand can apply
-            if not (len(play) == 6 and builders >= 1):
+        if len(play) > 5:
+            ok = (builders >= 1 and free_builder) or (missionaries >= 1 and free_missionary)
+            if not ok:
                 continue
         # Simulate blueprint triggers without mutating much — dry eval first
         # Actually apply supports: prefer firing unused BP/Doc if present
@@ -612,6 +680,10 @@ def greedy_assault(run: RunState, hand: list[Card], fight: FightMods,
             blueprints_fired=set(fight.blueprints_fired),
             doctrines_fired=list(fight.doctrines_fired),
             helping_hand=fight.helping_hand, merc_might=fight.merc_might,
+            builder_played=fight.builder_played,
+            draw_on_builder_used=fight.draw_on_builder_used,
+            missionary_free_slot_used=fight.missionary_free_slot_used,
+            bp_without_builder_used=fight.bp_without_builder_used,
         )
         # Trigger one BP/Doc per support in play (order: builders then missionaries)
         bps = [b for b in run.blueprints if b not in fe.blueprints_fired]
@@ -619,7 +691,8 @@ def greedy_assault(run: RunState, hand: list[Card], fight: FightMods,
         for c in play:
             if c.kind == "B" and bps:
                 pick = pick_blueprint(run, bps, settlement, fe)
-                apply_bp_to_fight(pick, fe, run.builder_scale, run.sci_level)
+                apply_bp_to_fight(pick, fe, run.builder_scale, run.sci_level,
+                                  wall_bonus="wall_bp_bonus" in run.eng_flags)
                 fe.blueprints_fired.add(pick)
                 bps = [b for b in bps if b != pick]
             if c.kind == "Y" and docs:
@@ -677,14 +750,16 @@ def pick_doctrine(run: RunState, available: list[str]) -> str:
     return available[0]
 
 
-def apply_bp_to_fight(name: str, fe: FightMods, scale: float, sci_level: int = 0) -> None:
+def apply_bp_to_fight(name: str, fe: FightMods, scale: float, sci_level: int = 0,
+                      wall_bonus: bool = False) -> None:
     effect = BLUEPRINTS[name][2]
+    sc = scale * (1.5 if wall_bonus and name in WALL_BLUEPRINTS else 1.0)
     if effect == "siege_might":
-        fe.siege_might += int(10 * scale)
+        fe.siege_might += int(10 * sc)
     elif effect == "ignore_walls_next":
         fe.ignore_walls_next = True
     elif effect == "next_might10":
-        fe.next_might += int(10 * scale)
+        fe.next_might += int(10 * sc)
     elif effect == "next_unit_might_50":
         fe.next_unit_might_pct = max(fe.next_unit_might_pct, 0.5)
     elif effect == "remove_walls":
@@ -692,7 +767,7 @@ def apply_bp_to_fight(name: str, fe: FightMods, scale: float, sci_level: int = 0
     elif effect == "plus_regroup":
         fe.plus_regroup += 1
     elif effect == "next_mom2":
-        fe.next_mom += 2
+        fe.next_mom += int(2 * sc) if sc >= 1 else 2
     elif effect == "plus_assault":
         fe.plus_assault += 1
     elif effect == "next_unit_might_25":
@@ -746,6 +821,21 @@ def regroup_discard(hand: list[Card], run: RunState) -> list[Card]:
     return [c for _, c in scored[:n]]
 
 
+def _pull_floating_support(hand: list[Card], draw: list[Card], discard: list[Card],
+                           kind: str, rng: random.Random) -> None:
+    """Add a support card that does not count toward hand size (float Builder / Missionary)."""
+    for i, c in enumerate(hand):
+        if c.kind == kind:
+            return  # already holding one
+    # Prefer draw pile, then discard
+    for pile in (draw, discard):
+        for i, c in enumerate(pile):
+            if c.kind == kind:
+                hand.append(pile.pop(i))
+                return
+    # Nothing to pull
+
+
 def fight_settlement(run: RunState, settlement: dict) -> tuple[bool, int, int]:
     """Returns (won, damage, assaults_used)."""
     rng = run.rng
@@ -754,8 +844,19 @@ def fight_settlement(run: RunState, settlement: dict) -> tuple[bool, int, int]:
     discard: list[Card] = []
     hand: list[Card] = []
     refill_hand(hand, draw, discard, run.hand_size, rng)
+    if "float_builder" in run.eng_flags:
+        _pull_floating_support(hand, draw, discard, "B", rng)
+    if "float_missionary" in run.pro_flags:
+        _pull_floating_support(hand, draw, discard, "Y", rng)
 
     fight = FightMods()
+    # Workshop Relay: fire one Blueprint at settlement start without playing a Builder
+    if "bp_without_builder" in run.eng_flags and run.blueprints:
+        avail = list(run.blueprints)
+        bp = pick_blueprint(run, avail, settlement, fight)
+        trigger_blueprint(run, bp, fight, hand, draw, discard)
+        fight.bp_without_builder_used = True
+
     assaults = run.base_assaults
     regroups = run.base_regroups
     defence = settlement["defence"]
@@ -774,7 +875,13 @@ def fight_settlement(run: RunState, settlement: dict) -> tuple[bool, int, int]:
             for c in dump:
                 hand.remove(c)
                 discard.append(c)
-            refill_hand(hand, draw, discard, run.hand_size, rng)
+            target = run.hand_size
+            # Keep floating supports above hand size after regroup
+            refill_hand(hand, draw, discard, target, rng)
+            if "float_builder" in run.eng_flags and not any(c.kind == "B" for c in hand):
+                _pull_floating_support(hand, draw, discard, "B", rng)
+            if "float_missionary" in run.pro_flags and not any(c.kind == "Y" for c in hand):
+                _pull_floating_support(hand, draw, discard, "Y", rng)
             regroups -= 1
             if fight.plus_regroup:
                 # already consumed as extra stock at start — handle below
@@ -789,10 +896,18 @@ def fight_settlement(run: RunState, settlement: dict) -> tuple[bool, int, int]:
                 if avail:
                     bp = pick_blueprint(run, avail, settlement, fight)
                     trigger_blueprint(run, bp, fight, hand, draw, discard)
+                if "draw_on_builder" in run.eng_flags and not fight.draw_on_builder_used:
+                    draw_cards(hand, draw, discard, 1, rng)
+                    fight.draw_on_builder_used = True
+                fight.builder_played = True
             if c.kind == "Y":
                 avail = [d for d in run.doctrines if d not in fight.doctrines_fired]
                 if avail:
                     trigger_doctrine(run, pick_doctrine(run, avail), fight)
+                if "faith_on_missionary" in run.pro_flags:
+                    run.faith += int(4 * (1 + run.faith_bonus_pct))
+                if "missionary_free_slot" in run.pro_flags and not fight.missionary_free_slot_used:
+                    fight.missionary_free_slot_used = True
 
         # Extra assaults/regroups from BP
         if fight.plus_assault:
@@ -827,19 +942,19 @@ def fight_settlement(run: RunState, settlement: dict) -> tuple[bool, int, int]:
 # --- Rewards / occupy / shop / level-ups --------------------------------------
 
 def interest(run: RunState) -> None:
-    run.gold += min(run.interest_cap, run.gold // 5)
+    run.gold += int(min(run.interest_cap, run.gold // 5) * (1 + run.gold_bonus_pct))
 
 
 def city_yields(run: RunState) -> None:
     for t in run.occupied:
         if t == "scholar":
-            run.science += CITY_YIELD
+            run.science += int(CITY_YIELD * (1 + run.sci_bonus_pct))
         elif t == "artisan":
-            run.culture += CITY_YIELD
+            run.culture += int(CITY_YIELD * (1 + run.cul_bonus_pct))
         elif t == "temple":
-            run.faith += CITY_YIELD
+            run.faith += int(CITY_YIELD * (1 + run.faith_bonus_pct))
         elif t == "trade":
-            run.gold += CITY_YIELD
+            run.gold += int(CITY_YIELD * (1 + run.gold_bonus_pct))
 
 
 def snapshot_run(run: RunState) -> dict:
@@ -880,6 +995,13 @@ def snapshot_run(run: RunState) -> dict:
         "occupy_count": len(run.occupied),
         "zeal_left": run.zeal_settlements_left,
         "writing": run.writing,
+        "sci_bonus_pct": run.sci_bonus_pct,
+        "gold_bonus_pct": run.gold_bonus_pct,
+        "faith_bonus_pct": run.faith_bonus_pct,
+        "cul_bonus_pct": run.cul_bonus_pct,
+        "owned_prog": sorted(run.owned_prog),
+        "eng_flags": sorted(run.eng_flags),
+        "pro_flags": sorted(run.pro_flags),
     }
 
 
@@ -900,16 +1022,16 @@ def after_victory(run: RunState, settlement: dict, total_damage: int,
 
     unused = max(0, run.base_assaults - assaults_used)
     base_gold = REWARD_GOLD + unused
-    run.gold += base_gold
-    run.science += REWARD_SCIENCE
-    run.culture += REWARD_CULTURE
-    run.faith += REWARD_FAITH
+    run.gold += int(base_gold * (1 + run.gold_bonus_pct))
+    run.science += int(REWARD_SCIENCE * (1 + run.sci_bonus_pct))
+    run.culture += int(REWARD_CULTURE * (1 + run.cul_bonus_pct))
+    run.faith += int(REWARD_FAITH * (1 + run.faith_bonus_pct))
     if "rationalism" in run.policies:
-        run.science += max(4, int(REWARD_SCIENCE * 0.25))
+        run.science += max(4, int(REWARD_SCIENCE * 0.25 * (1 + run.sci_bonus_pct)))
 
     choice = choose_occupy(run, settlement)
     if choice == "raze":
-        run.gold += RAZE_GOLD
+        run.gold += int(RAZE_GOLD * (1 + run.gold_bonus_pct))
         occupied_type = ""
     else:
         occupied_type = settlement["city_type"]
@@ -993,12 +1115,21 @@ def roll_science_offers(run: RunState) -> list[str]:
     rng = run.rng
     t_count = 1 if rng.random() < 0.60 else 2
     troops = weighted_troop_offers(run, t_count)
-    non = []
-    pool = [n for n, e in NON_TROOP_SCI if e <= run.era or rng.random() < 0.08]
+    # Drills: era <= current (+ rare ahead)
+    pool = [n for n, e, fam in NON_TROOP_SCI
+            if fam == "drill" and (e <= run.era or rng.random() < 0.08)]
+    # Progression: current-era node only, if not already owned
+    for tree in (PROG_EDU, PROG_BANK, PROG_DEV, PROG_ART, PROG_ENG, PROG_PRO):
+        if run.era in tree:
+            nid, _, _ = tree[run.era]
+            if nid not in run.owned_prog:
+                pool.append(nid)
     rng.shuffle(pool)
+    non = []
     while len(troops) + len(non) < 3 and pool:
-        non.append(pool.pop())
-    # pad
+        n = pool.pop()
+        if n not in non:
+            non.append(n)
     while len(troops) + len(non) < 3:
         non.append("battle_line_drill")
     return (troops + non)[:3]
@@ -1047,22 +1178,23 @@ def choose_science(run: RunState, offers: list[str]) -> str:
     strat = run.strategy
     pref = []
     if strat == "S3":
-        pref = ["upgrade_M", "upgrade_R", "battle_line_drill", "upgrade_C"]
+        pref = ["upgrade_M", "upgrade_R", "battle_line_drill", "edu_", "bank_", "upgrade_C"]
     elif strat == "S1":
-        pref = ["upgrade_S", "upgrade_M", "upgrade_B", "combined_arms_primer"]
+        pref = ["upgrade_S", "upgrade_M", "eng_", "upgrade_B", "combined_arms_primer"]
     elif strat == "S2":
-        pref = ["upgrade_M", "upgrade_C", "skirmish_drill", "upgrade_R"]
+        pref = ["upgrade_M", "upgrade_C", "skirmish_drill", "bank_", "upgrade_R"]
     elif strat == "S4":
-        pref = ["upgrade_B", "upgrade_M", "writing", "battle_line_drill"]
+        pref = ["eng_", "upgrade_B", "upgrade_M", "bank_", "writing"]
     elif strat == "S5":
-        pref = ["upgrade_M", "upgrade_R", "surveying", "upgrade_C"]
+        pref = ["pro_", "dev_", "upgrade_M", "surveying"]
     elif strat == "S6":
-        pref = ["upgrade_M", "upgrade_R", "upgrade_C", "upgrade_S", "writing"]
+        pref = ["edu_", "upgrade_M", "upgrade_R", "writing", "upgrade_C"]
     else:
-        pref = ["upgrade_M", "upgrade_R", "upgrade_C", "upgrade_S", "battle_line_drill"]
+        pref = ["upgrade_M", "edu_", "bank_", "upgrade_R", "battle_line_drill"]
     for p in pref:
-        if p in offers:
-            return p
+        for o in offers:
+            if o == p or (p.endswith("_") and o.startswith(p)):
+                return o
     return offers[0]
 
 
@@ -1075,6 +1207,42 @@ def apply_science(run: RunState, pick: str) -> None:
             run.builder_scale = {1: 1.0, 2: 1.5, 3: 2.0}[run.tiers["B"]]
         run.era_just_began = False
         return
+
+    # Progression trees
+    for tree in (PROG_EDU, PROG_BANK, PROG_DEV, PROG_ART, PROG_ENG, PROG_PRO):
+        for era, (nid, kind, val) in tree.items():
+            if pick != nid:
+                continue
+            run.owned_prog.add(nid)
+            if kind == "sci_pct":
+                run.sci_bonus_pct += val
+            elif kind == "gold_pct":
+                run.gold_bonus_pct += val
+            elif kind == "faith_pct":
+                run.faith_bonus_pct += val
+            elif kind == "cul_pct":
+                run.cul_bonus_pct += val
+            elif kind == "eng":
+                run.eng_flags.add(val)
+                if val == "builder_slot":
+                    if run.blueprint_slots < 5:
+                        run.blueprint_slots += 1
+                    else:
+                        run.builder_scale = max(run.builder_scale, run.builder_scale + 0.25)
+                elif val == "bp_numeric":
+                    run.builder_scale = max(run.builder_scale, run.builder_scale * 1.25)
+                elif val == "wall_bp_bonus":
+                    run.eng_flags.add("wall_bp_bonus")
+            elif kind == "pro":
+                run.pro_flags.add(val)
+                if val == "doctrine_slot":
+                    if run.doctrine_slots < 4:
+                        run.doctrine_slots += 1
+                    else:
+                        run.pro_flags.add("doctrine_numeric")
+            run.era_just_began = False
+            return
+
     if pick == "battle_line_drill":
         run.form_levels["battle_line"] += 1
     elif pick == "skirmish_drill":
@@ -1092,11 +1260,25 @@ def apply_science(run: RunState, pick: str) -> None:
         run.form_levels["legion"] += 1
     elif pick == "imperial_standards":
         run.form_levels["imperial_guard"] += 1
+    elif pick == "general_staff_maps":
+        # Pick strongest formation the player already uses and +2
+        best = max(run.form_levels, key=lambda k: run.form_levels[k], default="battle_line")
+        if not run.form_levels:
+            best = "battle_line"
+        run.form_levels[best] += 2
+    elif pick == "staff_college":
+        for k in ("battle_line", "skirmish", "pair", "combined_arms", "phalanx",
+                  "vanguard", "grand_army", "legion", "imperial_guard"):
+            run.form_levels[k] += 1
+    elif pick == "combined_doctrine_manual":
+        run.form_levels["combined_arms"] += 1
+        run.form_levels["grand_army"] += 1
+    elif pick == "rapid_deployment":
+        run.base_regroups += 1
+    elif pick == "networked_command":
+        run.hand_size += 1
     elif pick == "natural_philosophy":
-        if "rationalism" not in run.policies and len(run.policies) < run.policy_slots:
-            run.policies.append("rationalism")
-        else:
-            run.science += 8
+        run.sci_bonus_pct += 0.10
     elif pick == "machinery":
         run.writing = True
     elif pick == "writing":
@@ -1485,6 +1667,10 @@ def play_eras(seed: int, strategy: str, max_era: int = 1) -> dict:
         run.era_just_began = True
         run.era_wonder_offered = False
         run.era_wonder_available = None
+        # Prophetic Tradition: free Great Prophet proxy at era start
+        if "free_prophet_era" in run.pro_flags:
+            run.faith += int(15 * (1 + run.faith_bonus_pct))
+            run.gold += int(10 * (1 + run.gold_bonus_pct))
         for kind in ("village", "town", "capital"):
             run.settlement_index += 1
             st = make_settlement(kind, rng, era)
