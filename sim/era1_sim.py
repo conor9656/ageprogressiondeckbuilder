@@ -1558,6 +1558,8 @@ def fight_settlement_with_docs(run: RunState, settlement: dict) -> tuple[bool, i
 
     while defence > 0 and assaults > 0:
         st["defence_left"] = defence
+        st["assaults_left"] = assaults
+        st["regroups_left"] = regroups
         if should_regroup(run, hand, fight, st, regroups, assaults):
             dump = regroup_discard(hand, run)
             for c in dump:
