@@ -64,6 +64,7 @@ BLUEPRINTS = {
     "aqueduct": ("R", 45, "plus_assault"),
     "arsenal": ("R", 45, "next_unit_might_25"),
     "observatory": ("R", 45, "sci_mom_scale"),  # next formation Mom *= (1+0.1*sci_lv)
+    "helping_hand": ("R", 45, "helping_hand"),  # Builder ignores formation slot once
 }
 DOCTRINES = {
     "tithe": ("C", 8, "gold15"),
@@ -75,6 +76,7 @@ DOCTRINES = {
     "crusade": ("U", 18, "capital_might20"),
     "missionary_zeal": ("R", 35, "scale_gold_faith"),
     "scholastic_order": ("U", 18, "sci20_cul5"),
+    "mercenaries": ("R", 35, "merc_might"),
 }
 POLICIES = {
     "agoge": ("C", "melee_might4"),
@@ -98,6 +100,8 @@ POLICIES = {
     "workshop_network": ("U", "might_per_bp"),   # +6 Might per owned Blueprint
     "liturgical_fire": ("U", "mom_per_doc"),     # +1 Mom per owned Doctrine
     "academy_momentum": ("R", "mom_per_sci"),      # Mom *= (1 + 0.1 * sci_levels)
+    "last_stand": ("R", "last_stand"),             # +15 Mom on last assault, 0 regroups
+    "three_musketeers": ("R", "triple_mom_x3"),    # Triple Mom ×3
 }
 
 WONDERS = {
@@ -106,9 +110,10 @@ WONDERS = {
     "pyramids": ("builder_scale", 90),
     "hanging_gardens": ("hand_size", 85),
     "stonehenge": ("faith_burst", 85),
-    "terracotta_army": ("cheap_units", 95),
+    "terracotta_army": ("replace_troop", 95),
     "big_ben": ("interest", 95),
     "forbidden_palace": ("policy_slot", 90),
+    "grand_bazaar": ("cheap_units", 95),
 }
 
 NON_TROOP_SCI = [
@@ -154,6 +159,8 @@ class FightMods:
     plus_regroup: int = 0
     blueprints_fired: set = field(default_factory=set)
     doctrines_fired: list = field(default_factory=list)
+    helping_hand: bool = False
+    merc_might: int = 0  # flat Might per assault from Mercenaries
 
 
 @dataclass
@@ -419,9 +426,15 @@ def evaluate_play(run: RunState, cards: list[Card], fight: FightMods,
     if "academy_momentum" in run.policies:
         # Mom *= (1 + 0.1 * science levels taken) — e.g. 10 Mom @ 7 sci → 17
         mom *= 1.0 + 0.1 * run.sci_level
+    if "three_musketeers" in run.policies and form_id == "triple":
+        mom *= 3.0
+    if "last_stand" in run.policies and settlement.get("assaults_left") == 1 \
+            and settlement.get("regroups_left", 1) == 0:
+        mom += 15
 
     # fight bursts
     might += fight.next_might
+    might += fight.merc_might
     mom += fight.next_mom
     if fight.next_unit_might_pct:
         unit_part = might - base_m
@@ -488,12 +501,16 @@ def trigger_blueprint(run: RunState, name: str, fight: FightMods, hand: list[Car
         fight.next_unit_might_pct = max(fight.next_unit_might_pct, 0.25)
     elif effect == "sci_mom_scale":
         fight.next_mom_mult = max(fight.next_mom_mult, 1.0 + 0.1 * run.sci_level)
+    elif effect == "helping_hand":
+        fight.helping_hand = True
 
 
 def trigger_doctrine(run: RunState, name: str, fight: FightMods) -> None:
     if name in fight.doctrines_fired or name not in run.doctrines:
         return
     fight.doctrines_fired.append(name)
+    if DOCTRINES[name][2] == "merc_might":
+        fight.merc_might = max(fight.merc_might, min(40, run.gold // 5))
 
 
 def apply_doctrine_rewards(run: RunState, fight: FightMods, total_damage: int,
@@ -556,27 +573,34 @@ def refill_hand(hand: list[Card], draw: list[Card], discard: list[Card],
 
 def greedy_assault(run: RunState, hand: list[Card], fight: FightMods,
                    settlement: dict) -> tuple[list[Card], dict]:
-    """Enumerate subsets size 1..5 preferring damage; also try using supports for BP/Doc."""
+    """Enumerate subsets size 1..5 (or 6 with Helping Hand + Builder) preferring damage."""
     best_dmg = -1
     best_play: list[Card] = []
     best_eval: dict = {"damage": 0, "form": "none"}
 
-    # Limit enumeration: if hand large, sample + prioritize combat-heavy
+    max_k = 5
+    if (fight.helping_hand or "helping_hand" in run.blueprints) and any(c.kind == "B" for c in hand):
+        max_k = 6
+
     idxs = list(range(len(hand)))
     candidates = []
-    for k in range(1, min(5, len(hand)) + 1):
-        if len(hand) <= 8:
-            candidates.extend(itertools.combinations(idxs, k))
-        else:
-            # shouldn't happen
-            candidates.extend(itertools.combinations(idxs, k))
+    for k in range(1, min(max_k, len(hand)) + 1):
+        candidates.extend(itertools.combinations(idxs, k))
 
-    # Cap combinations if somehow huge
-    if len(candidates) > 2000:
-        candidates = random.sample(candidates, 2000) if False else candidates[:2000]
+    if len(candidates) > 2500:
+        candidates = candidates[:2500]
 
     for comb in candidates:
         play = [hand[i] for i in comb]
+        builders = sum(1 for c in play if c.kind == "B")
+        combat_n = sum(1 for c in play if c.combat())
+        # Without helping hand, max 5 cards; with it, max 5 combat + builders that are "free"
+        if combat_n > 5:
+            continue
+        if len(play) > 5 and not (builders and (fight.helping_hand or "helping_hand" in [b for b in run.blueprints])):
+            # Allow 6 only if includes Builder and Helping Hand can apply
+            if not (len(play) == 6 and builders >= 1):
+                continue
         # Simulate blueprint triggers without mutating much — dry eval first
         # Actually apply supports: prefer firing unused BP/Doc if present
         # Dry-run fight copy
@@ -587,21 +611,22 @@ def greedy_assault(run: RunState, hand: list[Card], fight: FightMods,
             next_mom=fight.next_mom, next_mom_mult=fight.next_mom_mult,
             blueprints_fired=set(fight.blueprints_fired),
             doctrines_fired=list(fight.doctrines_fired),
+            helping_hand=fight.helping_hand, merc_might=fight.merc_might,
         )
         # Trigger one BP/Doc per support in play (order: builders then missionaries)
         bps = [b for b in run.blueprints if b not in fe.blueprints_fired]
         docs = [d for d in run.doctrines if d not in fe.doctrines_fired]
         for c in play:
             if c.kind == "B" and bps:
-                # pick best blueprint heuristically
                 pick = pick_blueprint(run, bps, settlement, fe)
-                # apply numeric to fe only for eval
                 apply_bp_to_fight(pick, fe, run.builder_scale, run.sci_level)
                 fe.blueprints_fired.add(pick)
                 bps = [b for b in bps if b != pick]
             if c.kind == "Y" and docs:
                 pick = pick_doctrine(run, docs)
                 fe.doctrines_fired.append(pick)
+                if DOCTRINES[pick][2] == "merc_might":
+                    fe.merc_might = max(fe.merc_might, min(40, run.gold // 5))
                 docs = [d for d in docs if d != pick]
 
         ev = evaluate_play(run, play, fe, settlement, consume_burst=False)
@@ -628,10 +653,10 @@ def pick_blueprint(run: RunState, available: list[str], settlement: dict,
     if settlement["walls"] and not fe.walls_removed:
         pri += ["siege_tower", "scaffolding", "battering_ram"]
     if strat == "S4":
-        pri += ["aqueduct", "forge", "arsenal", "magazine", "watchtower"]
+        pri += ["helping_hand", "aqueduct", "forge", "observatory", "arsenal", "magazine", "watchtower"]
     if strat == "S1":
-        pri += ["siege_tower", "battering_ram", "scaffolding", "forge"]
-    pri += ["forge", "magazine", "aqueduct", "watchtower", "supply_lines", "roads"]
+        pri += ["siege_tower", "battering_ram", "scaffolding", "helping_hand", "forge"]
+    pri += ["helping_hand", "forge", "magazine", "aqueduct", "observatory", "watchtower", "supply_lines", "roads"]
     for p in pri:
         if p in available:
             return p
@@ -642,10 +667,10 @@ def pick_doctrine(run: RunState, available: list[str]) -> str:
     strat = run.strategy
     pri = []
     if strat == "S5":
-        pri += ["missionary_zeal", "zeal", "tithe", "pilgrimage", "relic_hunt"]
+        pri += ["missionary_zeal", "mercenaries", "zeal", "tithe", "pilgrimage", "relic_hunt"]
     if strat == "S6":
-        pri += ["scriptorium", "alms", "tithe"]
-    pri += ["zeal", "tithe", "scriptorium", "crusade", "alms", "pilgrimage", "missionary_zeal"]
+        pri += ["scriptorium", "scholastic_order", "alms", "tithe"]
+    pri += ["mercenaries", "zeal", "tithe", "scriptorium", "crusade", "alms", "pilgrimage", "missionary_zeal"]
     for p in pri:
         if p in available:
             return p
@@ -674,6 +699,8 @@ def apply_bp_to_fight(name: str, fe: FightMods, scale: float, sci_level: int = 0
         fe.next_unit_might_pct = max(fe.next_unit_might_pct, 0.25)
     elif effect == "sci_mom_scale":
         fe.next_mom_mult = max(fe.next_mom_mult, 1.0 + 0.1 * sci_level)
+    elif effect == "helping_hand":
+        fe.helping_hand = True
 
 
 def should_regroup(run: RunState, hand: list[Card], fight: FightMods,
@@ -739,6 +766,8 @@ def fight_settlement(run: RunState, settlement: dict) -> tuple[bool, int, int]:
 
     while defence > 0 and assaults > 0:
         settlement["defence_left"] = defence
+        settlement["assaults_left"] = assaults
+        settlement["regroups_left"] = regroups
         # optionally regroup
         if should_regroup(run, hand, fight, settlement, regroups, assaults):
             dump = regroup_discard(hand, run)
@@ -892,6 +921,7 @@ def after_victory(run: RunState, settlement: dict, total_damage: int,
     city_yields(run)
     level_ups = process_level_ups(run)
     shop(run, settlement)
+    terracotta_replace(run)
 
     after = snapshot_run(run)
     troop_ups = {
@@ -1135,14 +1165,14 @@ def draft_policy(run: RunState) -> None:
 def choose_policy(run: RunState, offers: list[str]) -> str:
     strat = run.strategy
     pref = {
-        "S3": ["academy_momentum", "research_corps", "agoge", "drill_manual", "line_officers",
+        "S3": ["academy_momentum", "last_stand", "research_corps", "agoge", "drill_manual", "line_officers",
                "conscription", "professional_army", "workshop_network", "logistics"],
-        "S1": ["academy_momentum", "sappers", "siegecraft", "workshop_network", "agoge", "conscription"],
-        "S2": ["academy_momentum", "conscription", "leveee", "horse_breeding", "chivalry", "research_corps"],
-        "S4": ["academy_momentum", "workshop_network", "logistics", "research_corps", "agoge"],
-        "S5": ["academy_momentum", "liturgical_fire", "logistics", "agoge", "rationalism"],
-        "S6": ["academy_momentum", "research_corps", "rationalism", "logistics", "agoge", "drill_manual"],
-    }.get(strat, ["academy_momentum", "research_corps", "agoge", "logistics", "conscription"])
+        "S1": ["academy_momentum", "last_stand", "sappers", "siegecraft", "workshop_network", "agoge", "conscription"],
+        "S2": ["three_musketeers", "academy_momentum", "conscription", "leveee", "last_stand", "horse_breeding", "chivalry"],
+        "S4": ["academy_momentum", "workshop_network", "last_stand", "logistics", "research_corps", "agoge"],
+        "S5": ["academy_momentum", "liturgical_fire", "last_stand", "logistics", "agoge", "rationalism"],
+        "S6": ["academy_momentum", "research_corps", "last_stand", "rationalism", "logistics", "agoge", "drill_manual"],
+    }.get(strat, ["academy_momentum", "last_stand", "research_corps", "three_musketeers", "agoge", "logistics", "conscription"])
     for p in pref:
         if p in offers:
             return p
@@ -1327,6 +1357,27 @@ def apply_wonder(run: RunState, name: str) -> None:
         run.interest_cap = max(run.interest_cap, 10)
     elif effect == "policy_slot":
         run.policy_slots = min(5, run.policy_slots + 1)
+    elif effect == "replace_troop":
+        pass  # handled after each victory via terracotta_replace()
+
+
+def terracotta_replace(run: RunState) -> None:
+    """Wonder: replace one combat unit with a random tier-current unit; 25% edition."""
+    if run.wonder != "terracotta_army":
+        return
+    combat = [c for c in run.deck if c.combat()]
+    if not combat:
+        return
+    old = run.rng.choice(combat)
+    run.deck.remove(old)
+    kind = run.rng.choice(list(CLASSES))
+    edition = "standard"
+    kw = {}
+    if run.rng.random() < 0.25:
+        edition = run.rng.choice(["gilded", "scholarly", "devout", "mercantile"])
+        if edition == "gilded":
+            kw["bonus_might"] = 2
+    run.deck.append(run.new_card(kind, edition=edition, **kw))
 
 
 def want_unit(run: RunState, kind: str) -> bool:
@@ -1354,10 +1405,10 @@ def want_blueprint(run: RunState, name: str) -> bool:
     if strat == "S4":
         return True
     if strat == "S3":
-        return name in ("forge", "magazine", "watchtower", "aqueduct", "supply_lines", "roads", "observatory", "arsenal")
+        return name in ("forge", "magazine", "watchtower", "aqueduct", "supply_lines", "roads", "observatory", "arsenal", "helping_hand")
     if strat == "S6":
-        return name in ("observatory", "forge", "aqueduct", "watchtower", "supply_lines")
-    return name in ("forge", "watchtower", "supply_lines", "aqueduct", "siege_tower", "observatory")
+        return name in ("observatory", "forge", "aqueduct", "watchtower", "supply_lines", "helping_hand")
+    return name in ("forge", "watchtower", "supply_lines", "aqueduct", "siege_tower", "observatory", "helping_hand")
 
 
 def want_doctrine(run: RunState, name: str) -> bool:

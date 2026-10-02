@@ -306,8 +306,9 @@ End-of-fight bonuses on Editions/Promotions are **on-score economy**, distinct f
 | Hanging Gardens | +1 hand size |
 | Stonehenge | Free Great Prophet each era |
 | Forbidden Palace | +1 Policy slot |
-| Terracotta Army | Unit offers in Treasury cost 50% less |
+| Terracotta Army | After each victory, replace one combat unit in your deck with a random combat unit at current class tier; **25%** chance it is an Edition (Gilded/Scholarly/Devout/Mercantile/etc.) |
 | Big Ben | Interest cap doubled |
+| Grand Bazaar | *(parking)* Unit offers in Treasury cost 50% less — former Terracotta effect |
 
 ---
 

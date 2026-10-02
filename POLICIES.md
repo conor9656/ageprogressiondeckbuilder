@@ -70,8 +70,10 @@ Strategies: S1 Wallbreakers · S2 Thin Legion · S3 Battle Line · S4 Builder ·
 | P42 | Academy Momentum | R | Multiplier | Formation Momentum ×(1 + 0.1 × Science levels) — e.g. 10 Mom @ 7 sci → 17 | all | Headline exponential (balance v2) |
 | P43 | Workshop Network | U | Flat | +6 Might per owned Blueprint | S4 | |
 | P44 | Liturgical Fire | U | Flat | +1 Momentum per owned Doctrine | S5 | |
+| P45 | Last Stand | R | Conditional | On your **last Assault**, if **0 Regroups** left: that formation **+15 Momentum** | all | Clutch Rare; tune to +8–10 if too strong |
+| P46 | Three Musketeers | R | Multiplier | If scored formation is a **Triple**: Momentum **×3** | S2 | Triple build-around; ×2 if ever Uncommon |
 
-**Count: 44** (P41–P44 added in balance v2). Cut candidates if playtests show clutter: P05, P10, P36 (too narrow / weak).
+**Count: 46** (P41–P46 balance / new cards). Cut candidates if playtests show clutter: P05, P10, P36 (too narrow / weak).
 
 ---
 

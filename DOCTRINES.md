@@ -57,8 +57,9 @@ Strategies: S5 Faith primary; also S6 Science, econ, bosses.
 | D38 | Anathema | R | Combat | Next Capital: enemy boss rule is **halved** in severity (designers define per boss; e.g. ×0.25 wall penalty → ×0.5) | bosses | Needs boss API — park if too vague; else keep |
 | D39 | Pax Dei | U | Rule | If you **Raze**, still gain half Occupy yield next settlement as one-time resources | flexible | Softens Raze regret |
 | D40 | Eternal Flame | R | Scaling | +3 Faith now; permanently **+1 Faith** per settlement you win for the rest of the run while this Doctrine remains equipped (*not per fire — passive after first fire*) | S5 | Equip-tax snowball; removing it stops growth |
+| D41 | Mercenaries | R | Combat | When fired: rest of this settlement, each Assault **+⌊Gold/5⌋ Might** (Gold snapshotted on fire), **cap +40**. Raw +1 Might/Gold is banned as broken. | econ S4 | See `CARD_ASSESSMENT_NEW.md` |
 
-**Count: 40.** Soft cuts if needed: D05, D31–D33 (class flavor commons), D38 until boss rules are fully specified.
+**Count: 41.** Soft cuts if needed: D05, D31–D33 (class flavor commons), D38 until boss rules are fully specified.
 
 ---
 

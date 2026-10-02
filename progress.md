@@ -4,6 +4,10 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-02 — New cards assessed + added
+- Helping Hand (Blueprint **Rare**), Last Stand (Policy **Rare**, +15 Mom clutch), Mercenaries (Doctrine **Rare**, nerfed to ⌊Gold/5⌋ Might cap 40), Three Musketeers (Policy **Rare**, Triple Mom×3), Terracotta Army Wonder (replace troop post-victory, 25% edition).
+- Raw +1 Might/Gold rejected as broken. Assessment: `CARD_ASSESSMENT_NEW.md`. Wired into pools + sim.
+
 ## 2026-10-01 — Balance v2 (stack denser + scalers + wonders)
 - Applied: early unit buffs, rewards 38/16/16/12, pack size 5, Tech Literacy + Academy-style Mom scalers, era Wonder offer, Medieval base 1400.
 - 3-era clear (mean): E1 ~85% · E2 ~73% · E3 ~39% (was 0%). Report: `BALANCE_V2_REPORT.md`.

@@ -55,8 +55,9 @@ Strategies: S1–S6 as in `CONTENT_CATALOG.md`.
 | B38 | Mass Levy Plans | C | Flat | Skirmish/Pair/Triple +6 Might this settlement | early | Early-game glue |
 | B39 | Coronation Stand | R | Burst | Next formation: if it is your **highest rank possible from this hand**, +30 Might and +2 Mom | skill | Skill-testing Rare |
 | B40 | Endless Scaffold | U | Scaling | After firing, this Blueprint stays available once more this settlement at **half** numeric effect (second fire auto-half). Does not grow run-long. | S4 | Pseudo-retrigger without Rare power |
+| B41 | Helping Hand | R | Rule | Once this settlement: a played Builder **does not consume a formation card slot** (5 combat + Builder legal). Still fires a Blueprint. | S4 | Removes Support tax once — Rare band; see `CARD_ASSESSMENT_NEW.md` |
 
-**Count: 40.** Prefer cutting niche garrison commons (B31–B33) if UI clutter > value — or merge into one “Countermeasures” Blueprint later.
+**Count: 41.** Prefer cutting niche garrison commons (B31–B33) if UI clutter > value — or merge into one “Countermeasures” Blueprint later.
 
 ---
 
