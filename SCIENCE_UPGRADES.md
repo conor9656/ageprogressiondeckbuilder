@@ -351,6 +351,6 @@ Tune so Ancient expects ~2–3 Science level-ups before Capital if player Occupi
 - Whether Builders count toward the “troop” min/max (currently **yes**).
 - Missionary **class tier** (Faith) vs Prophetic Line (Science) — both can coexist.
 - Sim: apply % bonuses to reward helpers; gate progression offers to current era only. **Done** in `sim/era1_sim.py`.
-- Shop civics (§7.2–7.3) — **designed**; sim wiring in progress.
+- Shop civics (§7.2–7.3) — designed **and** wired in `sim/era1_sim.py`.
 - Retune Education/Banking / shop civic power if multi-era sims show resource explosion.
 - Old Science §6.6 shop tree ideas are **superseded** by Civics Commerce line (keep Science focused on troops / formations / currency %).

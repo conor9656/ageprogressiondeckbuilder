@@ -4,6 +4,11 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-03 — Shop civics (Commerce line)
+- Civics clarified: **era-weighted random 1-of-3**, not a fixed tree (current-era bias + rare ahead; one-shots drop once owned).
+- Added Commerce shop civics to Civics (not Science): **Stall Permits** (+1 pack size, C), **Pedlar's Writ** (free reroll/era, U), **Royal Boon** (free item/era, U), plus Fairground Toll, Merchant Guild Charter, Tithe Rebate, Courier Privilege, Double Stall, Auction House, Edition Edict, Letter of Credit, Promotion Subsidy, World Fair, Disband Amnesty, Open Borders Market.
+- Wired into `era1_sim.py` (era charges, pack size, discounts, debt). Science §6.6 shop tree superseded → Civics §7.2–7.3.
+
 ## 2026-10-02 — Science progression trees (non-troop pool)
 - Designed era-gated stacking trees in `SCIENCE_UPGRADES.md` §6: **Education / Banking / Devotion / Arts** (currency %), **Engineering** (Builder line), **Prophecy** (Missionary line).
 - Rule: current-era node only; miss = gone forever; stacks additively across eras. Shop Science tree parked (§6.6).
