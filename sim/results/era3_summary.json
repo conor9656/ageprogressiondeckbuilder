@@ -1,0 +1,3754 @@
+{
+  "defence_bases": {
+    "1": 500,
+    "2": 800,
+    "3": 1600,
+    "4": 5000,
+    "5": 12000,
+    "6": 30000,
+    "7": 75000,
+    "8": 150000
+  },
+  "eras": 3,
+  "S1": {
+    "n": 250,
+    "max_era": 3,
+    "clear_through_era": {
+      "1": 0.852,
+      "2": 0.716,
+      "3": 0.288
+    },
+    "fail_at": {
+      "3:capital": 86,
+      "3:town": 21,
+      "1:capital": 31,
+      "2:capital": 32,
+      "1:town": 6,
+      "2:town": 2
+    },
+    "by_era": {
+      "1": {
+        "base_defence": 500,
+        "village_def": 500,
+        "town_def": 750,
+        "capital_def": 1250,
+        "village_clear": 1.0,
+        "town_clear": 0.976,
+        "capital_clear": 0.873,
+        "avg_capital_damage_won": 1470.3,
+        "p50_capital_damage_won": 1427,
+        "avg_capital_overkill": 220.3,
+        "avg_village_damage": 728.7,
+        "attempts_capital": 244
+      },
+      "2": {
+        "base_defence": 800,
+        "village_def": 800,
+        "town_def": 1200,
+        "capital_def": 2000,
+        "village_clear": 1.0,
+        "town_clear": 0.991,
+        "capital_clear": 0.848,
+        "avg_capital_damage_won": 2353.0,
+        "p50_capital_damage_won": 2268,
+        "avg_capital_overkill": 353.0,
+        "avg_village_damage": 1186.6,
+        "attempts_capital": 211
+      },
+      "3": {
+        "base_defence": 1600,
+        "village_def": 1600,
+        "town_def": 2400,
+        "capital_def": 4000,
+        "village_clear": 1.0,
+        "town_clear": 0.883,
+        "capital_clear": 0.456,
+        "avg_capital_damage_won": 4603.6,
+        "p50_capital_damage_won": 4535,
+        "avg_capital_overkill": 603.6,
+        "avg_village_damage": 2108.3,
+        "attempts_capital": 158
+      }
+    },
+    "power_curve": {
+      "1": {
+        "capital_hp": 1250,
+        "p50_damage": 1402,
+        "mean_damage": 1420.5,
+        "damage_to_hp_ratio_p50": 1.12
+      },
+      "2": {
+        "capital_hp": 2000,
+        "p50_damage": 2230,
+        "mean_damage": 2250.6,
+        "damage_to_hp_ratio_p50": 1.11
+      },
+      "3": {
+        "capital_hp": 4000,
+        "p50_damage": 3925,
+        "mean_damage": 3838.7,
+        "damage_to_hp_ratio_p50": 0.98
+      }
+    },
+    "era_win_rate": 0.852,
+    "village_clear_rate": 1.0,
+    "town_clear_rate": 0.976,
+    "capital_clear_rate": 0.873,
+    "sample_failures": [
+      {
+        "failed_era": 3,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 3,
+          "R": 2,
+          "C": 1,
+          "S": 4,
+          "B": 3
+        },
+        "policies": [
+          "agoge",
+          "conscription"
+        ],
+        "blueprints": [
+          "scaffolding",
+          "siege_tower"
+        ],
+        "settlements": [
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2260,
+            "defence": 1600,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 3,
+              "R": 2,
+              "C": 1,
+              "S": 3,
+              "B": 2
+            },
+            "gold": 135,
+            "overkill": 660,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 3195,
+            "defence": 2400,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 3,
+            "tiers": {
+              "M": 3,
+              "R": 2,
+              "C": 1,
+              "S": 3,
+              "B": 3
+            },
+            "gold": 189,
+            "overkill": 795,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": false,
+            "damage": 3387,
+            "defence": 4000,
+            "walls": true,
+            "garrison": "pikemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 3,
+              "R": 2,
+              "C": 1,
+              "S": 4,
+              "B": 3
+            },
+            "gold": 210,
+            "overkill": null,
+            "shortfall": 613
+          }
+        ]
+      },
+      {
+        "failed_era": 3,
+        "failed_at": "town",
+        "tiers": {
+          "M": 1,
+          "R": 3,
+          "C": 2,
+          "S": 3,
+          "B": 3
+        },
+        "policies": [
+          "workshop_network",
+          "drill_manual"
+        ],
+        "blueprints": [
+          "scaffolding",
+          "siege_tower",
+          "battering_ram",
+          "aqueduct"
+        ],
+        "settlements": [
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": true,
+            "damage": 2785,
+            "defence": 2000,
+            "walls": false,
+            "garrison": "archers",
+            "assaults_used": 3,
+            "tiers": {
+              "M": 1,
+              "R": 3,
+              "C": 2,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 39,
+            "overkill": 785,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2255,
+            "defence": 1600,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 1,
+              "R": 3,
+              "C": 2,
+              "S": 3,
+              "B": 2
+            },
+            "gold": 86,
+            "overkill": 655,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": false,
+            "damage": 1870,
+            "defence": 2400,
+            "walls": false,
+            "garrison": "horsemen",
+            "assaults_used": 5,
+            "tiers": {
+              "M": 1,
+              "R": 3,
+              "C": 2,
+              "S": 3,
+              "B": 3
+            },
+            "gold": 139,
+            "overkill": null,
+            "shortfall": 530
+          }
+        ]
+      },
+      {
+        "failed_era": 3,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 3,
+          "R": 3,
+          "C": 1,
+          "S": 3,
+          "B": 2
+        },
+        "policies": [
+          "agoge",
+          "horse_breeding"
+        ],
+        "blueprints": [
+          "forge",
+          "scaffolding",
+          "siege_tower"
+        ],
+        "settlements": [
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2240,
+            "defence": 1600,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 3,
+              "R": 3,
+              "C": 1,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 134,
+            "overkill": 640,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 2420,
+            "defence": 2400,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 3,
+              "R": 3,
+              "C": 1,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 185,
+            "overkill": 20,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": false,
+            "damage": 3699,
+            "defence": 4000,
+            "walls": true,
+            "garrison": "archers",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 3,
+              "R": 3,
+              "C": 1,
+              "S": 3,
+              "B": 2
+            },
+            "gold": 254,
+            "overkill": null,
+            "shortfall": 301
+          }
+        ]
+      }
+    ],
+    "sample_wins": [
+      {
+        "tiers": {
+          "M": 3,
+          "R": 3,
+          "C": 1,
+          "S": 2,
+          "B": 2
+        },
+        "policies": [
+          "phalanx_law",
+          "academy_momentum"
+        ],
+        "blueprints": [
+          "battering_ram",
+          "siege_tower",
+          "observatory"
+        ],
+        "doctrines": [
+          "tithe"
+        ],
+        "deck_size": 28,
+        "damage_by_era_capital": {
+          "1": 1425,
+          "2": 2126,
+          "3": 4637
+        },
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 528,
+            "defence": 500,
+            "assaults_used": 1
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 936,
+            "defence": 750,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": true,
+            "damage": 1425,
+            "defence": 1250,
+            "assaults_used": 4
+          },
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 936,
+            "defence": 800,
+            "assaults_used": 1
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 1718,
+            "defence": 1200,
+            "assaults_used": 2
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": true,
+            "damage": 2126,
+            "defence": 2000,
+            "assaults_used": 3
+          },
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 3187,
+            "defence": 1600,
+            "assaults_used": 3
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 2568,
+            "defence": 2400,
+            "assaults_used": 3
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": true,
+            "damage": 4637,
+            "defence": 4000,
+            "assaults_used": 4
+          }
+        ]
+      },
+      {
+        "tiers": {
+          "M": 2,
+          "R": 2,
+          "C": 2,
+          "S": 4,
+          "B": 2
+        },
+        "policies": [
+          "siegecraft",
+          "academy_momentum"
+        ],
+        "blueprints": [
+          "battering_ram",
+          "forge",
+          "scaffolding"
+        ],
+        "doctrines": [
+          "scriptorium",
+          "crusade"
+        ],
+        "deck_size": 28,
+        "damage_by_era_capital": {
+          "1": 1264,
+          "2": 2176,
+          "3": 5164
+        },
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 677,
+            "defence": 500,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 755,
+            "defence": 750,
+            "assaults_used": 3
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": true,
+            "damage": 1264,
+            "defence": 1250,
+            "assaults_used": 5
+          },
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 1120,
+            "defence": 800,
+            "assaults_used": 1
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 1400,
+            "defence": 1200,
+            "assaults_used": 2
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": true,
+            "damage": 2176,
+            "defence": 2000,
+            "assaults_used": 5
+          },
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 1764,
+            "defence": 1600,
+            "assaults_used": 2
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 3549,
+            "defence": 2400,
+            "assaults_used": 2
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": true,
+            "damage": 5164,
+            "defence": 4000,
+            "assaults_used": 4
+          }
+        ]
+      }
+    ]
+  },
+  "S2": {
+    "n": 250,
+    "max_era": 3,
+    "clear_through_era": {
+      "1": 0.996,
+      "2": 0.944,
+      "3": 0.636
+    },
+    "fail_at": {
+      "3:capital": 73,
+      "1:capital": 1,
+      "3:town": 4,
+      "2:capital": 13
+    },
+    "by_era": {
+      "1": {
+        "base_defence": 500,
+        "village_def": 500,
+        "town_def": 750,
+        "capital_def": 1250,
+        "village_clear": 1.0,
+        "town_clear": 1.0,
+        "capital_clear": 0.996,
+        "avg_capital_damage_won": 1552.4,
+        "p50_capital_damage_won": 1512,
+        "avg_capital_overkill": 302.4,
+        "avg_village_damage": 736.9,
+        "attempts_capital": 250
+      },
+      "2": {
+        "base_defence": 800,
+        "village_def": 800,
+        "town_def": 1200,
+        "capital_def": 2000,
+        "village_clear": 1.0,
+        "town_clear": 1.0,
+        "capital_clear": 0.948,
+        "avg_capital_damage_won": 2484.6,
+        "p50_capital_damage_won": 2424,
+        "avg_capital_overkill": 484.6,
+        "avg_village_damage": 1256.8,
+        "attempts_capital": 249
+      },
+      "3": {
+        "base_defence": 1600,
+        "village_def": 1600,
+        "town_def": 2400,
+        "capital_def": 4000,
+        "village_clear": 1.0,
+        "town_clear": 0.983,
+        "capital_clear": 0.685,
+        "avg_capital_damage_won": 4654.6,
+        "p50_capital_damage_won": 4564,
+        "avg_capital_overkill": 654.6,
+        "avg_village_damage": 2403.6,
+        "attempts_capital": 232
+      }
+    },
+    "power_curve": {
+      "1": {
+        "capital_hp": 1250,
+        "p50_damage": 1512,
+        "mean_damage": 1549.7,
+        "damage_to_hp_ratio_p50": 1.21
+      },
+      "2": {
+        "capital_hp": 2000,
+        "p50_damage": 2392,
+        "mean_damage": 2451.5,
+        "damage_to_hp_ratio_p50": 1.2
+      },
+      "3": {
+        "capital_hp": 4000,
+        "p50_damage": 4246,
+        "mean_damage": 4235.2,
+        "damage_to_hp_ratio_p50": 1.06
+      }
+    },
+    "era_win_rate": 0.996,
+    "village_clear_rate": 1.0,
+    "town_clear_rate": 1.0,
+    "capital_clear_rate": 0.996,
+    "sample_failures": [
+      {
+        "failed_era": 3,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 2,
+          "R": 3,
+          "C": 2,
+          "S": 2,
+          "B": 2
+        },
+        "policies": [
+          "conscription",
+          "horse_breeding"
+        ],
+        "blueprints": [
+          "forge",
+          "siege_tower"
+        ],
+        "settlements": [
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2784,
+            "defence": 1600,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 2,
+              "R": 2,
+              "C": 2,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 50,
+            "overkill": 1184,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 2462,
+            "defence": 2400,
+            "walls": false,
+            "garrison": "horsemen",
+            "assaults_used": 3,
+            "tiers": {
+              "M": 2,
+              "R": 2,
+              "C": 2,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 78,
+            "overkill": 62,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": false,
+            "damage": 3390,
+            "defence": 4000,
+            "walls": false,
+            "garrison": "horsemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 2,
+              "R": 3,
+              "C": 2,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 115,
+            "overkill": null,
+            "shortfall": 610
+          }
+        ]
+      },
+      {
+        "failed_era": 3,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 4,
+          "R": 3,
+          "C": 3,
+          "S": 1,
+          "B": 1
+        },
+        "policies": [
+          "line_officers",
+          "drill_manual"
+        ],
+        "blueprints": [
+          "observatory",
+          "watchtower"
+        ],
+        "settlements": [
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 3160,
+            "defence": 1600,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 3,
+              "R": 2,
+              "C": 3,
+              "S": 1,
+              "B": 1
+            },
+            "gold": 123,
+            "overkill": 1560,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 3184,
+            "defence": 2400,
+            "walls": true,
+            "garrison": "militia",
+            "assaults_used": 3,
+            "tiers": {
+              "M": 4,
+              "R": 2,
+              "C": 3,
+              "S": 1,
+              "B": 1
+            },
+            "gold": 182,
+            "overkill": 784,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": false,
+            "damage": 3078,
+            "defence": 4000,
+            "walls": true,
+            "garrison": "horsemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 4,
+              "R": 3,
+              "C": 3,
+              "S": 1,
+              "B": 1
+            },
+            "gold": 231,
+            "overkill": null,
+            "shortfall": 922
+          }
+        ]
+      },
+      {
+        "failed_era": 3,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 2,
+          "R": 3,
+          "C": 3,
+          "S": 1,
+          "B": 2
+        },
+        "policies": [
+          "total_war",
+          "horse_breeding"
+        ],
+        "blueprints": [
+          "supply_lines",
+          "watchtower"
+        ],
+        "settlements": [
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2544,
+            "defence": 1600,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 2,
+              "R": 3,
+              "C": 2,
+              "S": 1,
+              "B": 2
+            },
+            "gold": 69,
+            "overkill": 944,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 2736,
+            "defence": 2400,
+            "walls": true,
+            "garrison": "militia",
+            "assaults_used": 3,
+            "tiers": {
+              "M": 2,
+              "R": 3,
+              "C": 3,
+              "S": 1,
+              "B": 2
+            },
+            "gold": 101,
+            "overkill": 336,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": false,
+            "damage": 3485,
+            "defence": 4000,
+            "walls": true,
+            "garrison": "archers",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 2,
+              "R": 3,
+              "C": 3,
+              "S": 1,
+              "B": 2
+            },
+            "gold": 132,
+            "overkill": null,
+            "shortfall": 515
+          }
+        ]
+      }
+    ],
+    "sample_wins": [
+      {
+        "tiers": {
+          "M": 3,
+          "R": 1,
+          "C": 3,
+          "S": 2,
+          "B": 2
+        },
+        "policies": [
+          "academy_momentum",
+          "militia_act",
+          "conscription"
+        ],
+        "blueprints": [
+          "supply_lines",
+          "forge"
+        ],
+        "doctrines": [
+          "tithe"
+        ],
+        "deck_size": 21,
+        "damage_by_era_capital": {
+          "1": 1710,
+          "2": 2580,
+          "3": 4045
+        },
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 669,
+            "defence": 500,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 847,
+            "defence": 750,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": true,
+            "damage": 1710,
+            "defence": 1250,
+            "assaults_used": 2
+          },
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 2142,
+            "defence": 800,
+            "assaults_used": 1
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 1712,
+            "defence": 1200,
+            "assaults_used": 2
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": true,
+            "damage": 2580,
+            "defence": 2000,
+            "assaults_used": 3
+          },
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2360,
+            "defence": 1600,
+            "assaults_used": 2
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 2607,
+            "defence": 2400,
+            "assaults_used": 2
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": true,
+            "damage": 4045,
+            "defence": 4000,
+            "assaults_used": 3
+          }
+        ]
+      },
+      {
+        "tiers": {
+          "M": 2,
+          "R": 2,
+          "C": 3,
+          "S": 3,
+          "B": 3
+        },
+        "policies": [
+          "chivalry",
+          "academy_momentum"
+        ],
+        "blueprints": [
+          "aqueduct",
+          "forge"
+        ],
+        "doctrines": [
+          "tithe"
+        ],
+        "deck_size": 20,
+        "damage_by_era_capital": {
+          "1": 1599,
+          "2": 3468,
+          "3": 4571
+        },
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 591,
+            "defence": 500,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 948,
+            "defence": 750,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": true,
+            "damage": 1599,
+            "defence": 1250,
+            "assaults_used": 4
+          },
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 1610,
+            "defence": 800,
+            "assaults_used": 2
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 1584,
+            "defence": 1200,
+            "assaults_used": 3
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": true,
+            "damage": 3468,
+            "defence": 2000,
+            "assaults_used": 3
+          },
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 3015,
+            "defence": 1600,
+            "assaults_used": 2
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 2920,
+            "defence": 2400,
+            "assaults_used": 3
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": true,
+            "damage": 4571,
+            "defence": 4000,
+            "assaults_used": 4
+          }
+        ]
+      }
+    ]
+  },
+  "S3": {
+    "n": 250,
+    "max_era": 3,
+    "clear_through_era": {
+      "1": 0.828,
+      "2": 0.72,
+      "3": 0.424
+    },
+    "fail_at": {
+      "1:capital": 35,
+      "2:capital": 27,
+      "3:capital": 67,
+      "1:town": 8,
+      "3:town": 7
+    },
+    "by_era": {
+      "1": {
+        "base_defence": 500,
+        "village_def": 500,
+        "town_def": 750,
+        "capital_def": 1250,
+        "village_clear": 1.0,
+        "town_clear": 0.968,
+        "capital_clear": 0.855,
+        "avg_capital_damage_won": 1527.0,
+        "p50_capital_damage_won": 1478,
+        "avg_capital_overkill": 277.0,
+        "avg_village_damage": 727.8,
+        "attempts_capital": 242
+      },
+      "2": {
+        "base_defence": 800,
+        "village_def": 800,
+        "town_def": 1200,
+        "capital_def": 2000,
+        "village_clear": 1.0,
+        "town_clear": 1.0,
+        "capital_clear": 0.87,
+        "avg_capital_damage_won": 2439.1,
+        "p50_capital_damage_won": 2346,
+        "avg_capital_overkill": 439.1,
+        "avg_village_damage": 1250.7,
+        "attempts_capital": 207
+      },
+      "3": {
+        "base_defence": 1600,
+        "village_def": 1600,
+        "town_def": 2400,
+        "capital_def": 4000,
+        "village_clear": 1.0,
+        "town_clear": 0.961,
+        "capital_clear": 0.613,
+        "avg_capital_damage_won": 4750.5,
+        "p50_capital_damage_won": 4635,
+        "avg_capital_overkill": 750.5,
+        "avg_village_damage": 2398.0,
+        "attempts_capital": 173
+      }
+    },
+    "power_curve": {
+      "1": {
+        "capital_hp": 1250,
+        "p50_damage": 1434,
+        "mean_damage": 1463.2,
+        "damage_to_hp_ratio_p50": 1.15
+      },
+      "2": {
+        "capital_hp": 2000,
+        "p50_damage": 2295,
+        "mean_damage": 2332.9,
+        "damage_to_hp_ratio_p50": 1.15
+      },
+      "3": {
+        "capital_hp": 4000,
+        "p50_damage": 4179,
+        "mean_damage": 4058.8,
+        "damage_to_hp_ratio_p50": 1.04
+      }
+    },
+    "era_win_rate": 0.828,
+    "village_clear_rate": 1.0,
+    "town_clear_rate": 0.968,
+    "capital_clear_rate": 0.855,
+    "sample_failures": [
+      {
+        "failed_era": 1,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 1,
+          "R": 2,
+          "C": 2,
+          "S": 1,
+          "B": 1
+        },
+        "policies": [],
+        "blueprints": [
+          "aqueduct",
+          "watchtower"
+        ],
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 857,
+            "defence": 500,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 1,
+              "R": 1,
+              "C": 1,
+              "S": 1,
+              "B": 1
+            },
+            "gold": 0,
+            "overkill": 357,
+            "shortfall": null
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 1077,
+            "defence": 750,
+            "walls": false,
+            "garrison": "pikemen",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 1,
+              "R": 2,
+              "C": 1,
+              "S": 1,
+              "B": 1
+            },
+            "gold": 0,
+            "overkill": 327,
+            "shortfall": null
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": false,
+            "damage": 1180,
+            "defence": 1250,
+            "walls": true,
+            "garrison": "horsemen",
+            "assaults_used": 5,
+            "tiers": {
+              "M": 1,
+              "R": 2,
+              "C": 2,
+              "S": 1,
+              "B": 1
+            },
+            "gold": 11,
+            "overkill": null,
+            "shortfall": 70
+          }
+        ]
+      },
+      {
+        "failed_era": 2,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 2,
+          "R": 2,
+          "C": 2,
+          "S": 2,
+          "B": 2
+        },
+        "policies": [
+          "drill_manual",
+          "research_corps",
+          "professional_army"
+        ],
+        "blueprints": [
+          "roads",
+          "arsenal"
+        ],
+        "settlements": [
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 1426,
+            "defence": 800,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 1,
+            "tiers": {
+              "M": 2,
+              "R": 2,
+              "C": 2,
+              "S": 1,
+              "B": 1
+            },
+            "gold": 42,
+            "overkill": 626,
+            "shortfall": null
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 1671,
+            "defence": 1200,
+            "walls": true,
+            "garrison": "militia",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 2,
+              "R": 2,
+              "C": 2,
+              "S": 1,
+              "B": 2
+            },
+            "gold": 73,
+            "overkill": 471,
+            "shortfall": null
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": false,
+            "damage": 1640,
+            "defence": 2000,
+            "walls": true,
+            "garrison": "horsemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 2,
+              "R": 2,
+              "C": 2,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 8,
+            "overkill": null,
+            "shortfall": 360
+          }
+        ]
+      },
+      {
+        "failed_era": 1,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 1,
+          "R": 2,
+          "C": 1,
+          "S": 1,
+          "B": 1
+        },
+        "policies": [
+          "academy_momentum",
+          "logistics"
+        ],
+        "blueprints": [
+          "supply_lines",
+          "forge"
+        ],
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 656,
+            "defence": 500,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 3,
+            "tiers": {
+              "M": 1,
+              "R": 1,
+              "C": 1,
+              "S": 1,
+              "B": 1
+            },
+            "gold": 0,
+            "overkill": 156,
+            "shortfall": null
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 1070,
+            "defence": 750,
+            "walls": false,
+            "garrison": "horsemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 1,
+              "R": 1,
+              "C": 1,
+              "S": 1,
+              "B": 1
+            },
+            "gold": 26,
+            "overkill": 320,
+            "shortfall": null
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": false,
+            "damage": 762,
+            "defence": 1250,
+            "walls": true,
+            "garrison": "horsemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 1,
+              "R": 2,
+              "C": 1,
+              "S": 1,
+              "B": 1
+            },
+            "gold": 26,
+            "overkill": null,
+            "shortfall": 488
+          }
+        ]
+      }
+    ],
+    "sample_wins": [
+      {
+        "tiers": {
+          "M": 2,
+          "R": 2,
+          "C": 2,
+          "S": 3,
+          "B": 2
+        },
+        "policies": [
+          "academy_momentum",
+          "professional_army",
+          "line_officers",
+          "horse_breeding"
+        ],
+        "blueprints": [
+          "arsenal",
+          "watchtower"
+        ],
+        "doctrines": [
+          "scriptorium"
+        ],
+        "deck_size": 28,
+        "damage_by_era_capital": {
+          "1": 1289,
+          "2": 2633,
+          "3": 4724
+        },
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 591,
+            "defence": 500,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 1310,
+            "defence": 750,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": true,
+            "damage": 1289,
+            "defence": 1250,
+            "assaults_used": 4
+          },
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 1350,
+            "defence": 800,
+            "assaults_used": 2
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 2490,
+            "defence": 1200,
+            "assaults_used": 2
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": true,
+            "damage": 2633,
+            "defence": 2000,
+            "assaults_used": 4
+          },
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 1632,
+            "defence": 1600,
+            "assaults_used": 1
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 4096,
+            "defence": 2400,
+            "assaults_used": 2
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": true,
+            "damage": 4724,
+            "defence": 4000,
+            "assaults_used": 3
+          }
+        ]
+      },
+      {
+        "tiers": {
+          "M": 3,
+          "R": 3,
+          "C": 2,
+          "S": 1,
+          "B": 1
+        },
+        "policies": [
+          "research_corps",
+          "academy_momentum",
+          "line_officers"
+        ],
+        "blueprints": [
+          "watchtower",
+          "roads"
+        ],
+        "doctrines": [
+          "crusade"
+        ],
+        "deck_size": 28,
+        "damage_by_era_capital": {
+          "1": 1621,
+          "2": 2654,
+          "3": 4024
+        },
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 857,
+            "defence": 500,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 897,
+            "defence": 750,
+            "assaults_used": 1
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": true,
+            "damage": 1621,
+            "defence": 1250,
+            "assaults_used": 4
+          },
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 1477,
+            "defence": 800,
+            "assaults_used": 1
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 1344,
+            "defence": 1200,
+            "assaults_used": 1
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": true,
+            "damage": 2654,
+            "defence": 2000,
+            "assaults_used": 2
+          },
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 3544,
+            "defence": 1600,
+            "assaults_used": 1
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 3348,
+            "defence": 2400,
+            "assaults_used": 1
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": true,
+            "damage": 4024,
+            "defence": 4000,
+            "assaults_used": 3
+          }
+        ]
+      }
+    ]
+  },
+  "S4": {
+    "n": 250,
+    "max_era": 3,
+    "clear_through_era": {
+      "1": 0.816,
+      "2": 0.68,
+      "3": 0.324
+    },
+    "fail_at": {
+      "1:capital": 43,
+      "3:capital": 78,
+      "3:town": 11,
+      "2:town": 4,
+      "1:town": 3,
+      "2:capital": 30
+    },
+    "by_era": {
+      "1": {
+        "base_defence": 500,
+        "village_def": 500,
+        "town_def": 750,
+        "capital_def": 1250,
+        "village_clear": 1.0,
+        "town_clear": 0.988,
+        "capital_clear": 0.826,
+        "avg_capital_damage_won": 1488.0,
+        "p50_capital_damage_won": 1427,
+        "avg_capital_overkill": 238.0,
+        "avg_village_damage": 740.7,
+        "attempts_capital": 247
+      },
+      "2": {
+        "base_defence": 800,
+        "village_def": 800,
+        "town_def": 1200,
+        "capital_def": 2000,
+        "village_clear": 1.0,
+        "town_clear": 0.98,
+        "capital_clear": 0.85,
+        "avg_capital_damage_won": 2371.8,
+        "p50_capital_damage_won": 2299,
+        "avg_capital_overkill": 371.8,
+        "avg_village_damage": 1227.9,
+        "attempts_capital": 200
+      },
+      "3": {
+        "base_defence": 1600,
+        "village_def": 1600,
+        "town_def": 2400,
+        "capital_def": 4000,
+        "village_clear": 1.0,
+        "town_clear": 0.935,
+        "capital_clear": 0.509,
+        "avg_capital_damage_won": 4681.5,
+        "p50_capital_damage_won": 4478,
+        "avg_capital_overkill": 681.5,
+        "avg_village_damage": 2261.3,
+        "attempts_capital": 159
+      }
+    },
+    "power_curve": {
+      "1": {
+        "capital_hp": 1250,
+        "p50_damage": 1389,
+        "mean_damage": 1416.8,
+        "damage_to_hp_ratio_p50": 1.11
+      },
+      "2": {
+        "capital_hp": 2000,
+        "p50_damage": 2242,
+        "mean_damage": 2269.4,
+        "damage_to_hp_ratio_p50": 1.12
+      },
+      "3": {
+        "capital_hp": 4000,
+        "p50_damage": 4029,
+        "mean_damage": 3876.5,
+        "damage_to_hp_ratio_p50": 1.01
+      }
+    },
+    "era_win_rate": 0.816,
+    "village_clear_rate": 1.0,
+    "town_clear_rate": 0.988,
+    "capital_clear_rate": 0.826,
+    "sample_failures": [
+      {
+        "failed_era": 1,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 2,
+          "R": 1,
+          "C": 1,
+          "S": 1,
+          "B": 2
+        },
+        "policies": [],
+        "blueprints": [
+          "watchtower",
+          "scaffolding",
+          "supply_lines"
+        ],
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 528,
+            "defence": 500,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 1,
+            "tiers": {
+              "M": 1,
+              "R": 1,
+              "C": 1,
+              "S": 1,
+              "B": 1
+            },
+            "gold": 0,
+            "overkill": 28,
+            "shortfall": null
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 1039,
+            "defence": 750,
+            "walls": true,
+            "garrison": "horsemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 2,
+              "R": 1,
+              "C": 1,
+              "S": 1,
+              "B": 1
+            },
+            "gold": 24,
+            "overkill": 289,
+            "shortfall": null
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": false,
+            "damage": 1093,
+            "defence": 1250,
+            "walls": true,
+            "garrison": "horsemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 2,
+              "R": 1,
+              "C": 1,
+              "S": 1,
+              "B": 2
+            },
+            "gold": 42,
+            "overkill": null,
+            "shortfall": 157
+          }
+        ]
+      },
+      {
+        "failed_era": 3,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 3,
+          "R": 1,
+          "C": 3,
+          "S": 2,
+          "B": 2
+        },
+        "policies": [
+          "logistics",
+          "conscription",
+          "workshop_network"
+        ],
+        "blueprints": [
+          "scaffolding",
+          "watchtower",
+          "battering_ram"
+        ],
+        "settlements": [
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2638,
+            "defence": 1600,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 2,
+              "R": 1,
+              "C": 3,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 135,
+            "overkill": 1038,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 2887,
+            "defence": 2400,
+            "walls": true,
+            "garrison": "archers",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 2,
+              "R": 1,
+              "C": 3,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 193,
+            "overkill": 487,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": false,
+            "damage": 3318,
+            "defence": 4000,
+            "walls": true,
+            "garrison": "horsemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 3,
+              "R": 1,
+              "C": 3,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 257,
+            "overkill": null,
+            "shortfall": 682
+          }
+        ]
+      },
+      {
+        "failed_era": 3,
+        "failed_at": "town",
+        "tiers": {
+          "M": 2,
+          "R": 1,
+          "C": 2,
+          "S": 1,
+          "B": 2
+        },
+        "policies": [
+          "phalanx_law"
+        ],
+        "blueprints": [
+          "forge",
+          "scaffolding",
+          "watchtower",
+          "supply_lines",
+          "arsenal"
+        ],
+        "settlements": [
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": true,
+            "damage": 2360,
+            "defence": 2000,
+            "walls": true,
+            "garrison": "horsemen",
+            "assaults_used": 5,
+            "tiers": {
+              "M": 2,
+              "R": 1,
+              "C": 2,
+              "S": 1,
+              "B": 2
+            },
+            "gold": 32,
+            "overkill": 360,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2055,
+            "defence": 1600,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 3,
+            "tiers": {
+              "M": 2,
+              "R": 1,
+              "C": 2,
+              "S": 1,
+              "B": 2
+            },
+            "gold": 84,
+            "overkill": 455,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": false,
+            "damage": 2379,
+            "defence": 2400,
+            "walls": true,
+            "garrison": "pikemen",
+            "assaults_used": 5,
+            "tiers": {
+              "M": 2,
+              "R": 1,
+              "C": 2,
+              "S": 1,
+              "B": 2
+            },
+            "gold": 142,
+            "overkill": null,
+            "shortfall": 21
+          }
+        ]
+      }
+    ],
+    "sample_wins": [
+      {
+        "tiers": {
+          "M": 2,
+          "R": 2,
+          "C": 3,
+          "S": 2,
+          "B": 2
+        },
+        "policies": [
+          "workshop_network",
+          "academy_momentum"
+        ],
+        "blueprints": [
+          "supply_lines",
+          "aqueduct",
+          "forge",
+          "siege_tower",
+          "scaffolding"
+        ],
+        "doctrines": [
+          "tithe"
+        ],
+        "deck_size": 28,
+        "damage_by_era_capital": {
+          "1": 1410,
+          "2": 2190,
+          "3": 4131
+        },
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 797,
+            "defence": 500,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 1091,
+            "defence": 750,
+            "assaults_used": 4
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": true,
+            "damage": 1410,
+            "defence": 1250,
+            "assaults_used": 4
+          },
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 1120,
+            "defence": 800,
+            "assaults_used": 1
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 1340,
+            "defence": 1200,
+            "assaults_used": 2
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": true,
+            "damage": 2190,
+            "defence": 2000,
+            "assaults_used": 3
+          },
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2240,
+            "defence": 1600,
+            "assaults_used": 2
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 3442,
+            "defence": 2400,
+            "assaults_used": 3
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": true,
+            "damage": 4131,
+            "defence": 4000,
+            "assaults_used": 3
+          }
+        ]
+      },
+      {
+        "tiers": {
+          "M": 3,
+          "R": 2,
+          "C": 1,
+          "S": 1,
+          "B": 2
+        },
+        "policies": [
+          "professional_army",
+          "agoge",
+          "workshop_network"
+        ],
+        "blueprints": [
+          "supply_lines",
+          "aqueduct",
+          "siege_tower",
+          "magazine",
+          "scaffolding"
+        ],
+        "doctrines": [
+          "scriptorium"
+        ],
+        "deck_size": 28,
+        "damage_by_era_capital": {
+          "1": 1543,
+          "2": 2337,
+          "3": 4038
+        },
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 698,
+            "defence": 500,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 834,
+            "defence": 750,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": true,
+            "damage": 1543,
+            "defence": 1250,
+            "assaults_used": 3
+          },
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 1008,
+            "defence": 800,
+            "assaults_used": 1
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 1276,
+            "defence": 1200,
+            "assaults_used": 2
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": true,
+            "damage": 2337,
+            "defence": 2000,
+            "assaults_used": 4
+          },
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2166,
+            "defence": 1600,
+            "assaults_used": 3
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 2780,
+            "defence": 2400,
+            "assaults_used": 4
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": true,
+            "damage": 4038,
+            "defence": 4000,
+            "assaults_used": 3
+          }
+        ]
+      }
+    ]
+  },
+  "S5": {
+    "n": 250,
+    "max_era": 3,
+    "clear_through_era": {
+      "1": 0.764,
+      "2": 0.584,
+      "3": 0.244
+    },
+    "fail_at": {
+      "3:capital": 74,
+      "1:capital": 54,
+      "2:capital": 44,
+      "3:town": 11,
+      "1:town": 5,
+      "2:town": 1
+    },
+    "by_era": {
+      "1": {
+        "base_defence": 500,
+        "village_def": 500,
+        "town_def": 750,
+        "capital_def": 1250,
+        "village_clear": 1.0,
+        "town_clear": 0.98,
+        "capital_clear": 0.78,
+        "avg_capital_damage_won": 1498.2,
+        "p50_capital_damage_won": 1449,
+        "avg_capital_overkill": 248.2,
+        "avg_village_damage": 725.9,
+        "attempts_capital": 245
+      },
+      "2": {
+        "base_defence": 800,
+        "village_def": 800,
+        "town_def": 1200,
+        "capital_def": 2000,
+        "village_clear": 1.0,
+        "town_clear": 0.995,
+        "capital_clear": 0.768,
+        "avg_capital_damage_won": 2458.1,
+        "p50_capital_damage_won": 2404,
+        "avg_capital_overkill": 458.1,
+        "avg_village_damage": 1224.9,
+        "attempts_capital": 190
+      },
+      "3": {
+        "base_defence": 1600,
+        "village_def": 1600,
+        "town_def": 2400,
+        "capital_def": 4000,
+        "village_clear": 1.0,
+        "town_clear": 0.925,
+        "capital_clear": 0.452,
+        "avg_capital_damage_won": 4637.0,
+        "p50_capital_damage_won": 4470,
+        "avg_capital_overkill": 637.0,
+        "avg_village_damage": 2308.9,
+        "attempts_capital": 135
+      }
+    },
+    "power_curve": {
+      "1": {
+        "capital_hp": 1250,
+        "p50_damage": 1388,
+        "mean_damage": 1395.5,
+        "damage_to_hp_ratio_p50": 1.11
+      },
+      "2": {
+        "capital_hp": 2000,
+        "p50_damage": 2274,
+        "mean_damage": 2260.7,
+        "damage_to_hp_ratio_p50": 1.14
+      },
+      "3": {
+        "capital_hp": 4000,
+        "p50_damage": 3833,
+        "mean_damage": 3775.7,
+        "damage_to_hp_ratio_p50": 0.96
+      }
+    },
+    "era_win_rate": 0.764,
+    "village_clear_rate": 1.0,
+    "town_clear_rate": 0.98,
+    "capital_clear_rate": 0.78,
+    "sample_failures": [
+      {
+        "failed_era": 3,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 2,
+          "R": 3,
+          "C": 2,
+          "S": 2,
+          "B": 2
+        },
+        "policies": [
+          "combined_edict",
+          "phalanx_law"
+        ],
+        "blueprints": [
+          "aqueduct",
+          "watchtower"
+        ],
+        "settlements": [
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 1744,
+            "defence": 1600,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 2,
+              "R": 3,
+              "C": 1,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 98,
+            "overkill": 144,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 2487,
+            "defence": 2400,
+            "walls": true,
+            "garrison": "militia",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 2,
+              "R": 3,
+              "C": 2,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 162,
+            "overkill": 87,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": false,
+            "damage": 2776,
+            "defence": 4000,
+            "walls": false,
+            "garrison": "archers",
+            "assaults_used": 5,
+            "tiers": {
+              "M": 2,
+              "R": 3,
+              "C": 2,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 241,
+            "overkill": null,
+            "shortfall": 1224
+          }
+        ]
+      },
+      {
+        "failed_era": 3,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 2,
+          "R": 2,
+          "C": 3,
+          "S": 3,
+          "B": 2
+        },
+        "policies": [
+          "liturgical_fire",
+          "phalanx_law"
+        ],
+        "blueprints": [
+          "aqueduct",
+          "siege_tower"
+        ],
+        "settlements": [
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 1678,
+            "defence": 1600,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 2,
+              "R": 2,
+              "C": 2,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 124,
+            "overkill": 78,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 2895,
+            "defence": 2400,
+            "walls": true,
+            "garrison": "pikemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 2,
+              "R": 2,
+              "C": 2,
+              "S": 3,
+              "B": 2
+            },
+            "gold": 190,
+            "overkill": 495,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": false,
+            "damage": 3137,
+            "defence": 4000,
+            "walls": true,
+            "garrison": "pikemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 2,
+              "R": 2,
+              "C": 3,
+              "S": 3,
+              "B": 2
+            },
+            "gold": 259,
+            "overkill": null,
+            "shortfall": 863
+          }
+        ]
+      },
+      {
+        "failed_era": 1,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 2,
+          "R": 1,
+          "C": 1,
+          "S": 2,
+          "B": 1
+        },
+        "policies": [],
+        "blueprints": [],
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 901,
+            "defence": 500,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 1,
+              "R": 1,
+              "C": 1,
+              "S": 1,
+              "B": 1
+            },
+            "gold": 0,
+            "overkill": 401,
+            "shortfall": null
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 792,
+            "defence": 750,
+            "walls": true,
+            "garrison": "archers",
+            "assaults_used": 3,
+            "tiers": {
+              "M": 2,
+              "R": 1,
+              "C": 1,
+              "S": 1,
+              "B": 1
+            },
+            "gold": 36,
+            "overkill": 42,
+            "shortfall": null
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": false,
+            "damage": 791,
+            "defence": 1250,
+            "walls": true,
+            "garrison": "horsemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 2,
+              "R": 1,
+              "C": 1,
+              "S": 2,
+              "B": 1
+            },
+            "gold": 86,
+            "overkill": null,
+            "shortfall": 459
+          }
+        ]
+      }
+    ],
+    "sample_wins": [
+      {
+        "tiers": {
+          "M": 3,
+          "R": 3,
+          "C": 2,
+          "S": 2,
+          "B": 2
+        },
+        "policies": [
+          "combined_edict",
+          "liturgical_fire"
+        ],
+        "blueprints": [
+          "watchtower",
+          "siege_tower",
+          "aqueduct"
+        ],
+        "doctrines": [
+          "tithe",
+          "alms",
+          "relic_hunt"
+        ],
+        "deck_size": 28,
+        "damage_by_era_capital": {
+          "1": 1338,
+          "2": 2443,
+          "3": 4522
+        },
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 901,
+            "defence": 500,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 811,
+            "defence": 750,
+            "assaults_used": 3
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": true,
+            "damage": 1338,
+            "defence": 1250,
+            "assaults_used": 4
+          },
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 952,
+            "defence": 800,
+            "assaults_used": 1
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 2004,
+            "defence": 1200,
+            "assaults_used": 2
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": true,
+            "damage": 2443,
+            "defence": 2000,
+            "assaults_used": 4
+          },
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2506,
+            "defence": 1600,
+            "assaults_used": 2
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 3811,
+            "defence": 2400,
+            "assaults_used": 3
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": true,
+            "damage": 4522,
+            "defence": 4000,
+            "assaults_used": 4
+          }
+        ]
+      },
+      {
+        "tiers": {
+          "M": 3,
+          "R": 1,
+          "C": 1,
+          "S": 2,
+          "B": 2
+        },
+        "policies": [
+          "total_war",
+          "liturgical_fire",
+          "academy_momentum"
+        ],
+        "blueprints": [
+          "siege_tower",
+          "watchtower"
+        ],
+        "doctrines": [
+          "pilgrimage",
+          "scriptorium",
+          "alms"
+        ],
+        "deck_size": 28,
+        "damage_by_era_capital": {
+          "1": 1383,
+          "2": 2393,
+          "3": 4511
+        },
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 626,
+            "defence": 500,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 885,
+            "defence": 750,
+            "assaults_used": 3
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": true,
+            "damage": 1383,
+            "defence": 1250,
+            "assaults_used": 3
+          },
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 1048,
+            "defence": 800,
+            "assaults_used": 2
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 1288,
+            "defence": 1200,
+            "assaults_used": 3
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": true,
+            "damage": 2393,
+            "defence": 2000,
+            "assaults_used": 3
+          },
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 1941,
+            "defence": 1600,
+            "assaults_used": 2
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 3000,
+            "defence": 2400,
+            "assaults_used": 4
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": true,
+            "damage": 4511,
+            "defence": 4000,
+            "assaults_used": 3
+          }
+        ]
+      }
+    ]
+  },
+  "S6": {
+    "n": 250,
+    "max_era": 3,
+    "clear_through_era": {
+      "1": 0.844,
+      "2": 0.668,
+      "3": 0.372
+    },
+    "fail_at": {
+      "2:capital": 42,
+      "3:capital": 66,
+      "1:capital": 32,
+      "1:town": 7,
+      "3:town": 8,
+      "2:town": 2
+    },
+    "by_era": {
+      "1": {
+        "base_defence": 500,
+        "village_def": 500,
+        "town_def": 750,
+        "capital_def": 1250,
+        "village_clear": 1.0,
+        "town_clear": 0.972,
+        "capital_clear": 0.868,
+        "avg_capital_damage_won": 1525.8,
+        "p50_capital_damage_won": 1456,
+        "avg_capital_overkill": 275.8,
+        "avg_village_damage": 727.2,
+        "attempts_capital": 243
+      },
+      "2": {
+        "base_defence": 800,
+        "village_def": 800,
+        "town_def": 1200,
+        "capital_def": 2000,
+        "village_clear": 1.0,
+        "town_clear": 0.991,
+        "capital_clear": 0.799,
+        "avg_capital_damage_won": 2422.1,
+        "p50_capital_damage_won": 2337,
+        "avg_capital_overkill": 422.1,
+        "avg_village_damage": 1202.6,
+        "attempts_capital": 209
+      },
+      "3": {
+        "base_defence": 1600,
+        "village_def": 1600,
+        "town_def": 2400,
+        "capital_def": 4000,
+        "village_clear": 1.0,
+        "town_clear": 0.952,
+        "capital_clear": 0.585,
+        "avg_capital_damage_won": 4661.4,
+        "p50_capital_damage_won": 4461,
+        "avg_capital_overkill": 661.4,
+        "avg_village_damage": 2343.2,
+        "attempts_capital": 159
+      }
+    },
+    "power_curve": {
+      "1": {
+        "capital_hp": 1250,
+        "p50_damage": 1427,
+        "mean_damage": 1467.1,
+        "damage_to_hp_ratio_p50": 1.14
+      },
+      "2": {
+        "capital_hp": 2000,
+        "p50_damage": 2250,
+        "mean_damage": 2274.0,
+        "damage_to_hp_ratio_p50": 1.12
+      },
+      "3": {
+        "capital_hp": 4000,
+        "p50_damage": 4109,
+        "mean_damage": 4008.8,
+        "damage_to_hp_ratio_p50": 1.03
+      }
+    },
+    "era_win_rate": 0.844,
+    "village_clear_rate": 1.0,
+    "town_clear_rate": 0.972,
+    "capital_clear_rate": 0.868,
+    "sample_failures": [
+      {
+        "failed_era": 2,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 1,
+          "R": 2,
+          "C": 3,
+          "S": 2,
+          "B": 2
+        },
+        "policies": [
+          "rationalism",
+          "conscription"
+        ],
+        "blueprints": [
+          "forge",
+          "supply_lines"
+        ],
+        "settlements": [
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 801,
+            "defence": 800,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 1,
+            "tiers": {
+              "M": 1,
+              "R": 1,
+              "C": 3,
+              "S": 2,
+              "B": 1
+            },
+            "gold": 44,
+            "overkill": 1,
+            "shortfall": null
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 1255,
+            "defence": 1200,
+            "walls": true,
+            "garrison": "archers",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 1,
+              "R": 2,
+              "C": 3,
+              "S": 2,
+              "B": 1
+            },
+            "gold": 6,
+            "overkill": 55,
+            "shortfall": null
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": false,
+            "damage": 1657,
+            "defence": 2000,
+            "walls": true,
+            "garrison": "horsemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 1,
+              "R": 2,
+              "C": 3,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 27,
+            "overkill": null,
+            "shortfall": 343
+          }
+        ]
+      },
+      {
+        "failed_era": 3,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 3,
+          "R": 1,
+          "C": 2,
+          "S": 3,
+          "B": 2
+        },
+        "policies": [
+          "research_corps",
+          "workshop_network"
+        ],
+        "blueprints": [
+          "forge"
+        ],
+        "settlements": [
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2152,
+            "defence": 1600,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 3,
+              "R": 1,
+              "C": 2,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 63,
+            "overkill": 552,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 3093,
+            "defence": 2400,
+            "walls": false,
+            "garrison": "horsemen",
+            "assaults_used": 3,
+            "tiers": {
+              "M": 3,
+              "R": 1,
+              "C": 2,
+              "S": 3,
+              "B": 2
+            },
+            "gold": 112,
+            "overkill": 693,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": false,
+            "damage": 2305,
+            "defence": 4000,
+            "walls": true,
+            "garrison": "pikemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 3,
+              "R": 1,
+              "C": 2,
+              "S": 3,
+              "B": 2
+            },
+            "gold": 160,
+            "overkill": null,
+            "shortfall": 1695
+          }
+        ]
+      },
+      {
+        "failed_era": 2,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 2,
+          "R": 1,
+          "C": 3,
+          "S": 2,
+          "B": 2
+        },
+        "policies": [
+          "research_corps",
+          "logistics",
+          "phalanx_law"
+        ],
+        "blueprints": [
+          "supply_lines",
+          "watchtower"
+        ],
+        "settlements": [
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 1425,
+            "defence": 800,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 2,
+              "R": 1,
+              "C": 3,
+              "S": 2,
+              "B": 1
+            },
+            "gold": 6,
+            "overkill": 625,
+            "shortfall": null
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 1385,
+            "defence": 1200,
+            "walls": true,
+            "garrison": "horsemen",
+            "assaults_used": 3,
+            "tiers": {
+              "M": 2,
+              "R": 1,
+              "C": 3,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 8,
+            "overkill": 185,
+            "shortfall": null
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": false,
+            "damage": 1875,
+            "defence": 2000,
+            "walls": true,
+            "garrison": "horsemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 2,
+              "R": 1,
+              "C": 3,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 18,
+            "overkill": null,
+            "shortfall": 125
+          }
+        ]
+      }
+    ],
+    "sample_wins": [
+      {
+        "tiers": {
+          "M": 3,
+          "R": 3,
+          "C": 2,
+          "S": 2,
+          "B": 1
+        },
+        "policies": [
+          "drill_manual",
+          "phalanx_law",
+          "academy_momentum"
+        ],
+        "blueprints": [
+          "forge",
+          "watchtower",
+          "supply_lines"
+        ],
+        "doctrines": [
+          "zeal"
+        ],
+        "deck_size": 28,
+        "damage_by_era_capital": {
+          "1": 1311,
+          "2": 2154,
+          "3": 5500
+        },
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 705,
+            "defence": 500,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 960,
+            "defence": 750,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": true,
+            "damage": 1311,
+            "defence": 1250,
+            "assaults_used": 2
+          },
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 1040,
+            "defence": 800,
+            "assaults_used": 1
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 1872,
+            "defence": 1200,
+            "assaults_used": 3
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": true,
+            "damage": 2154,
+            "defence": 2000,
+            "assaults_used": 2
+          },
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2350,
+            "defence": 1600,
+            "assaults_used": 2
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 3344,
+            "defence": 2400,
+            "assaults_used": 4
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": true,
+            "damage": 5500,
+            "defence": 4000,
+            "assaults_used": 3
+          }
+        ]
+      },
+      {
+        "tiers": {
+          "M": 3,
+          "R": 3,
+          "C": 2,
+          "S": 1,
+          "B": 2
+        },
+        "policies": [
+          "conscription",
+          "logistics",
+          "line_officers",
+          "chivalry"
+        ],
+        "blueprints": [
+          "forge",
+          "supply_lines"
+        ],
+        "doctrines": [
+          "alms"
+        ],
+        "deck_size": 28,
+        "damage_by_era_capital": {
+          "1": 1360,
+          "2": 2020,
+          "3": 4109
+        },
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 528,
+            "defence": 500,
+            "assaults_used": 1
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 869,
+            "defence": 750,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": true,
+            "damage": 1360,
+            "defence": 1250,
+            "assaults_used": 1
+          },
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 1476,
+            "defence": 800,
+            "assaults_used": 1
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 1758,
+            "defence": 1200,
+            "assaults_used": 2
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": true,
+            "damage": 2020,
+            "defence": 2000,
+            "assaults_used": 2
+          },
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 1992,
+            "defence": 1600,
+            "assaults_used": 1
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 2442,
+            "defence": 2400,
+            "assaults_used": 3
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": true,
+            "damage": 4109,
+            "defence": 4000,
+            "assaults_used": 4
+          }
+        ]
+      }
+    ]
+  },
+  "BALANCED": {
+    "n": 250,
+    "max_era": 3,
+    "clear_through_era": {
+      "1": 0.848,
+      "2": 0.748,
+      "3": 0.444
+    },
+    "fail_at": {
+      "1:capital": 35,
+      "3:capital": 71,
+      "3:town": 5,
+      "2:capital": 24,
+      "1:town": 3,
+      "2:town": 1
+    },
+    "by_era": {
+      "1": {
+        "base_defence": 500,
+        "village_def": 500,
+        "town_def": 750,
+        "capital_def": 1250,
+        "village_clear": 1.0,
+        "town_clear": 0.988,
+        "capital_clear": 0.858,
+        "avg_capital_damage_won": 1509.7,
+        "p50_capital_damage_won": 1454,
+        "avg_capital_overkill": 259.7,
+        "avg_village_damage": 751.6,
+        "attempts_capital": 247
+      },
+      "2": {
+        "base_defence": 800,
+        "village_def": 800,
+        "town_def": 1200,
+        "capital_def": 2000,
+        "village_clear": 1.0,
+        "town_clear": 0.995,
+        "capital_clear": 0.886,
+        "avg_capital_damage_won": 2443.7,
+        "p50_capital_damage_won": 2349,
+        "avg_capital_overkill": 443.7,
+        "avg_village_damage": 1242.5,
+        "attempts_capital": 211
+      },
+      "3": {
+        "base_defence": 1600,
+        "village_def": 1600,
+        "town_def": 2400,
+        "capital_def": 4000,
+        "village_clear": 1.0,
+        "town_clear": 0.973,
+        "capital_clear": 0.61,
+        "avg_capital_damage_won": 4767.2,
+        "p50_capital_damage_won": 4613,
+        "avg_capital_overkill": 767.2,
+        "avg_village_damage": 2347.6,
+        "attempts_capital": 182
+      }
+    },
+    "power_curve": {
+      "1": {
+        "capital_hp": 1250,
+        "p50_damage": 1417,
+        "mean_damage": 1443.6,
+        "damage_to_hp_ratio_p50": 1.13
+      },
+      "2": {
+        "capital_hp": 2000,
+        "p50_damage": 2283,
+        "mean_damage": 2358.2,
+        "damage_to_hp_ratio_p50": 1.14
+      },
+      "3": {
+        "capital_hp": 4000,
+        "p50_damage": 4220,
+        "mean_damage": 4159.4,
+        "damage_to_hp_ratio_p50": 1.05
+      }
+    },
+    "era_win_rate": 0.848,
+    "village_clear_rate": 1.0,
+    "town_clear_rate": 0.988,
+    "capital_clear_rate": 0.858,
+    "sample_failures": [
+      {
+        "failed_era": 1,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 1,
+          "R": 2,
+          "C": 1,
+          "S": 2,
+          "B": 1
+        },
+        "policies": [],
+        "blueprints": [
+          "supply_lines",
+          "aqueduct"
+        ],
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 1235,
+            "defence": 500,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 1,
+            "tiers": {
+              "M": 1,
+              "R": 1,
+              "C": 1,
+              "S": 1,
+              "B": 1
+            },
+            "gold": 0,
+            "overkill": 735,
+            "shortfall": null
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 854,
+            "defence": 750,
+            "walls": true,
+            "garrison": "militia",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 1,
+              "R": 1,
+              "C": 1,
+              "S": 2,
+              "B": 1
+            },
+            "gold": 36,
+            "overkill": 104,
+            "shortfall": null
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": false,
+            "damage": 960,
+            "defence": 1250,
+            "walls": true,
+            "garrison": "archers",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 1,
+              "R": 2,
+              "C": 1,
+              "S": 2,
+              "B": 1
+            },
+            "gold": 21,
+            "overkill": null,
+            "shortfall": 290
+          }
+        ]
+      },
+      {
+        "failed_era": 3,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 2,
+          "R": 3,
+          "C": 3,
+          "S": 4,
+          "B": 1
+        },
+        "policies": [
+          "conscription",
+          "line_officers"
+        ],
+        "blueprints": [
+          "aqueduct",
+          "watchtower"
+        ],
+        "settlements": [
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2268,
+            "defence": 1600,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 1,
+            "tiers": {
+              "M": 2,
+              "R": 3,
+              "C": 3,
+              "S": 3,
+              "B": 1
+            },
+            "gold": 13,
+            "overkill": 668,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 3482,
+            "defence": 2400,
+            "walls": true,
+            "garrison": "pikemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 2,
+              "R": 3,
+              "C": 3,
+              "S": 3,
+              "B": 1
+            },
+            "gold": 59,
+            "overkill": 1082,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": false,
+            "damage": 3970,
+            "defence": 4000,
+            "walls": false,
+            "garrison": "horsemen",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 2,
+              "R": 3,
+              "C": 3,
+              "S": 4,
+              "B": 1
+            },
+            "gold": 102,
+            "overkill": null,
+            "shortfall": 30
+          }
+        ]
+      },
+      {
+        "failed_era": 3,
+        "failed_at": "capital",
+        "tiers": {
+          "M": 2,
+          "R": 2,
+          "C": 2,
+          "S": 3,
+          "B": 2
+        },
+        "policies": [
+          "conscription",
+          "sappers"
+        ],
+        "blueprints": [
+          "watchtower",
+          "siege_tower"
+        ],
+        "settlements": [
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2180,
+            "defence": 1600,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 2,
+            "tiers": {
+              "M": 2,
+              "R": 2,
+              "C": 2,
+              "S": 2,
+              "B": 2
+            },
+            "gold": 163,
+            "overkill": 580,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 2544,
+            "defence": 2400,
+            "walls": false,
+            "garrison": "militia",
+            "assaults_used": 3,
+            "tiers": {
+              "M": 2,
+              "R": 2,
+              "C": 2,
+              "S": 3,
+              "B": 2
+            },
+            "gold": 210,
+            "overkill": 144,
+            "shortfall": null
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": false,
+            "damage": 3116,
+            "defence": 4000,
+            "walls": true,
+            "garrison": "archers",
+            "assaults_used": 4,
+            "tiers": {
+              "M": 2,
+              "R": 2,
+              "C": 2,
+              "S": 3,
+              "B": 2
+            },
+            "gold": 248,
+            "overkill": null,
+            "shortfall": 884
+          }
+        ]
+      }
+    ],
+    "sample_wins": [
+      {
+        "tiers": {
+          "M": 3,
+          "R": 3,
+          "C": 2,
+          "S": 3,
+          "B": 1
+        },
+        "policies": [
+          "academy_momentum",
+          "logistics",
+          "research_corps"
+        ],
+        "blueprints": [
+          "forge",
+          "observatory",
+          "supply_lines"
+        ],
+        "doctrines": [
+          "tithe"
+        ],
+        "deck_size": 28,
+        "damage_by_era_capital": {
+          "1": 1641,
+          "2": 2145,
+          "3": 6355
+        },
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 713,
+            "defence": 500,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 1062,
+            "defence": 750,
+            "assaults_used": 3
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": true,
+            "damage": 1641,
+            "defence": 1250,
+            "assaults_used": 2
+          },
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 2457,
+            "defence": 800,
+            "assaults_used": 1
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 1706,
+            "defence": 1200,
+            "assaults_used": 2
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": true,
+            "damage": 2145,
+            "defence": 2000,
+            "assaults_used": 3
+          },
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2757,
+            "defence": 1600,
+            "assaults_used": 2
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 3071,
+            "defence": 2400,
+            "assaults_used": 2
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": true,
+            "damage": 6355,
+            "defence": 4000,
+            "assaults_used": 2
+          }
+        ]
+      },
+      {
+        "tiers": {
+          "M": 3,
+          "R": 3,
+          "C": 3,
+          "S": 2,
+          "B": 2
+        },
+        "policies": [
+          "siegecraft",
+          "academy_momentum"
+        ],
+        "blueprints": [
+          "supply_lines",
+          "watchtower"
+        ],
+        "doctrines": [
+          "scriptorium"
+        ],
+        "deck_size": 28,
+        "damage_by_era_capital": {
+          "1": 1250,
+          "2": 2160,
+          "3": 4721
+        },
+        "settlements": [
+          {
+            "era": 1,
+            "kind": "village",
+            "won": true,
+            "damage": 857,
+            "defence": 500,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "town",
+            "won": true,
+            "damage": 1560,
+            "defence": 750,
+            "assaults_used": 2
+          },
+          {
+            "era": 1,
+            "kind": "capital",
+            "won": true,
+            "damage": 1250,
+            "defence": 1250,
+            "assaults_used": 1
+          },
+          {
+            "era": 2,
+            "kind": "village",
+            "won": true,
+            "damage": 1120,
+            "defence": 800,
+            "assaults_used": 1
+          },
+          {
+            "era": 2,
+            "kind": "town",
+            "won": true,
+            "damage": 2163,
+            "defence": 1200,
+            "assaults_used": 1
+          },
+          {
+            "era": 2,
+            "kind": "capital",
+            "won": true,
+            "damage": 2160,
+            "defence": 2000,
+            "assaults_used": 1
+          },
+          {
+            "era": 3,
+            "kind": "village",
+            "won": true,
+            "damage": 2528,
+            "defence": 1600,
+            "assaults_used": 1
+          },
+          {
+            "era": 3,
+            "kind": "town",
+            "won": true,
+            "damage": 2998,
+            "defence": 2400,
+            "assaults_used": 1
+          },
+          {
+            "era": 3,
+            "kind": "capital",
+            "won": true,
+            "damage": 4721,
+            "defence": 4000,
+            "assaults_used": 3
+          }
+        ]
+      }
+    ]
+  }
+}
