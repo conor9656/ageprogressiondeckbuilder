@@ -227,18 +227,9 @@ Mirror of Engineering for Faith supports. Slot bumps on Eras **2, 5, 8**.
 
 Old **Natural Philosophy** one-off is retired in favour of the Education tree.
 
-### 6.6 Shop tree — parked (do not implement yet)
+### 6.6 Shop tree — moved to Civics
 
-Future non-troop Science line ideas (era-gated same way):
-
-| Idea | Example beats |
-|---|---|
-| Stall Permits → Bazaar Law → Department Stores → … | +1 visible shop offer |
-| Tariff Reform / Subsidies | −% cost on Units or Blueprints |
-| Faith Concession | −% Synod costs |
-| Bulk Contracts | First reroll each visit free |
-
-Keep out of the live pool until shop UX is stable.
+Shop / pack upgrades now live on the **Civics Commerce line** (§7.2–7.3): Stall Permits, Pedlar's Writ, Royal Boon, etc. Science stays troops, formations, and currency % trees.
 
 ### 6.7 Offer weighting (non-troop fill)
 
@@ -255,24 +246,78 @@ Duplicate rule: don’t offer the same ID twice in one screen.
 
 Culture bar fills → **3 random civics** → pick one.
 
-No troop quota. Weights by era tag + rare ahead-of-era.
+**Not a fixed tree.** Same luck-with-choice loop as Science, but:
+- **No troop quota** (Culture never upgrades Melee/Ranged/…).
+- **Era-weighted random pool:** offers prefer the **current era’s** civic tags; **rare** chance to roll **one era ahead**. Earlier-era unowned one-shots can still appear (catch-up), unlike Science progression trees.
+- Most civics are **one-shot** (owning them removes them from future offers). Repeatable drafts (Policy draft) can reappear.
 
-### Starter civic pool (expand later)
+Rarity on a civic is **offer weight**, not a separate currency:
+| Rarity | Relative weight | Role |
+|---|---|---|
+| **C** Common | 10 | Everyday infrastructure |
+| **U** Uncommon | 4 | Meaningful shop / economy spikes |
+| **R** Rare | 1 | Run-defining shop rules |
 
-| ID | Era | Civic | Effect |
-|---|---|---|---|
-| CV01 | 1 | Code of Laws | +1 Policy slot (if &lt; max) |
-| CV02 | 1 | Craftsmanship | Draft 1 of 3 Policies |
-| CV03 | 1 | Early Empire | +1 Builder slot |
-| CV04 | 1 | Theology | +1 Missionary slot |
-| CV05 | 1 | Military Training | +1 Regroup permanently |
-| CV06 | 1 | Literacy | Draft 1 of 3 Policies (Uncommon+ weight ↑) |
-| CV07 | 2 | Citizenship | +1 Policy slot |
-| CV08 | 2 | Patron Games | Draft 1 of 3 Policies |
-| CV09 | 2 | Civil Service | +1 hand size |
-| CV10 | 2 | State Church | Doctrine numeric +15% or +1 Doctrine slot if under max — TBD |
+Illegal offers (slots maxed, already owned one-shot) are rerolled.
 
-If a civic is illegal (slots maxed), reroll that offer.
+### 7.1 Core civics (slots / drafts / combat QoL)
+
+| ID | Era | R | Civic | Effect | Once? |
+|---|---|---|---|---|---|
+| CV01 | 1 | C | Code of Laws | +1 Policy slot (if &lt; max) | Yes |
+| CV02 | 1 | C | Craftsmanship | Draft 1 of 3 Policies | No |
+| CV03 | 1 | C | Early Empire | +1 Builder slot | Yes |
+| CV04 | 1 | C | Theology | +1 Missionary / Doctrine slot | Yes |
+| CV05 | 1 | C | Military Training | +1 Regroup permanently | Yes |
+| CV06 | 1 | U | Literacy | Draft 1 of 3 Policies (Uncommon+ weight ↑) | No |
+| CV07 | 2 | C | Citizenship | +1 Policy slot | Yes |
+| CV08 | 2 | C | Patron Games | Draft 1 of 3 Policies | No |
+| CV09 | 2 | U | Civil Service | +1 hand size | Yes |
+| CV10 | 2 | U | State Church | +1 Doctrine slot **or** Doctrine numeric +15% if maxed | Yes |
+| CV11 | 3 | C | Guild Charters | Draft 1 of 3 Policies | No |
+| CV12 | 3 | U | Standing Orders | +1 Regroup permanently | Yes |
+| CV13 | 4 | U | Cabinet Office | +1 Policy slot | Yes |
+| CV14 | 5 | R | Consular Reform | +1 hand size | Yes |
+
+### 7.2 Shop civics (new — Commerce line)
+
+Shop UX is stable enough to put these on **Civics** (Culture), not Science. Effects are permanent once taken; era-limited charges reset each era.
+
+| ID | Era | R | Civic | Effect | Once? |
+|---|---|---|---|---|---|
+| CVS01 | 1 | C | **Stall Permits** | **+1 visible offer** in **both** Treasury and Synod packs (5→6) for the rest of the run | Yes |
+| CVS02 | 2 | U | **Pedlar's Writ** | **Once per era:** first pack reroll (Treasury *or* Synod) is **free** | Yes |
+| CVS03 | 3 | U | **Royal Boon** | **Once per era:** one **random** shop offer appears priced at **0** (still counts as a pack slot) | Yes |
+
+### 7.3 More shop / commerce civics (same line — expand pool)
+
+| ID | Era | R | Civic | Effect | Once? |
+|---|---|---|---|---|---|
+| CVS04 | 1 | C | **Fairground Toll** | All **Unit** offers cost **−2 Gold** (floor 1) | Yes |
+| CVS05 | 2 | U | **Merchant Guild Charter** | All **Blueprint** offers cost **−20%** (round down, floor 1) | Yes |
+| CVS06 | 2 | U | **Tithe Rebate** | All **Doctrine** offers cost **−20%** Faith (floor 1) | Yes |
+| CVS07 | 3 | C | **Courier Privilege** | Reroll cost **3→1** Gold/Faith (still 1× per pack per visit base) | Yes |
+| CVS08 | 3 | R | **Double Stall** | **+1** pack size again (stacks with Stall Permits → 7) | Yes |
+| CVS09 | 4 | U | **Auction House** | **Once per era:** replace one unwanted Treasury offer with a fresh roll of the **same category** | Yes |
+| CVS10 | 4 | U | **Edition Edict** | Unit **Edition** weight in Treasury **×1.5** | Yes |
+| CVS11 | 5 | R | **Letter of Credit** | **Once per era:** may buy one Treasury item while up to **10 Gold in debt** (debt cleared from next victory Gold) | Yes |
+| CVS12 | 5 | U | **Promotion Subsidy** | **Promotion** offers cost **−25%** | Yes |
+| CVS13 | 6 | R | **World Fair** | Stall Permits effect **+1** again **and** Royal Boon triggers **twice** per era | Yes |
+| CVS14 | 6 | U | **Disband Amnesty** | Next **3** Disbands this run cost **0** Gold | Yes |
+| CVS15 | 7 | R | **Open Borders Market** | Pack size **+1** Synod only **and** Pedlar's Writ also grants a free Synod reroll the same era (separate charge) | Yes |
+
+**Design notes**
+- Stall Permits / Double Stall / World Fair are the **visible choice** fantasy — more rows to gamble on.
+- Pedlar's Writ / Courier Privilege / Auction House are the **agency** fantasy — better control of bad rolls.
+- Royal Boon / Letter of Credit / Fairground Toll / Guild Charter are the **economy** fantasy — stretch Gold/Faith further.
+- Cap soft power: pack size soft-cap around **7**; don’t stack unlimited free rerolls per visit.
+
+### 7.4 Offer composition (civics)
+
+When rolling 3 civic choices:
+1. Build weighted pool = unowned one-shots with `era ≤ current` (+ rare `era == current+1`) + repeatable drafts with `era ≤ current`.
+2. Prefer at least **1** shop/commerce civic in the three when any are legal (~40% force-include if pool allows) so the new line actually shows up.
+3. No duplicate IDs on one screen.
 
 ---
 
@@ -295,16 +340,17 @@ Tune so Ancient expects ~2–3 Science level-ups before Capital if player Occupi
 - Show current tiers on the Science screen (Melee II · Ranged I · …).
 - Ahead-of-era troop offers get a **rare** badge (“Ahead of era”).
 - Non-troop cards show era chip.
-- After pick, brief banner: `Melee I → II` / `Battle Line level 2`.
+- Civics show rarity pip + era chip; shop civics use a **Commerce** tag.
+- After pick, brief banner: `Melee I → II` / `Battle Line level 2` / `Stall Permits — packs +1`.
 
 ---
 
 ## 10. Open follow-ups
 
-- Implement shop progression tree (§6.6) when shop UX is ready.
 - Exact weights for T=1 vs T=2 troop slots.
 - Whether Builders count toward the “troop” min/max (currently **yes**).
 - Missionary **class tier** (Faith) vs Prophetic Line (Science) — both can coexist.
 - Sim: apply % bonuses to reward helpers; gate progression offers to current era only. **Done** in `sim/era1_sim.py`.
-- Fatten civics to ~20+.
-- Retune Education/Banking caps if multi-era sims show resource explosion.
+- Shop civics (§7.2–7.3) — **designed**; sim wiring in progress.
+- Retune Education/Banking / shop civic power if multi-era sims show resource explosion.
+- Old Science §6.6 shop tree ideas are **superseded** by Civics Commerce line (keep Science focused on troops / formations / currency %).

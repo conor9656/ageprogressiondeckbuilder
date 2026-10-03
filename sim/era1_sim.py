@@ -172,6 +172,43 @@ PROG_PRO = {1: ("pro_alms", "pro", "faith_on_missionary"),
             7: ("pro_evangelists", "pro", "missionary_free_slot"),
             8: ("pro_communion", "pro", "doctrine_slot")}
 
+# Civics: (id, era, rarity C/U/R, family, once)
+# family: slot/draft/qol/shop
+CIVICS = [
+    ("code_of_laws", 1, "C", "slot", True),
+    ("craftsmanship", 1, "C", "draft", False),
+    ("early_empire", 1, "C", "slot", True),
+    ("theology", 1, "C", "slot", True),
+    ("military_training", 1, "C", "qol", True),
+    ("literacy", 1, "U", "draft", False),
+    ("citizenship", 2, "C", "slot", True),
+    ("patron_games", 2, "C", "draft", False),
+    ("civil_service", 2, "U", "qol", True),
+    ("state_church", 2, "U", "slot", True),
+    ("guild_charters", 3, "C", "draft", False),
+    ("standing_orders", 3, "U", "qol", True),
+    ("cabinet_office", 4, "U", "slot", True),
+    ("consular_reform", 5, "R", "qol", True),
+    # Commerce / shop
+    ("stall_permits", 1, "C", "shop", True),
+    ("fairground_toll", 1, "C", "shop", True),
+    ("pedlars_writ", 2, "U", "shop", True),
+    ("merchant_guild_charter", 2, "U", "shop", True),
+    ("tithe_rebate", 2, "U", "shop", True),
+    ("royal_boon", 3, "U", "shop", True),
+    ("courier_privilege", 3, "C", "shop", True),
+    ("double_stall", 3, "R", "shop", True),
+    ("auction_house", 4, "U", "shop", True),
+    ("edition_edict", 4, "U", "shop", True),
+    ("letter_of_credit", 5, "R", "shop", True),
+    ("promotion_subsidy", 5, "U", "shop", True),
+    ("world_fair", 6, "R", "shop", True),
+    ("disband_amnesty", 6, "U", "shop", True),
+    ("open_borders_market", 7, "R", "shop", True),
+]
+
+RARITY_WEIGHT = {"C": 10, "U": 4, "R": 1}
+
 
 @dataclass
 class Card:
@@ -257,6 +294,29 @@ class RunState:
     eng_flags: set = field(default_factory=set)
     pro_flags: set = field(default_factory=set)
     owned_prog: set = field(default_factory=set)
+    owned_civics: set = field(default_factory=set)
+    # Shop / commerce civics
+    pack_bonus: int = 0               # +visible offers both packs
+    synod_pack_bonus: int = 0         # Open Borders extra
+    pedlars_writ: bool = False        # free reroll once/era
+    royal_boon: bool = False          # free item once/era (or 2 with world fair)
+    royal_boon_charges: int = 1
+    auction_house: bool = False
+    letter_of_credit: bool = False
+    unit_cost_flat: int = 0           # Fairground Toll −2
+    bp_cost_pct: float = 0.0          # Merchant Guild −20%
+    doctrine_cost_pct: float = 0.0    # Tithe Rebate −20%
+    promo_cost_pct: float = 0.0       # Promotion Subsidy −25%
+    reroll_cost: int = 3              # Courier Privilege → 1
+    edition_weight_mult: float = 1.0  # Edition Edict
+    free_disbands_left: int = 0
+    gold_debt: int = 0
+    # Per-era shop charge tracking
+    era_free_reroll_left: int = 0
+    era_free_item_left: int = 0
+    era_auction_left: int = 0
+    era_credit_left: int = 0
+    era_free_synod_reroll_left: int = 0
 
     def soft_cap(self) -> int:
         return ERA_SOFT_CAP.get(self.era, 5)
@@ -1023,6 +1083,11 @@ def after_victory(run: RunState, settlement: dict, total_damage: int,
     unused = max(0, run.base_assaults - assaults_used)
     base_gold = REWARD_GOLD + unused
     run.gold += int(base_gold * (1 + run.gold_bonus_pct))
+    # Clear Letter of Credit debt from victory Gold
+    if run.gold_debt > 0:
+        pay = min(run.gold, run.gold_debt)
+        run.gold -= pay
+        run.gold_debt -= pay
     run.science += int(REWARD_SCIENCE * (1 + run.sci_bonus_pct))
     run.culture += int(REWARD_CULTURE * (1 + run.cul_bonus_pct))
     run.faith += int(REWARD_FAITH * (1 + run.faith_bonus_pct))
@@ -1288,48 +1353,187 @@ def apply_science(run: RunState, pick: str) -> None:
     run.era_just_began = False
 
 
+def civic_legal(run: RunState, cid: str) -> bool:
+    meta = next((c for c in CIVICS if c[0] == cid), None)
+    if not meta:
+        return False
+    _, _, _, family, once = meta
+    if once and cid in run.owned_civics:
+        return False
+    if cid == "code_of_laws" and run.policy_slots >= 5:
+        return False
+    if cid == "citizenship" and run.policy_slots >= 5:
+        return False
+    if cid == "cabinet_office" and run.policy_slots >= 5:
+        return False
+    if cid == "early_empire" and run.blueprint_slots >= 5:
+        return False
+    if cid == "theology" and run.doctrine_slots >= 4:
+        return False
+    if cid == "state_church" and run.doctrine_slots >= 4 and "doctrine_numeric" in run.pro_flags:
+        return False
+    if cid in ("craftsmanship", "literacy", "patron_games", "guild_charters") and len(run.policies) >= run.policy_slots:
+        return False
+    if cid == "stall_permits" and run.pack_bonus >= 2:
+        return False
+    if cid == "double_stall" and ("stall_permits" not in run.owned_civics or run.pack_bonus >= 2):
+        return False
+    if cid == "world_fair" and "stall_permits" not in run.owned_civics:
+        return False
+    return True
+
+
 def roll_civic_offers(run: RunState) -> list[str]:
-    pool = ["policy_slot", "draft_policy", "builder_slot", "missionary_slot",
-            "plus_regroup", "plus_hand"]
-    run.rng.shuffle(pool)
-    return pool[:3]
+    """Era-weighted random civics; rarity weights; ~40% force one shop civic if available."""
+    rng = run.rng
+    candidates = []
+    weights = []
+    for cid, era, rarity, family, once in CIVICS:
+        if era > run.era + 1:
+            continue
+        ahead = era == run.era + 1
+        if era > run.era and not ahead:
+            continue
+        if ahead and rng.random() >= 0.08:
+            continue
+        if not civic_legal(run, cid):
+            continue
+        w = RARITY_WEIGHT.get(rarity, 1)
+        if ahead:
+            w *= 0.35
+        if era < run.era:
+            w *= 0.6  # catch-up softer than current-era
+        candidates.append(cid)
+        weights.append(w)
+
+    if not candidates:
+        return ["craftsmanship", "military_training", "fairground_toll"][:3]
+
+    offers: list[str] = []
+    shop_pool = [c for c in candidates if next(x[3] for x in CIVICS if x[0] == c) == "shop"]
+    if shop_pool and rng.random() < 0.40:
+        pick = rng.choice(shop_pool)
+        offers.append(pick)
+
+    # Weighted sample without replacement
+    pool = list(zip(candidates, weights))
+    while len(offers) < 3 and pool:
+        total = sum(w for _, w in pool)
+        r = rng.random() * total
+        acc = 0.0
+        chosen_i = 0
+        for i, (cid, w) in enumerate(pool):
+            acc += w
+            if r <= acc:
+                chosen_i = i
+                break
+        cid = pool.pop(chosen_i)[0]
+        if cid not in offers:
+            offers.append(cid)
+    while len(offers) < 3:
+        offers.append("craftsmanship")
+    return offers[:3]
 
 
 def choose_civic(run: RunState, offers: list[str]) -> str:
     strat = run.strategy
     pref = {
-        "S4": ["builder_slot", "draft_policy", "plus_hand"],
-        "S5": ["missionary_slot", "draft_policy", "policy_slot"],
-        "S3": ["draft_policy", "policy_slot", "plus_hand"],
-        "S2": ["draft_policy", "plus_regroup", "policy_slot"],
-        "S6": ["draft_policy", "policy_slot", "plus_hand"],
-        "S1": ["draft_policy", "builder_slot", "plus_regroup"],
-    }.get(strat, ["draft_policy", "policy_slot", "plus_hand"])
+        "S4": ["stall_permits", "merchant_guild_charter", "early_empire", "double_stall",
+               "craftsmanship", "royal_boon", "pedlars_writ"],
+        "S5": ["theology", "tithe_rebate", "state_church", "royal_boon", "pedlars_writ",
+               "craftsmanship", "open_borders_market"],
+        "S3": ["stall_permits", "craftsmanship", "code_of_laws", "pedlars_writ", "royal_boon"],
+        "S2": ["craftsmanship", "pedlars_writ", "fairground_toll", "military_training",
+               "stall_permits", "royal_boon"],
+        "S6": ["craftsmanship", "code_of_laws", "stall_permits", "literacy", "royal_boon"],
+        "S1": ["merchant_guild_charter", "early_empire", "stall_permits", "craftsmanship",
+               "pedlars_writ", "military_training"],
+    }.get(strat, ["stall_permits", "craftsmanship", "pedlars_writ", "royal_boon", "code_of_laws"])
     for p in pref:
-        if p in offers:
-            if p == "policy_slot" and run.policy_slots >= 5:
-                continue
-            if p == "builder_slot" and run.blueprint_slots >= 5:
-                continue
-            if p == "missionary_slot" and run.doctrine_slots >= 4:
-                continue
+        if p in offers and civic_legal(run, p):
             return p
+    for o in offers:
+        if civic_legal(run, o):
+            return o
     return offers[0]
 
 
 def apply_civic(run: RunState, pick: str) -> None:
-    if pick == "policy_slot":
+    meta = next((c for c in CIVICS if c[0] == pick), None)
+    if meta and meta[4]:
+        run.owned_civics.add(pick)
+
+    if pick in ("code_of_laws", "citizenship", "cabinet_office"):
         run.policy_slots = min(5, run.policy_slots + 1)
-    elif pick == "builder_slot":
+    elif pick == "early_empire":
         run.blueprint_slots = min(5, run.blueprint_slots + 1)
-    elif pick == "missionary_slot":
+    elif pick == "theology":
         run.doctrine_slots = min(4, run.doctrine_slots + 1)
-    elif pick == "plus_regroup":
+    elif pick == "state_church":
+        if run.doctrine_slots < 4:
+            run.doctrine_slots += 1
+        else:
+            run.pro_flags.add("doctrine_numeric")
+    elif pick in ("military_training", "standing_orders"):
         run.base_regroups += 1
-    elif pick == "plus_hand":
+    elif pick in ("civil_service", "consular_reform"):
         run.hand_size += 1
-    elif pick == "draft_policy":
+    elif pick in ("craftsmanship", "literacy", "patron_games", "guild_charters"):
         draft_policy(run)
+    elif pick == "stall_permits":
+        run.pack_bonus = min(2, run.pack_bonus + 1)
+    elif pick == "double_stall":
+        run.pack_bonus = min(2, run.pack_bonus + 1)
+    elif pick == "world_fair":
+        run.pack_bonus = min(2, run.pack_bonus + 1)
+        run.royal_boon = True
+        run.royal_boon_charges = 2
+        run.era_free_item_left = max(run.era_free_item_left, 2)
+    elif pick == "pedlars_writ":
+        run.pedlars_writ = True
+        run.era_free_reroll_left = max(run.era_free_reroll_left, 1)
+    elif pick == "royal_boon":
+        run.royal_boon = True
+        run.royal_boon_charges = max(run.royal_boon_charges, 1)
+        run.era_free_item_left = max(run.era_free_item_left, run.royal_boon_charges)
+    elif pick == "fairground_toll":
+        run.unit_cost_flat = max(run.unit_cost_flat, 2)
+    elif pick == "merchant_guild_charter":
+        run.bp_cost_pct = max(run.bp_cost_pct, 0.20)
+    elif pick == "tithe_rebate":
+        run.doctrine_cost_pct = max(run.doctrine_cost_pct, 0.20)
+    elif pick == "courier_privilege":
+        run.reroll_cost = min(run.reroll_cost, 1)
+    elif pick == "auction_house":
+        run.auction_house = True
+        run.era_auction_left = max(run.era_auction_left, 1)
+    elif pick == "edition_edict":
+        run.edition_weight_mult = max(run.edition_weight_mult, 1.5)
+    elif pick == "letter_of_credit":
+        run.letter_of_credit = True
+        run.era_credit_left = max(run.era_credit_left, 1)
+    elif pick == "promotion_subsidy":
+        run.promo_cost_pct = max(run.promo_cost_pct, 0.25)
+    elif pick == "disband_amnesty":
+        run.free_disbands_left += 3
+    elif pick == "open_borders_market":
+        run.synod_pack_bonus = min(1, run.synod_pack_bonus + 1)
+        run.pedlars_writ = True
+        run.era_free_synod_reroll_left = max(run.era_free_synod_reroll_left, 1)
+
+
+def refresh_era_shop_charges(run: RunState) -> None:
+    """Reset once-per-era Commerce charges at era start."""
+    if run.pedlars_writ:
+        run.era_free_reroll_left = 1
+    if run.royal_boon:
+        run.era_free_item_left = run.royal_boon_charges
+    if run.auction_house:
+        run.era_auction_left = 1
+    if run.letter_of_credit:
+        run.era_credit_left = 1
+    if "open_borders_market" in run.owned_civics:
+        run.era_free_synod_reroll_left = 1
 
 
 def draft_policy(run: RunState) -> None:
@@ -1363,36 +1567,102 @@ def choose_policy(run: RunState, offers: list[str]) -> str:
 
 def shop(run: RunState, settlement: dict) -> None:
     rng = run.rng
+    pack_n = PACK_SIZE + run.pack_bonus
+    synod_n = pack_n + run.synod_pack_bonus
+
     # Once per era: guarantee a Wonder purchase option
     if not run.era_wonder_offered and run.wonder is None:
         run.era_wonder_available = rng.choice(list(WONDERS.keys()))
         run.era_wonder_offered = True
 
-    treasury = [roll_treasury_offer(run) for _ in range(PACK_SIZE)]
-    synod = [roll_synod_offer(run) for _ in range(PACK_SIZE)]
+    treasury = [roll_treasury_offer(run) for _ in range(pack_n)]
+    synod = [roll_synod_offer(run) for _ in range(synod_n)]
 
     # Append forced era wonder as an extra buyable row item
     if run.era_wonder_available and run.wonder is None:
         w = run.era_wonder_available
         treasury.append(("wonder", w, WONDERS[w][1]))
 
-    if run.strategy in ("S4", "S1") and run.gold >= 3:
-        if not any(o[0] == "blueprint" for o in treasury):
-            run.gold -= 3
-            treasury = [roll_treasury_offer(run) for _ in range(PACK_SIZE)]
+    # Royal Boon: zero out random offer(s) once per era
+    while run.era_free_item_left > 0:
+        pool = treasury + synod
+        if not pool:
+            break
+        target = rng.choice(pool)
+        zeroed = False
+        for lst in (treasury, synod):
+            for i, o in enumerate(lst):
+                if o is target:
+                    lst[i] = _zero_cost(o)
+                    zeroed = True
+                    break
+            if zeroed:
+                break
+        run.era_free_item_left -= 1
+
+    # Auction House: replace one low-value Treasury offer with same category
+    if run.era_auction_left > 0 and treasury:
+        worst_i = min(range(len(treasury)), key=lambda i: treasury_score(run, treasury[i]))
+        if treasury_score(run, treasury[worst_i]) <= 1:
+            cat = treasury[worst_i][0]
+            for _ in range(8):
+                fresh = roll_treasury_offer(run)
+                if fresh[0] == cat:
+                    treasury[worst_i] = fresh
+                    break
+            run.era_auction_left -= 1
+
+    # Pedlar's Writ / free Synod reroll — use instead of paying when bot wants a reroll
+    if run.strategy in ("S4", "S1") and not any(o[0] == "blueprint" for o in treasury):
+        if run.era_free_reroll_left > 0:
+            run.era_free_reroll_left -= 1
+            treasury = [roll_treasury_offer(run) for _ in range(pack_n)]
             if run.era_wonder_available and run.wonder is None:
                 w = run.era_wonder_available
                 treasury.append(("wonder", w, WONDERS[w][1]))
-    if run.strategy == "S5" and run.faith >= 3:
-        if not any(o[0] == "doctrine" for o in synod):
-            run.faith -= 3
-            synod = [roll_synod_offer(run) for _ in range(PACK_SIZE)]
+        elif run.gold >= run.reroll_cost:
+            run.gold -= run.reroll_cost
+            treasury = [roll_treasury_offer(run) for _ in range(pack_n)]
+            if run.era_wonder_available and run.wonder is None:
+                w = run.era_wonder_available
+                treasury.append(("wonder", w, WONDERS[w][1]))
+
+    if run.strategy == "S5" and not any(o[0] == "doctrine" for o in synod):
+        if run.era_free_synod_reroll_left > 0:
+            run.era_free_synod_reroll_left -= 1
+            synod = [roll_synod_offer(run) for _ in range(synod_n)]
+        elif run.era_free_reroll_left > 0:
+            run.era_free_reroll_left -= 1
+            synod = [roll_synod_offer(run) for _ in range(synod_n)]
+        elif run.faith >= run.reroll_cost:
+            run.faith -= run.reroll_cost
+            synod = [roll_synod_offer(run) for _ in range(synod_n)]
 
     buy_treasury(run, treasury)
     buy_synod(run, synod)
 
     if run.strategy == "S2":
         disband_supports(run)
+
+
+def _zero_cost(o: tuple) -> tuple:
+    if o[0] == "unit":
+        return (o[0], o[1], 0, o[3])
+    return (o[0], o[1], 0)
+
+
+def _apply_cost_mods(run: RunState, kind: str, cost: int) -> int:
+    if kind == "unit":
+        cost = max(1, cost - run.unit_cost_flat)
+    elif kind == "blueprint":
+        cost = max(1, int(cost * (1.0 - run.bp_cost_pct)))
+    elif kind == "doctrine":
+        cost = max(1, int(cost * (1.0 - run.doctrine_cost_pct)))
+    elif kind == "promotion":
+        cost = max(1, int(cost * (1.0 - run.promo_cost_pct)))
+    if run.cheap_units and kind == "unit":
+        cost = max(1, cost // 2)
+    return cost
 
 
 def roll_treasury_offer(run: RunState) -> tuple:
@@ -1404,26 +1674,24 @@ def roll_treasury_offer(run: RunState) -> tuple:
     if r < 0.38:
         kind = rng.choice(["M", "R", "C", "S"])
         cost = {1: 8, 2: 12, 3: 18}.get(run.tiers[kind], 12)
-        if run.cheap_units:
-            cost = max(4, cost // 2)
         edition = "standard"
         er = rng.random()
-        if er < 0.15:
+        edition_chance = 0.15 * run.edition_weight_mult
+        if er < edition_chance:
             edition = rng.choice(["gilded", "scholarly", "devout", "mercantile"])
             cost = int(cost * 1.5)
+        cost = _apply_cost_mods(run, "unit", cost)
         return ("unit", kind, cost, edition)
     if r < 0.72:
         rarities = [b for b, v in BLUEPRINTS.items() if v[0] == "C"] * 3 + \
                    [b for b, v in BLUEPRINTS.items() if v[0] == "U"] * 2 + \
                    [b for b, v in BLUEPRINTS.items() if v[0] == "R"]
         name = rng.choice(rarities)
-        return ("blueprint", name, BLUEPRINTS[name][1])
+        return ("blueprint", name, _apply_cost_mods(run, "blueprint", BLUEPRINTS[name][1]))
     if r < 0.92:
-        return ("promotion", "master_drill", 10)
+        return ("promotion", "master_drill", _apply_cost_mods(run, "promotion", 10))
     kind = rng.choice(["M", "R", "C", "S"])
-    cost = 8
-    if run.cheap_units:
-        cost = 4
+    cost = _apply_cost_mods(run, "unit", 8)
     return ("unit", kind, cost, "standard")
 
 
@@ -1434,7 +1702,7 @@ def roll_synod_offer(run: RunState) -> tuple:
                    [d for d, v in DOCTRINES.items() if v[0] == "U"] * 2 + \
                    [d for d, v in DOCTRINES.items() if v[0] == "R"]
         name = rng.choice(rarities)
-        return ("doctrine", name, DOCTRINES[name][1])
+        return ("doctrine", name, _apply_cost_mods(run, "doctrine", DOCTRINES[name][1]))
     return ("prophet", "sow_dissent", 15)
 
 
@@ -1448,8 +1716,8 @@ def buy_treasury(run: RunState, offers: list) -> None:
             continue
         if o[0] == "unit":
             _, kind, cost, edition = o
-            if run.gold >= cost and want_unit(run, kind):
-                run.gold -= cost
+            if _can_pay_gold(run, cost) and want_unit(run, kind):
+                _pay_gold(run, cost)
                 kw = {}
                 if edition == "gilded":
                     kw["bonus_might"] = 2
@@ -1459,25 +1727,44 @@ def buy_treasury(run: RunState, offers: list) -> None:
                 run.deck.append(c)
         elif o[0] == "blueprint":
             _, name, cost = o
-            if run.gold >= cost and name not in run.blueprints and len(run.blueprints) < run.blueprint_slots:
+            if _can_pay_gold(run, cost) and name not in run.blueprints and len(run.blueprints) < run.blueprint_slots:
                 if want_blueprint(run, name):
-                    run.gold -= cost
+                    _pay_gold(run, cost)
                     run.blueprints.append(name)
         elif o[0] == "promotion":
             _, name, cost = o
-            if run.gold >= cost:
+            if _can_pay_gold(run, cost):
                 targets = [c for c in run.deck if c.combat()]
                 if targets and want_promotion(run):
-                    run.gold -= cost
+                    _pay_gold(run, cost)
                     pref = preferred_class(run)
                     targets.sort(key=lambda c: (0 if c.kind == pref else 1))
                     targets[0].bonus_might += 2
         elif o[0] == "wonder":
             _, name, cost = o
-            if run.wonder is None and run.gold >= cost and want_wonder(run, name):
-                run.gold -= cost
+            if run.wonder is None and _can_pay_gold(run, cost) and want_wonder(run, name):
+                _pay_gold(run, cost)
                 apply_wonder(run, name)
                 run.era_wonder_available = None
+
+
+def _can_pay_gold(run: RunState, cost: int) -> bool:
+    if run.gold >= cost:
+        return True
+    if run.era_credit_left > 0 and cost - run.gold <= 10:
+        return True
+    return False
+
+
+def _pay_gold(run: RunState, cost: int) -> None:
+    if run.gold >= cost:
+        run.gold -= cost
+        return
+    # Letter of Credit: go into debt up to 10
+    short = cost - run.gold
+    run.gold = 0
+    run.gold_debt += short
+    run.era_credit_left = max(0, run.era_credit_left - 1)
 
 
 def buy_synod(run: RunState, offers: list) -> None:
@@ -1615,7 +1902,10 @@ def disband_supports(run: RunState) -> None:
     # Remove up to 2 supports if gold allows
     supports = [c for c in run.deck if c.kind in ("B", "Y")]
     for c in supports[:2]:
-        if run.gold >= run.disband_cost:
+        if run.free_disbands_left > 0:
+            run.free_disbands_left -= 1
+            run.deck.remove(c)
+        elif run.gold >= run.disband_cost:
             run.gold -= run.disband_cost
             run.deck.remove(c)
             run.disband_cost += 1
@@ -1667,6 +1957,7 @@ def play_eras(seed: int, strategy: str, max_era: int = 1) -> dict:
         run.era_just_began = True
         run.era_wonder_offered = False
         run.era_wonder_available = None
+        refresh_era_shop_charges(run)
         # Prophetic Tradition: free Great Prophet proxy at era start
         if "free_prophet_era" in run.pro_flags:
             run.faith += int(15 * (1 + run.faith_bonus_pct))

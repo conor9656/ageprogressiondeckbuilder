@@ -187,15 +187,16 @@ Falling behind Science still means outdated tiers (and Imperial Guard needs curr
 
 ### Civics level-ups (random offer of 3)
 
-Same presentation: bar fills → **3 random civic upgrades** → pick one. No troop mix rule (Culture doesn’t upgrade unit tiers).
+Same presentation: Culture bar fills → **3 random civic upgrades** → pick one. **Not a fixed tree.** No troop mix rule (Culture doesn’t upgrade unit tiers).
+
+**Era-weighted:** prefer current-era civics; rare chance of one-era-ahead. Earlier unowned one-shots can still appear (catch-up). Most are one-shot (removed from future offers once taken).
 
 Each civic does one of:
-- **+1 Policy slot** (start 2, max 5).
-- **Gain a Policy** (often itself a nested 1-of-3 Policy draft).
-- **+1 Builder or Missionary slot** (start 2 / 1, max 5 / 4).
-- Small rule upgrades (e.g. +1 hand size, +1 Regroup).
+- **+1 Policy / Builder / Missionary slot**, or **draft a Policy**.
+- Small rule upgrades (hand size, Regroup).
+- **Commerce / shop** upgrades (pack size, free era reroll, free era item, discounts) — see `SCIENCE_UPGRADES.md` §7.2–7.3.
 
-Era-weighting for civics mirrors Science (current-era pool + rare ahead-of-era). Details expand with the civic pool later.
+Rarity (C/U/R) weights offer chance. Full pool + Stall Permits / Pedlar's Writ / Royal Boon: **`SCIENCE_UPGRADES.md` §7**.
 
 ---
 
