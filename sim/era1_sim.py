@@ -1641,12 +1641,12 @@ def choose_civic(run: RunState, offers: list[str]) -> str:
                "corvee_exemption", "stall_permits", "early_empire", "craftsmanship"],
         "S5": ["lay_preachers", "chaplains_escort", "parish_expansion", "silent_benediction",
                "apostolic_double", "theology", "tithe_rebate", "craftsmanship"],
-        "S3": ["stall_permits", "craftsmanship", "code_of_laws", "corvee_exemption", "lay_preachers"],
-        "S2": ["craftsmanship", "corvee_exemption", "lay_preachers", "military_training", "stall_permits"],
-        "S6": ["craftsmanship", "code_of_laws", "stall_permits", "literacy", "works_department"],
-        "S1": ["works_department", "clerks_retinue", "standing_order_of_works", "merchant_guild_charter",
-               "early_empire", "corvee_exemption", "craftsmanship"],
-    }.get(strat, ["lay_preachers", "corvee_exemption", "stall_permits", "craftsmanship", "parish_expansion"])
+        "S3": ["treasury_windfall", "stall_permits", "craftsmanship", "code_of_laws", "corvee_exemption"],
+        "S2": ["treasury_windfall", "craftsmanship", "corvee_exemption", "lay_preachers", "stall_permits"],
+        "S6": ["treasury_windfall", "craftsmanship", "code_of_laws", "stall_permits", "literacy"],
+        "S1": ["works_department", "clerks_retinue", "treasury_windfall", "standing_order_of_works",
+               "merchant_guild_charter", "early_empire", "corvee_exemption"],
+    }.get(strat, ["treasury_windfall", "lay_preachers", "corvee_exemption", "stall_permits", "craftsmanship"])
     for p in pref:
         if p in offers and civic_legal(run, p):
             return p

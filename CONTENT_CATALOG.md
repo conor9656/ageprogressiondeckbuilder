@@ -99,9 +99,11 @@ Full draft pool (**40**): **`DOCTRINES.md`**. Synod pack; primary home for cappe
 - Non-troop Science includes **progression trees** (Education / Banking / Devotion / Arts / Engineering / Prophecy) — **current-era node only**, miss forever.
 - Civics: same 1-of-3; **era-weighted random** (not a fixed tree); no troop quota. Includes **Commerce** shop upgrades and **Works/Ministry** Builder·Missionary ladders (free slot → float → free use → ×2; +slots across eras).
 
+New idea placements (Wonders / Mime / Bond / etc.): **`CARD_ASSESSMENT_IDEAS.md`**.
+
 ## 9. Shop — packs, editions, promotions
 
-See `GAME_DESIGN.md` §8 for rules. Stubs below.
+See `GAME_DESIGN.md` §8 for rules. Stubs below. Commerce civics already buff pack size / rerolls / free items.
 
 ### Pack layout (provisional)
 

@@ -4,6 +4,12 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-09 — Idea intake batch (Wonders / BP / Policies / Doctrine / Civic)
+- Assessed spoken bonuses in `CARD_ASSESSMENT_IDEAS.md` (placement + tuned numbers).
+- **Skipped** per-class +Mom (dupe of Science tiers / class Policies). Shop Commerce already live.
+- Added: Wonders Parade Grounds / Theater of War / Scriptoria Spire / Safe Conduct; Blueprints Court Mime / Investment Bond / Kaleidoscope Orders; Policies Steady Advance / Court Fashion; Doctrine Prophetic Succession; Civic Treasury Windfall.
+- Wired into `era1_sim.py`. Content dense enough for first full multi-era sim.
+
 ## 2026-10-09 — Works/Ministry Builder & Missionary upgrades
 - Shared support ladder (Science + Civics): **free slot → float → free use → ×2**, plus **+slots** on eras 2/4/6.
 - Missionary civics: Lay Preachers (E1 free slot), Chaplain's Escort (E2 float), Silent Benediction (E3 free use), Parish/Synodal/Cathedral +slots, Apostolic Double (E6 ×2).
