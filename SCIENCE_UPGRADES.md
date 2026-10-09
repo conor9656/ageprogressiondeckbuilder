@@ -175,7 +175,7 @@ Max: **+96% Culture**.
 
 ### 6.3 Engineering Line (Builder progression)
 
-Eight era nodes; **only three** grant +1 Builder slot (Eras **2, 5, 8**). Others are Builder-facing abilities that grow with the ages.
+Eight era nodes; **only three** grant +1 Builder slot (Eras **2, 5, 8**). Others are Builder-facing abilities that grow with the ages. Civics (§7.5) mirror several of these so Culture can also push the Builder fantasy.
 
 | Era | ID | Name | Effect |
 |---|---|---|---|
@@ -188,9 +188,11 @@ Eight era nodes; **only three** grant +1 Builder slot (Eras **2, 5, 8**). Others
 | 7 | ENG7 | Workshop Relay | Once per settlement: fire one equipped Blueprint **without** playing a Builder |
 | 8 | ENG8 | Planetary Engineering | **+1 Builder slot** (cap still 5 — if maxed, Blueprint numeric +25% instead) |
 
+**Late spike (Science, era 6–7, also offered as civic):** **Masterwork Code** — all Blueprint numeric effects **×2** for the rest of the run (stacks multiplicatively after Prefab / wall bonuses). Soft-cap: do not stack a second ×2.
+
 ### 6.4 Prophetic Line (Missionary / Doctrine / Prophet progression)
 
-Mirror of Engineering for Faith supports. Slot bumps on Eras **2, 5, 8**.
+Mirror of Engineering for Faith supports. Slot bumps on Eras **2, 5, 8**. Early free-slot / float / free-use beats also appear on **Civics §7.5** so Faith strategies can path through Culture.
 
 | Era | ID | Name | Effect |
 |---|---|---|---|
@@ -202,6 +204,20 @@ Mirror of Engineering for Faith supports. Slot bumps on Eras **2, 5, 8**.
 | 6 | PRO6 | Prophetic Tradition | Gain a **free Great Prophet** at the start of each era |
 | 7 | PRO7 | Evangelists | Once per settlement: a played Missionary **does not consume a formation slot** (Helping Hand for Faith) |
 | 8 | PRO8 | World Communion | **+1 Doctrine slot** (if maxed, Doctrine numeric +20% instead) |
+
+**Late spike:** **Apostolic Double** — all Doctrine rewards from Missionary fires **×2** (stacks with Illuminated Canon %). Soft-cap: one ×2 only.
+
+### 6.4b Support ability ladder (shared language)
+
+Same three beats for **Builder** and **Missionary**, whether rolled on Science or Civics:
+
+| Beat | Meaning | Typical era |
+|---|---|---|
+| **Free slot** | Played support **does not consume a formation slot** (once/settlement unless noted) | 1–2 |
+| **Float** | Opening hand always includes that support; **does not count** toward hand size (hand is effectively +1) | 2–4 |
+| **Free use** | Once/settlement: fire one equipped Blueprint / Doctrine **without** playing the support | 3–4 |
+| **Double** | All that support’s fired effects **×2** | 6–7 |
+| **+Slot** | +1 Blueprint or Doctrine capacity (overflow → numeric %) | 2, 4, 5, 8… |
 
 ### 6.5 Formation drills & misc unlocks (keep / expand)
 
@@ -222,6 +238,8 @@ Mirror of Engineering for Faith supports. Slot bumps on Eras **2, 5, 8**.
 | NS15 | 4 | General Staff Maps | Pick one formation +2 levels |
 | NS16 | 5 | Staff College | All formations +1 level |
 | NS17 | 6 | Combined Doctrine Manual | Combined Arms & Grand Army +1 level |
+| NS17b | 6 | Masterwork Code | All Blueprint numeric effects **×2** (soft-cap one ×2; also Civic CVB06) |
+| NS17c | 6 | Apostolic Double | All Doctrine rewards **×2** (soft-cap one ×2; also Civic CVM06) |
 | NS18 | 7 | Rapid Deployment | +1 Regroup permanently |
 | NS19 | 8 | Networked Command | +1 hand size |
 
@@ -312,12 +330,43 @@ Shop UX is stable enough to put these on **Civics** (Culture), not Science. Effe
 - Royal Boon / Letter of Credit / Fairground Toll / Guild Charter are the **economy** fantasy — stretch Gold/Faith further.
 - Cap soft power: pack size soft-cap around **7**; don’t stack unlimited free rerolls per visit.
 
-### 7.4 Offer composition (civics)
+### 7.5 Works & Ministry civics (Builder / Missionary)
+
+Culture-side path for support upgrades. Same beats as Science Engineering / Prophecy (§6.4b). If you already own the effect from Science, the civic is illegal (reroll) — no double-dip.
+
+#### Missionary / Prophet ladder (user request)
+
+| ID | Era | R | Civic | Effect | Once? |
+|---|---|---|---|---|---|
+| CVM01 | 1 | C | **Lay Preachers** | Once/settlement: played Missionary **does not consume a formation slot** | Yes |
+| CVM02 | 2 | C | **Parish Expansion** | **+1 Doctrine slot** (if maxed → Doctrine numeric +15%) | Yes |
+| CVM03 | 2 | U | **Chaplain's Escort** | Opening hand: **floating Missionary** (does not count toward hand size) | Yes |
+| CVM04 | 3 | U | **Silent Benediction** | Once/settlement: fire one Doctrine **without** playing a Missionary (**free use**) | Yes |
+| CVM05 | 4 | C | **Synodal College** | **+1 Doctrine slot** (overflow → +15% Doctrine numeric) | Yes |
+| CVM06 | 6 | R | **Apostolic Double** | All Doctrine rewards from Missionary fires **×2** (one ×2 soft-cap) | Yes |
+| CVM07 | 6 | U | **Cathedral Chapter** | **+1 Doctrine slot** | Yes |
+
+#### Builder / Works ladder (mirror)
+
+| ID | Era | R | Civic | Effect | Once? |
+|---|---|---|---|---|---|
+| CVB01 | 1 | C | **Corvée Exemption** | Once/settlement: played Builder **does not consume a formation slot** (civic Helping Hand) | Yes |
+| CVB02 | 2 | C | **Works Department** | **+1 Blueprint slot** (if maxed → Blueprint numeric +15%) | Yes |
+| CVB03 | 2 | U | **Clerk's Retinue** | Opening hand: **floating Builder** (does not count toward hand size) | Yes |
+| CVB04 | 3 | U | **Standing Order of Works** | Once/settlement: fire one Blueprint **without** playing a Builder (**free use**) | Yes |
+| CVB05 | 4 | C | **Public Works Board** | **+1 Blueprint slot** | Yes |
+| CVB06 | 6 | R | **Masterwork Code** | All Blueprint numeric effects **×2** (one ×2 soft-cap) | Yes |
+| CVB07 | 6 | U | **Grand Atelier** | **+1 Blueprint slot** | Yes |
+
+**Slot cadence (combined Science + Civics):** expect Doctrine/Blueprint capacity to climb across eras 2 → 4 → 5/6 → 8 if the player prioritises supports. Caps remain **5 Blueprint / 4 Doctrine**; further +slot rolls convert to numeric %.
+
+### 7.6 Offer composition (civics)
 
 When rolling 3 civic choices:
 1. Build weighted pool = unowned one-shots with `era ≤ current` (+ rare `era == current+1`) + repeatable drafts with `era ≤ current`.
-2. Prefer at least **1** shop/commerce civic in the three when any are legal (~40% force-include if pool allows) so the new line actually shows up.
-3. No duplicate IDs on one screen.
+2. Prefer at least **1** shop/commerce civic in the three when any are legal (~35% force-include if pool allows).
+3. Prefer at least **1** Works/Ministry civic when legal (~30% force-include) so Builder/Missionary lines show up beside Commerce.
+4. No duplicate IDs on one screen.
 
 ---
 

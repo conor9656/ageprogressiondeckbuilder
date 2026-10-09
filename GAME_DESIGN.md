@@ -195,8 +195,9 @@ Each civic does one of:
 - **+1 Policy / Builder / Missionary slot**, or **draft a Policy**.
 - Small rule upgrades (hand size, Regroup).
 - **Commerce / shop** upgrades (pack size, free era reroll, free era item, discounts) — see `SCIENCE_UPGRADES.md` §7.2–7.3.
+- **Works / Ministry** support upgrades (Builder & Missionary: free formation slot → floating hand card → free use without playing support → effect ×2; +slots on eras 2/4/6) — §7.5.
 
-Rarity (C/U/R) weights offer chance. Full pool + Stall Permits / Pedlar's Writ / Royal Boon: **`SCIENCE_UPGRADES.md` §7**.
+Rarity (C/U/R) weights offer chance. Full pool: **`SCIENCE_UPGRADES.md` §7**.
 
 ---
 

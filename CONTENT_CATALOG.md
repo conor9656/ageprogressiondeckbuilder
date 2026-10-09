@@ -97,7 +97,7 @@ Full draft pool (**40**): **`DOCTRINES.md`**. Synod pack; primary home for cappe
 - Soft-cap by era; rare ahead-of-era; same-class weight recovers next era.
 - Science screen: **min 1 / max 2** of the three offers are troop-like; rest non-troop.
 - Non-troop Science includes **progression trees** (Education / Banking / Devotion / Arts / Engineering / Prophecy) — **current-era node only**, miss forever.
-- **Civics:** same 1-of-3; **era-weighted random** (not a fixed tree); no troop quota. Includes **Commerce** shop upgrades (Stall Permits, Pedlar's Writ, Royal Boon, …) — `SCIENCE_UPGRADES.md` §7.
+- Civics: same 1-of-3; **era-weighted random** (not a fixed tree); no troop quota. Includes **Commerce** shop upgrades and **Works/Ministry** Builder·Missionary ladders (free slot → float → free use → ×2; +slots across eras).
 
 ## 9. Shop — packs, editions, promotions
 

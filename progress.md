@@ -4,6 +4,13 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-09 — Works/Ministry Builder & Missionary upgrades
+- Shared support ladder (Science + Civics): **free slot → float → free use → ×2**, plus **+slots** on eras 2/4/6.
+- Missionary civics: Lay Preachers (E1 free slot), Chaplain's Escort (E2 float), Silent Benediction (E3 free use), Parish/Synodal/Cathedral +slots, Apostolic Double (E6 ×2).
+- Builder mirrors: Corvée Exemption, Clerk's Retinue, Standing Order of Works, Works/Public Works/Atelier +slots, Masterwork Code ×2.
+- Science also offers Masterwork Code / Apostolic Double as era-6 drills. No double-dip if already owned via the other track.
+- Docs §6.4b + §7.5; sim wired.
+
 ## 2026-10-03 — Shop civics (Commerce line)
 - Civics clarified: **era-weighted random 1-of-3**, not a fixed tree (current-era bias + rare ahead; one-shots drop once owned).
 - Added Commerce shop civics to Civics (not Science): **Stall Permits** (+1 pack size, C), **Pedlar's Writ** (free reroll/era, U), **Royal Boon** (free item/era, U), plus Fairground Toll, Merchant Guild Charter, Tithe Rebate, Courier Privilege, Double Stall, Auction House, Edition Edict, Letter of Credit, Promotion Subsidy, World Fair, Disband Amnesty, Open Borders Market.

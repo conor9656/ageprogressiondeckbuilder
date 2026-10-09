@@ -132,6 +132,8 @@ NON_TROOP_SCI = [
     ("general_staff_maps", 4, "drill"),
     ("staff_college", 5, "drill"),
     ("combined_doctrine_manual", 6, "drill"),
+    ("masterwork_code_sci", 6, "drill"),
+    ("apostolic_double_sci", 6, "drill"),
     ("rapid_deployment", 7, "drill"),
     ("networked_command", 8, "drill"),
 ]
@@ -205,6 +207,21 @@ CIVICS = [
     ("world_fair", 6, "R", "shop", True),
     ("disband_amnesty", 6, "U", "shop", True),
     ("open_borders_market", 7, "R", "shop", True),
+    # Works / Ministry (Builder + Missionary)
+    ("corvee_exemption", 1, "C", "works", True),
+    ("lay_preachers", 1, "C", "ministry", True),
+    ("works_department", 2, "C", "works", True),
+    ("parish_expansion", 2, "C", "ministry", True),
+    ("clerks_retinue", 2, "U", "works", True),
+    ("chaplains_escort", 2, "U", "ministry", True),
+    ("standing_order_of_works", 3, "U", "works", True),
+    ("silent_benediction", 3, "U", "ministry", True),
+    ("public_works_board", 4, "C", "works", True),
+    ("synodal_college", 4, "C", "ministry", True),
+    ("masterwork_code", 6, "R", "works", True),
+    ("apostolic_double", 6, "R", "ministry", True),
+    ("grand_atelier", 6, "U", "works", True),
+    ("cathedral_chapter", 6, "U", "ministry", True),
 ]
 
 RARITY_WEIGHT = {"C": 10, "U": 4, "R": 1}
@@ -244,6 +261,8 @@ class FightMods:
     draw_on_builder_used: bool = False
     missionary_free_slot_used: bool = False
     bp_without_builder_used: bool = False
+    doctrine_without_missionary_used: bool = False
+    builder_free_slot_used: bool = False
 
 
 @dataclass
@@ -584,10 +603,26 @@ def evaluate_play(run: RunState, cards: list[Card], fight: FightMods,
     }
 
 
+def _grant_blueprint_slot(run: RunState, overflow_pct: float = 0.15) -> None:
+    if run.blueprint_slots < 5:
+        run.blueprint_slots += 1
+    else:
+        run.builder_scale = max(run.builder_scale, run.builder_scale * (1.0 + overflow_pct))
+
+
+def _grant_doctrine_slot(run: RunState) -> None:
+    if run.doctrine_slots < 4:
+        run.doctrine_slots += 1
+    else:
+        run.pro_flags.add("doctrine_numeric")
+
+
 def _bp_scale(run: RunState, name: str) -> float:
     sc = run.builder_scale
     if name in WALL_BLUEPRINTS and "wall_bp_bonus" in run.eng_flags:
         sc *= 1.5
+    if "bp_double" in run.eng_flags:
+        sc *= 2.0
     return sc
 
 
@@ -603,24 +638,29 @@ def trigger_blueprint(run: RunState, name: str, fight: FightMods, hand: list[Car
     elif effect == "ignore_walls_next":
         fight.ignore_walls_next = True
     elif effect == "draw2":
-        draw_cards(hand, draw, discard, 2, run.rng)
+        n = 4 if "bp_double" in run.eng_flags else 2
+        draw_cards(hand, draw, discard, n, run.rng)
     elif effect == "next_might10":
         fight.next_might += int(10 * sc)
     elif effect == "next_unit_might_50":
-        fight.next_unit_might_pct = max(fight.next_unit_might_pct, 0.5 * (sc / max(1.0, run.builder_scale)))
+        base = 0.5 * (sc / max(1.0, run.builder_scale / (2.0 if "bp_double" in run.eng_flags else 1.0)))
+        fight.next_unit_might_pct = max(fight.next_unit_might_pct, min(1.0, base))
     elif effect == "remove_walls":
         fight.walls_removed = True
     elif effect == "plus_regroup":
-        fight.plus_regroup += 1
+        fight.plus_regroup += 2 if "bp_double" in run.eng_flags else 1
     elif effect == "next_mom2":
         fight.next_mom += int(2 * sc) if sc >= 1 else 2
         fight.next_mom += 2
     elif effect == "plus_assault":
-        fight.plus_assault += 1
+        fight.plus_assault += 2 if "bp_double" in run.eng_flags else 1
     elif effect == "next_unit_might_25":
-        fight.next_unit_might_pct = max(fight.next_unit_might_pct, 0.25)
+        fight.next_unit_might_pct = max(fight.next_unit_might_pct, 0.50 if "bp_double" in run.eng_flags else 0.25)
     elif effect == "sci_mom_scale":
-        fight.next_mom_mult = max(fight.next_mom_mult, 1.0 + 0.1 * run.sci_level)
+        mult = 1.0 + 0.1 * run.sci_level
+        if "bp_double" in run.eng_flags:
+            mult = 1.0 + 0.2 * run.sci_level
+        fight.next_mom_mult = max(fight.next_mom_mult, mult)
     elif effect == "helping_hand":
         fight.helping_hand = True
 
@@ -636,12 +676,15 @@ def trigger_doctrine(run: RunState, name: str, fight: FightMods) -> None:
 def apply_doctrine_rewards(run: RunState, fight: FightMods, total_damage: int,
                            settlement: dict, occupied_choice: str) -> None:
     doc_mult = 1.2 if "doctrine_numeric" in run.pro_flags else 1.0
+    if "doc_double" in run.pro_flags:
+        doc_mult *= 2.0
     for name in fight.doctrines_fired:
         effect = DOCTRINES[name][2]
         if effect == "gold15":
             run.gold += int(15 * doc_mult * (1 + run.gold_bonus_pct))
         elif effect == "sci_pct":
-            run.science += min(40, int(total_damage * 0.08 * doc_mult * (1 + run.sci_bonus_pct)))
+            run.science += min(80 if "doc_double" in run.pro_flags else 40,
+                               int(total_damage * 0.08 * doc_mult * (1 + run.sci_bonus_pct)))
         elif effect == "faith10":
             run.faith += int(10 * doc_mult * (1 + run.faith_bonus_pct))
             if occupied_choice == "temple":
@@ -700,7 +743,11 @@ def greedy_assault(run: RunState, hand: list[Card], fight: FightMods,
     best_eval: dict = {"damage": 0, "form": "none"}
 
     max_k = 5
-    free_builder = (fight.helping_hand or "helping_hand" in run.blueprints) and any(c.kind == "B" for c in hand)
+    free_builder = (
+        (fight.helping_hand or "helping_hand" in run.blueprints
+         or ("builder_free_slot" in run.eng_flags and not fight.builder_free_slot_used))
+        and any(c.kind == "B" for c in hand)
+    )
     free_missionary = (
         "missionary_free_slot" in run.pro_flags
         and not fight.missionary_free_slot_used
@@ -744,6 +791,8 @@ def greedy_assault(run: RunState, hand: list[Card], fight: FightMods,
             draw_on_builder_used=fight.draw_on_builder_used,
             missionary_free_slot_used=fight.missionary_free_slot_used,
             bp_without_builder_used=fight.bp_without_builder_used,
+            doctrine_without_missionary_used=fight.doctrine_without_missionary_used,
+            builder_free_slot_used=fight.builder_free_slot_used,
         )
         # Trigger one BP/Doc per support in play (order: builders then missionaries)
         bps = [b for b in run.blueprints if b not in fe.blueprints_fired]
@@ -910,12 +959,17 @@ def fight_settlement(run: RunState, settlement: dict) -> tuple[bool, int, int]:
         _pull_floating_support(hand, draw, discard, "Y", rng)
 
     fight = FightMods()
-    # Workshop Relay: fire one Blueprint at settlement start without playing a Builder
+    # Workshop Relay / Standing Order: fire one Blueprint at settlement start without Builder
     if "bp_without_builder" in run.eng_flags and run.blueprints:
         avail = list(run.blueprints)
         bp = pick_blueprint(run, avail, settlement, fight)
         trigger_blueprint(run, bp, fight, hand, draw, discard)
         fight.bp_without_builder_used = True
+    # Silent Benediction: fire one Doctrine at settlement start without Missionary
+    if "doctrine_without_missionary" in run.pro_flags and run.doctrines:
+        avail = list(run.doctrines)
+        trigger_doctrine(run, pick_doctrine(run, avail), fight)
+        fight.doctrine_without_missionary_used = True
 
     assaults = run.base_assaults
     regroups = run.base_regroups
@@ -959,6 +1013,8 @@ def fight_settlement(run: RunState, settlement: dict) -> tuple[bool, int, int]:
                 if "draw_on_builder" in run.eng_flags and not fight.draw_on_builder_used:
                     draw_cards(hand, draw, discard, 1, rng)
                     fight.draw_on_builder_used = True
+                if "builder_free_slot" in run.eng_flags and not fight.builder_free_slot_used:
+                    fight.builder_free_slot_used = True
                 fight.builder_played = True
             if c.kind == "Y":
                 avail = [d for d in run.doctrines if d not in fight.doctrines_fired]
@@ -1180,9 +1236,18 @@ def roll_science_offers(run: RunState) -> list[str]:
     rng = run.rng
     t_count = 1 if rng.random() < 0.60 else 2
     troops = weighted_troop_offers(run, t_count)
-    # Drills: era <= current (+ rare ahead)
-    pool = [n for n, e, fam in NON_TROOP_SCI
-            if fam == "drill" and (e <= run.era or rng.random() < 0.08)]
+    # Drills: era <= current (+ rare ahead); skip doubles already owned via civic/sci
+    pool = []
+    for n, e, fam in NON_TROOP_SCI:
+        if fam != "drill":
+            continue
+        if not (e <= run.era or rng.random() < 0.08):
+            continue
+        if n == "masterwork_code_sci" and "bp_double" in run.eng_flags:
+            continue
+        if n == "apostolic_double_sci" and "doc_double" in run.pro_flags:
+            continue
+        pool.append(n)
     # Progression: current-era node only, if not already owned
     for tree in (PROG_EDU, PROG_BANK, PROG_DEV, PROG_ART, PROG_ENG, PROG_PRO):
         if run.era in tree:
@@ -1290,10 +1355,7 @@ def apply_science(run: RunState, pick: str) -> None:
             elif kind == "eng":
                 run.eng_flags.add(val)
                 if val == "builder_slot":
-                    if run.blueprint_slots < 5:
-                        run.blueprint_slots += 1
-                    else:
-                        run.builder_scale = max(run.builder_scale, run.builder_scale + 0.25)
+                    _grant_blueprint_slot(run, overflow_pct=0.25)
                 elif val == "bp_numeric":
                     run.builder_scale = max(run.builder_scale, run.builder_scale * 1.25)
                 elif val == "wall_bp_bonus":
@@ -1301,10 +1363,7 @@ def apply_science(run: RunState, pick: str) -> None:
             elif kind == "pro":
                 run.pro_flags.add(val)
                 if val == "doctrine_slot":
-                    if run.doctrine_slots < 4:
-                        run.doctrine_slots += 1
-                    else:
-                        run.pro_flags.add("doctrine_numeric")
+                    _grant_doctrine_slot(run)
             run.era_just_began = False
             return
 
@@ -1338,6 +1397,10 @@ def apply_science(run: RunState, pick: str) -> None:
     elif pick == "combined_doctrine_manual":
         run.form_levels["combined_arms"] += 1
         run.form_levels["grand_army"] += 1
+    elif pick == "masterwork_code_sci":
+        run.eng_flags.add("bp_double")
+    elif pick == "apostolic_double_sci":
+        run.pro_flags.add("doc_double")
     elif pick == "rapid_deployment":
         run.base_regroups += 1
     elif pick == "networked_command":
@@ -1380,11 +1443,28 @@ def civic_legal(run: RunState, cid: str) -> bool:
         return False
     if cid == "world_fair" and "stall_permits" not in run.owned_civics:
         return False
+    # Works / Ministry — illegal if Science already granted the same beat
+    if cid == "corvee_exemption" and "builder_free_slot" in run.eng_flags:
+        return False
+    if cid == "lay_preachers" and "missionary_free_slot" in run.pro_flags:
+        return False
+    if cid == "clerks_retinue" and "float_builder" in run.eng_flags:
+        return False
+    if cid == "chaplains_escort" and "float_missionary" in run.pro_flags:
+        return False
+    if cid == "standing_order_of_works" and "bp_without_builder" in run.eng_flags:
+        return False
+    if cid == "silent_benediction" and "doctrine_without_missionary" in run.pro_flags:
+        return False
+    if cid == "masterwork_code" and "bp_double" in run.eng_flags:
+        return False
+    if cid == "apostolic_double" and "doc_double" in run.pro_flags:
+        return False
     return True
 
 
 def roll_civic_offers(run: RunState) -> list[str]:
-    """Era-weighted random civics; rarity weights; ~40% force one shop civic if available."""
+    """Era-weighted random civics; rarity weights; force-include shop / works-ministry sometimes."""
     rng = run.rng
     candidates = []
     weights = []
@@ -1410,10 +1490,18 @@ def roll_civic_offers(run: RunState) -> list[str]:
         return ["craftsmanship", "military_training", "fairground_toll"][:3]
 
     offers: list[str] = []
-    shop_pool = [c for c in candidates if next(x[3] for x in CIVICS if x[0] == c) == "shop"]
-    if shop_pool and rng.random() < 0.40:
-        pick = rng.choice(shop_pool)
-        offers.append(pick)
+
+    def _family(cid: str) -> str:
+        return next(x[3] for x in CIVICS if x[0] == cid)
+
+    shop_pool = [c for c in candidates if _family(c) == "shop"]
+    support_pool = [c for c in candidates if _family(c) in ("works", "ministry")]
+    if shop_pool and rng.random() < 0.35:
+        offers.append(rng.choice(shop_pool))
+    if support_pool and rng.random() < 0.30 and len(offers) < 3:
+        pick = rng.choice(support_pool)
+        if pick not in offers:
+            offers.append(pick)
 
     # Weighted sample without replacement
     pool = list(zip(candidates, weights))
@@ -1438,17 +1526,16 @@ def roll_civic_offers(run: RunState) -> list[str]:
 def choose_civic(run: RunState, offers: list[str]) -> str:
     strat = run.strategy
     pref = {
-        "S4": ["stall_permits", "merchant_guild_charter", "early_empire", "double_stall",
-               "craftsmanship", "royal_boon", "pedlars_writ"],
-        "S5": ["theology", "tithe_rebate", "state_church", "royal_boon", "pedlars_writ",
-               "craftsmanship", "open_borders_market"],
-        "S3": ["stall_permits", "craftsmanship", "code_of_laws", "pedlars_writ", "royal_boon"],
-        "S2": ["craftsmanship", "pedlars_writ", "fairground_toll", "military_training",
-               "stall_permits", "royal_boon"],
-        "S6": ["craftsmanship", "code_of_laws", "stall_permits", "literacy", "royal_boon"],
-        "S1": ["merchant_guild_charter", "early_empire", "stall_permits", "craftsmanship",
-               "pedlars_writ", "military_training"],
-    }.get(strat, ["stall_permits", "craftsmanship", "pedlars_writ", "royal_boon", "code_of_laws"])
+        "S4": ["clerks_retinue", "works_department", "standing_order_of_works", "masterwork_code",
+               "corvee_exemption", "stall_permits", "early_empire", "craftsmanship"],
+        "S5": ["lay_preachers", "chaplains_escort", "parish_expansion", "silent_benediction",
+               "apostolic_double", "theology", "tithe_rebate", "craftsmanship"],
+        "S3": ["stall_permits", "craftsmanship", "code_of_laws", "corvee_exemption", "lay_preachers"],
+        "S2": ["craftsmanship", "corvee_exemption", "lay_preachers", "military_training", "stall_permits"],
+        "S6": ["craftsmanship", "code_of_laws", "stall_permits", "literacy", "works_department"],
+        "S1": ["works_department", "clerks_retinue", "standing_order_of_works", "merchant_guild_charter",
+               "early_empire", "corvee_exemption", "craftsmanship"],
+    }.get(strat, ["lay_preachers", "corvee_exemption", "stall_permits", "craftsmanship", "parish_expansion"])
     for p in pref:
         if p in offers and civic_legal(run, p):
             return p
@@ -1466,14 +1553,11 @@ def apply_civic(run: RunState, pick: str) -> None:
     if pick in ("code_of_laws", "citizenship", "cabinet_office"):
         run.policy_slots = min(5, run.policy_slots + 1)
     elif pick == "early_empire":
-        run.blueprint_slots = min(5, run.blueprint_slots + 1)
+        _grant_blueprint_slot(run)
     elif pick == "theology":
-        run.doctrine_slots = min(4, run.doctrine_slots + 1)
+        _grant_doctrine_slot(run)
     elif pick == "state_church":
-        if run.doctrine_slots < 4:
-            run.doctrine_slots += 1
-        else:
-            run.pro_flags.add("doctrine_numeric")
+        _grant_doctrine_slot(run)
     elif pick in ("military_training", "standing_orders"):
         run.base_regroups += 1
     elif pick in ("civil_service", "consular_reform"):
@@ -1520,6 +1604,27 @@ def apply_civic(run: RunState, pick: str) -> None:
         run.synod_pack_bonus = min(1, run.synod_pack_bonus + 1)
         run.pedlars_writ = True
         run.era_free_synod_reroll_left = max(run.era_free_synod_reroll_left, 1)
+    # Works / Ministry
+    elif pick == "corvee_exemption":
+        run.eng_flags.add("builder_free_slot")
+    elif pick == "lay_preachers":
+        run.pro_flags.add("missionary_free_slot")
+    elif pick in ("works_department", "public_works_board", "grand_atelier"):
+        _grant_blueprint_slot(run)
+    elif pick in ("parish_expansion", "synodal_college", "cathedral_chapter"):
+        _grant_doctrine_slot(run)
+    elif pick == "clerks_retinue":
+        run.eng_flags.add("float_builder")
+    elif pick == "chaplains_escort":
+        run.pro_flags.add("float_missionary")
+    elif pick == "standing_order_of_works":
+        run.eng_flags.add("bp_without_builder")
+    elif pick == "silent_benediction":
+        run.pro_flags.add("doctrine_without_missionary")
+    elif pick == "masterwork_code":
+        run.eng_flags.add("bp_double")
+    elif pick == "apostolic_double":
+        run.pro_flags.add("doc_double")
 
 
 def refresh_era_shop_charges(run: RunState) -> None:
