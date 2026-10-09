@@ -56,8 +56,11 @@ Strategies: S1–S6 as in `CONTENT_CATALOG.md`.
 | B39 | Coronation Stand | R | Burst | Next formation: if it is your **highest rank possible from this hand**, +30 Might and +2 Mom | skill | Skill-testing Rare |
 | B40 | Endless Scaffold | U | Scaling | After firing, this Blueprint stays available once more this settlement at **half** numeric effect (second fire auto-half). Does not grow run-long. | S4 | Pseudo-retrigger without Rare power |
 | B41 | Helping Hand | R | Rule | Once this settlement: a played Builder **does not consume a formation card slot** (5 combat + Builder legal). Still fires a Blueprint. | S4 | Removes Support tax once — Rare band; see `CARD_ASSESSMENT_NEW.md` |
+| B42 | Court Mime | R | Rule | Once this settlement: your formation is scored as if it had a **phantom** combat unit of the class that maximises damage (current soft-cap tier stats). Phantom is not a real card. | S4 | Completes best shape — Rare |
+| B43 | Investment Bond | U | Economy | Occupies a Blueprint slot. After each victory while equipped: bank **+5 Gold** (*cap 80*). Disband/cash-out pays the bank and removes this Blueprint. No combat effect when “fired”. | econ S4 | Slot tax vs Gold — fun dilemma |
+| B44 | Kaleidoscope Orders | R | Scaling | When fired: enable streak. Each Assault whose formation **≠ previous** this run: permanent **+0.5 Mom** aura (*cap +4*). Same formation as previous → **reset aura to 0**. | S4 S3 | Variety reward; soft vs Grand Strategy |
 
-**Count: 41.** Prefer cutting niche garrison commons (B31–B33) if UI clutter > value — or merge into one “Countermeasures” Blueprint later.
+**Count: 44.** Prefer cutting niche garrison commons (B31–B33) if UI clutter > value — or merge into one “Countermeasures” Blueprint later.
 
 ---
 

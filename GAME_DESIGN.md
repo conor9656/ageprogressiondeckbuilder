@@ -310,7 +310,11 @@ End-of-fight bonuses on Editions/Promotions are **on-score economy**, distinct f
 | Forbidden Palace | +1 Policy slot |
 | Terracotta Army | After each victory, replace one combat unit in your deck with a random combat unit at current class tier; **25%** chance it is an Edition (Gilded/Scholarly/Devout/Mercantile/etc.) |
 | Big Ben | Interest cap doubled |
-| Grand Bazaar | *(parking)* Unit offers in Treasury cost 50% less — former Terracotta effect |
+| Grand Bazaar | Unit offers in Treasury cost **25%** less |
+| **Parade Grounds** | Track scoring-class plays. Formations **+0.05 Mom per prior play** of each scoring class in the hand (*cap +3.0 Mom* from this Wonder) |
+| **Theater of War** | On acquire: pick Source→Target class. Source units **count as Target for formation shape** (Might/Mom stay Source) while owned |
+| **Scriptoria Spire** | After each victory: **duplicate one combat unit** (deck soft-cap 30) |
+| **Safe Conduct** | No passive. **Once:** discard Wonder → **skip next settlement** (auto-clear, half rewards, no shop) |
 
 ---
 

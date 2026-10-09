@@ -296,6 +296,7 @@ Illegal offers (slots maxed, already owned one-shot) are rerolled.
 | CV12 | 3 | U | Standing Orders | +1 Regroup permanently | Yes |
 | CV13 | 4 | U | Cabinet Office | +1 Policy slot | Yes |
 | CV14 | 5 | R | Consular Reform | +1 hand size | Yes |
+| CV15 | 1 | U | **Treasury Windfall** | One-shot: gain **Gold = 22 + 14×(era−1)** | Yes |
 
 ### 7.2 Shop civics (new — Commerce line)
 

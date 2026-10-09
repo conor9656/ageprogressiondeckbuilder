@@ -58,8 +58,9 @@ Strategies: S5 Faith primary; also S6 Science, econ, bosses.
 | D39 | Pax Dei | U | Rule | If you **Raze**, still gain half Occupy yield next settlement as one-time resources | flexible | Softens Raze regret |
 | D40 | Eternal Flame | R | Scaling | +3 Faith now; permanently **+1 Faith** per settlement you win for the rest of the run while this Doctrine remains equipped (*not per fire — passive after first fire*) | S5 | Equip-tax snowball; removing it stops growth |
 | D41 | Mercenaries | R | Combat | When fired: rest of this settlement, each Assault **+⌊Gold/5⌋ Might** (Gold snapshotted on fire), **cap +40**. Raw +1 Might/Gold is banned as broken. | econ S4 | See `CARD_ASSESSMENT_NEW.md` |
+| D42 | Prophetic Succession | U | Utility | On victory (if fired this settlement): gain **1 random Great Prophet** | S5 | On-win cousin of Relic Hunt (immediate) |
 
-**Count: 41.** Soft cuts if needed: D05, D31–D33 (class flavor commons), D38 until boss rules are fully specified.
+**Count: 42.** Soft cuts if needed: D05, D31–D33 (class flavor commons), D38 until boss rules are fully specified.
 
 ---
 

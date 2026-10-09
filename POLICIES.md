@@ -72,8 +72,10 @@ Strategies: S1 Wallbreakers · S2 Thin Legion · S3 Battle Line · S4 Builder ·
 | P44 | Liturgical Fire | U | Flat | +1 Momentum per owned Doctrine | S5 | |
 | P45 | Last Stand | R | Conditional | On your **last Assault**, if **0 Regroups** left: that formation **+15 Momentum** | all | Clutch Rare; tune to +8–10 if too strong |
 | P46 | Three Musketeers | R | Multiplier | If scored formation is a **Triple**: Momentum **×3** | S2 | Triple build-around; ×2 if ever Uncommon |
+| P47 | Steady Advance | U | Conditional | At settlement start, snapshot unused Regroups; all formations this settlement **+1 Mom per unused Regroup** (*cap +3*) | all | Opposite fantasy of Last Stand |
+| P48 | Court Fashion | U | Flat | Formations **+1 Mom per Edition unit** in deck (*cap +4*) | shop S3 | Edition shop identity |
 
-**Count: 46** (P41–P46 balance / new cards). Cut candidates if playtests show clutter: P05, P10, P36 (too narrow / weak).
+**Count: 48** (P41–P48 balance / new cards). Cut candidates if playtests show clutter: P05, P10, P36 (too narrow / weak).
 
 ---
 

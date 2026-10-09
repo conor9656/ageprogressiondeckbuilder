@@ -65,6 +65,9 @@ BLUEPRINTS = {
     "arsenal": ("R", 45, "next_unit_might_25"),
     "observatory": ("R", 45, "sci_mom_scale"),  # next formation Mom *= (1+0.1*sci_lv)
     "helping_hand": ("R", 45, "helping_hand"),  # Builder ignores formation slot once
+    "court_mime": ("R", 45, "court_mime"),
+    "investment_bond": ("U", 22, "investment_bond"),
+    "kaleidoscope_orders": ("R", 45, "kaleidoscope"),
 }
 DOCTRINES = {
     "tithe": ("C", 8, "gold15"),
@@ -77,6 +80,7 @@ DOCTRINES = {
     "missionary_zeal": ("R", 35, "scale_gold_faith"),
     "scholastic_order": ("U", 18, "sci20_cul5"),
     "mercenaries": ("R", 35, "merc_might"),
+    "prophetic_succession": ("U", 18, "prophet_on_win"),
 }
 POLICIES = {
     "agoge": ("C", "melee_might4"),
@@ -102,6 +106,8 @@ POLICIES = {
     "academy_momentum": ("R", "mom_per_sci"),      # Mom *= (1 + 0.1 * sci_levels)
     "last_stand": ("R", "last_stand"),             # +15 Mom on last assault, 0 regroups
     "three_musketeers": ("R", "triple_mom_x3"),    # Triple Mom ×3
+    "steady_advance": ("U", "mom_per_regroup"),    # +1 Mom per unused Regroup (cap 3)
+    "court_fashion": ("U", "mom_per_edition"),     # +1 Mom per Edition unit (cap 4)
 }
 
 WONDERS = {
@@ -114,6 +120,10 @@ WONDERS = {
     "big_ben": ("interest", 95),
     "forbidden_palace": ("policy_slot", 90),
     "grand_bazaar": ("cheap_units", 95),
+    "parade_grounds": ("parade_grounds", 100),
+    "theater_of_war": ("theater_of_war", 100),
+    "scriptoria_spire": ("scriptoria_spire", 110),
+    "safe_conduct": ("safe_conduct", 70),
 }
 
 # Formation/misc: (id, era, family) family "drill" = era<=current; "prog" = era==current only
@@ -191,6 +201,7 @@ CIVICS = [
     ("standing_orders", 3, "U", "qol", True),
     ("cabinet_office", 4, "U", "slot", True),
     ("consular_reform", 5, "R", "qol", True),
+    ("treasury_windfall", 1, "U", "econ", True),
     # Commerce / shop
     ("stall_permits", 1, "C", "shop", True),
     ("fairground_toll", 1, "C", "shop", True),
@@ -263,6 +274,9 @@ class FightMods:
     bp_without_builder_used: bool = False
     doctrine_without_missionary_used: bool = False
     builder_free_slot_used: bool = False
+    court_mime: bool = False
+    kaleidoscope_active: bool = False
+    unused_regroups_snapshot: int = 0
 
 
 @dataclass
@@ -336,6 +350,17 @@ class RunState:
     era_auction_left: int = 0
     era_credit_left: int = 0
     era_free_synod_reroll_left: int = 0
+    # New idea cards / wonders
+    class_plays: dict = field(default_factory=lambda: {"M": 0, "R": 0, "C": 0, "S": 0})
+    theater_map: Optional[tuple] = None  # (source_kind, target_kind)
+    scriptoria_spire: bool = False
+    safe_conduct_ready: bool = False
+    skip_next_settlement: bool = False
+    bond_bank: int = 0
+    kaleidoscope_mom: float = 0.0
+    last_formation_id: Optional[str] = None
+    kaleidoscope_armed: bool = False
+    prophet_on_win: bool = False
 
     def soft_cap(self) -> int:
         return ERA_SOFT_CAP.get(self.era, 5)
@@ -475,9 +500,32 @@ FORM_BASE = {
 
 def evaluate_play(run: RunState, cards: list[Card], fight: FightMods,
                   settlement: dict, consume_burst: bool) -> dict:
+    # Court Mime: try phantom combat units of each class; pick best damage
+    if fight.court_mime:
+        fe = FightMods(**{**fight.__dict__, "court_mime": False})
+        best = evaluate_play(run, cards, fe, settlement, consume_burst=False)
+        for ph in CLASSES:
+            fake = Card(kind=ph, cid=-1)
+            ev = evaluate_play(run, list(cards) + [fake], fe, settlement, consume_burst=False)
+            if ev["damage"] > best["damage"]:
+                best = ev
+        if consume_burst:
+            fight.next_might = 0
+            fight.next_mom = 0
+            fight.next_unit_might_pct = 0.0
+            fight.next_mom_mult = 1.0
+            fight.ignore_walls_next = False
+            fight.court_mime = False
+        return best
+
     combat = [(i, c) for i, c in enumerate(cards) if c.combat()]
     supports = [c for c in cards if not c.combat()]
-    kinds = [c.kind for _, c in combat]
+    # Theater of War: remap shape class only
+    def _shape(k: str) -> str:
+        if run.theater_map and k == run.theater_map[0]:
+            return run.theater_map[1]
+        return k
+    kinds = [_shape(c.kind) for _, c in combat]
     tiers = [run.tier_of(c.kind) for _, c in combat]
     siegecraft = "siegecraft" in run.policies
 
@@ -563,6 +611,16 @@ def evaluate_play(run: RunState, cards: list[Card], fight: FightMods,
     if "last_stand" in run.policies and settlement.get("assaults_left") == 1 \
             and settlement.get("regroups_left", 1) == 0:
         mom += 15
+    if "steady_advance" in run.policies:
+        mom += min(3, fight.unused_regroups_snapshot)
+    if "court_fashion" in run.policies:
+        n_ed = sum(1 for c in run.deck if c.edition != "standard")
+        mom += min(4, n_ed)
+    if run.wonder == "parade_grounds" and scoring_cards:
+        bonus = sum(0.05 * run.class_plays.get(c.kind, 0) for c in scoring_cards)
+        mom += min(3.0, bonus)
+    if run.kaleidoscope_mom > 0:
+        mom += run.kaleidoscope_mom
 
     # fight bursts
     might += fight.next_might
@@ -663,6 +721,13 @@ def trigger_blueprint(run: RunState, name: str, fight: FightMods, hand: list[Car
         fight.next_mom_mult = max(fight.next_mom_mult, mult)
     elif effect == "helping_hand":
         fight.helping_hand = True
+    elif effect == "court_mime":
+        fight.court_mime = True
+    elif effect == "investment_bond":
+        pass  # passive bank only
+    elif effect == "kaleidoscope":
+        run.kaleidoscope_armed = True
+        fight.kaleidoscope_active = True
 
 
 def trigger_doctrine(run: RunState, name: str, fight: FightMods) -> None:
@@ -704,6 +769,8 @@ def apply_doctrine_rewards(run: RunState, fight: FightMods, total_damage: int,
         elif effect == "sci20_cul5":
             run.science += int(20 * doc_mult * (1 + run.sci_bonus_pct))
             run.culture += int(5 * doc_mult * (1 + run.cul_bonus_pct))
+        elif effect == "prophet_on_win":
+            run.prophet_on_win = True
 
 
 # --- Deck helpers -------------------------------------------------------------
@@ -835,10 +902,12 @@ def pick_blueprint(run: RunState, available: list[str], settlement: dict,
     if settlement["walls"] and not fe.walls_removed:
         pri += ["siege_tower", "scaffolding", "battering_ram"]
     if strat == "S4":
-        pri += ["helping_hand", "aqueduct", "forge", "observatory", "arsenal", "magazine", "watchtower"]
+        pri += ["court_mime", "kaleidoscope_orders", "helping_hand", "aqueduct", "forge",
+                "observatory", "arsenal", "magazine", "investment_bond", "watchtower"]
     if strat == "S1":
-        pri += ["siege_tower", "battering_ram", "scaffolding", "helping_hand", "forge"]
-    pri += ["helping_hand", "forge", "magazine", "aqueduct", "observatory", "watchtower", "supply_lines", "roads"]
+        pri += ["siege_tower", "battering_ram", "scaffolding", "court_mime", "helping_hand", "forge"]
+    pri += ["court_mime", "helping_hand", "forge", "magazine", "kaleidoscope_orders",
+            "aqueduct", "observatory", "watchtower", "supply_lines", "roads", "investment_bond"]
     for p in pri:
         if p in available:
             return p
@@ -849,10 +918,10 @@ def pick_doctrine(run: RunState, available: list[str]) -> str:
     strat = run.strategy
     pri = []
     if strat == "S5":
-        pri += ["missionary_zeal", "mercenaries", "zeal", "tithe", "pilgrimage", "relic_hunt"]
+        pri += ["missionary_zeal", "prophetic_succession", "mercenaries", "zeal", "tithe", "pilgrimage", "relic_hunt"]
     if strat == "S6":
         pri += ["scriptorium", "scholastic_order", "alms", "tithe"]
-    pri += ["mercenaries", "zeal", "tithe", "scriptorium", "crusade", "alms", "pilgrimage", "missionary_zeal"]
+    pri += ["mercenaries", "prophetic_succession", "zeal", "tithe", "scriptorium", "crusade", "alms", "pilgrimage"]
     for p in pri:
         if p in available:
             return p
@@ -885,6 +954,10 @@ def apply_bp_to_fight(name: str, fe: FightMods, scale: float, sci_level: int = 0
         fe.next_mom_mult = max(fe.next_mom_mult, 1.0 + 0.1 * sci_level)
     elif effect == "helping_hand":
         fe.helping_hand = True
+    elif effect == "court_mime":
+        fe.court_mime = True
+    elif effect == "kaleidoscope":
+        fe.kaleidoscope_active = True
 
 
 def should_regroup(run: RunState, hand: list[Card], fight: FightMods,
@@ -959,6 +1032,7 @@ def fight_settlement(run: RunState, settlement: dict) -> tuple[bool, int, int]:
         _pull_floating_support(hand, draw, discard, "Y", rng)
 
     fight = FightMods()
+    fight.unused_regroups_snapshot = run.base_regroups
     # Workshop Relay / Standing Order: fire one Blueprint at settlement start without Builder
     if "bp_without_builder" in run.eng_flags and run.blueprints:
         avail = list(run.blueprints)
@@ -1039,6 +1113,20 @@ def fight_settlement(run: RunState, settlement: dict) -> tuple[bool, int, int]:
         total_damage += dmg
         assaults_used += 1
         assaults -= 1
+        # Parade Grounds / Kaleidoscope tracking
+        for c in play:
+            if c.combat() and c.kind in run.class_plays:
+                run.class_plays[c.kind] += 1
+        form_id = ev.get("form")
+        if run.kaleidoscope_armed and form_id and form_id != "none":
+            if run.last_formation_id is None:
+                run.last_formation_id = form_id
+            elif form_id != run.last_formation_id:
+                run.kaleidoscope_mom = min(4.0, run.kaleidoscope_mom + 0.5)
+                run.last_formation_id = form_id
+            else:
+                run.kaleidoscope_mom = 0.0
+                run.last_formation_id = form_id
         for c in play:
             hand.remove(c)
             discard.append(c)
@@ -1149,6 +1237,29 @@ def after_victory(run: RunState, settlement: dict, total_damage: int,
     run.faith += int(REWARD_FAITH * (1 + run.faith_bonus_pct))
     if "rationalism" in run.policies:
         run.science += max(4, int(REWARD_SCIENCE * 0.25 * (1 + run.sci_bonus_pct)))
+    # Investment Bond accrues while equipped
+    if "investment_bond" in run.blueprints:
+        run.bond_bank = min(80, run.bond_bank + 5)
+    # Prophetic Succession: free prophet proxy on win
+    if run.prophet_on_win:
+        run.faith += int(12 * (1 + run.faith_bonus_pct))
+        run.gold += int(8 * (1 + run.gold_bonus_pct))
+        run.prophet_on_win = False
+    # Scriptoria Spire: duplicate preferred combat unit
+    if run.scriptoria_spire and len(run.deck) < 30:
+        pref = preferred_class(run)
+        candidates = [c for c in run.deck if c.kind == pref and c.combat()]
+        if not candidates:
+            candidates = [c for c in run.deck if c.combat()]
+        if candidates:
+            src = candidates[0]
+            run.deck.append(run.new_card(src.kind, edition=src.edition,
+                                         bonus_might=src.bonus_might, bonus_mom=src.bonus_mom))
+    # Safe Conduct: bots cash it before a Capital they might lose (simple heuristic)
+    if run.safe_conduct_ready and settlement["kind"] == "town" and run.rng.random() < 0.35:
+        run.safe_conduct_ready = False
+        run.skip_next_settlement = True
+        run.wonder = None
 
     choice = choose_occupy(run, settlement)
     if choice == "raze":
@@ -1625,6 +1736,8 @@ def apply_civic(run: RunState, pick: str) -> None:
         run.eng_flags.add("bp_double")
     elif pick == "apostolic_double":
         run.pro_flags.add("doc_double")
+    elif pick == "treasury_windfall":
+        run.gold += int((22 + 14 * (run.era - 1)) * (1 + run.gold_bonus_pct))
 
 
 def refresh_era_shop_charges(run: RunState) -> None:
@@ -1656,14 +1769,14 @@ def draft_policy(run: RunState) -> None:
 def choose_policy(run: RunState, offers: list[str]) -> str:
     strat = run.strategy
     pref = {
-        "S3": ["academy_momentum", "last_stand", "research_corps", "agoge", "drill_manual", "line_officers",
-               "conscription", "professional_army", "workshop_network", "logistics"],
-        "S1": ["academy_momentum", "last_stand", "sappers", "siegecraft", "workshop_network", "agoge", "conscription"],
-        "S2": ["three_musketeers", "academy_momentum", "conscription", "leveee", "last_stand", "horse_breeding", "chivalry"],
-        "S4": ["academy_momentum", "workshop_network", "last_stand", "logistics", "research_corps", "agoge"],
-        "S5": ["academy_momentum", "liturgical_fire", "last_stand", "logistics", "agoge", "rationalism"],
-        "S6": ["academy_momentum", "research_corps", "last_stand", "rationalism", "logistics", "agoge", "drill_manual"],
-    }.get(strat, ["academy_momentum", "last_stand", "research_corps", "three_musketeers", "agoge", "logistics", "conscription"])
+        "S3": ["academy_momentum", "steady_advance", "court_fashion", "last_stand", "research_corps", "agoge",
+               "drill_manual", "line_officers", "conscription", "professional_army", "workshop_network", "logistics"],
+        "S1": ["academy_momentum", "steady_advance", "last_stand", "sappers", "siegecraft", "workshop_network", "agoge"],
+        "S2": ["three_musketeers", "academy_momentum", "steady_advance", "conscription", "leveee", "last_stand", "chivalry"],
+        "S4": ["academy_momentum", "workshop_network", "steady_advance", "court_fashion", "last_stand", "logistics"],
+        "S5": ["academy_momentum", "liturgical_fire", "steady_advance", "last_stand", "logistics", "agoge"],
+        "S6": ["academy_momentum", "research_corps", "court_fashion", "last_stand", "rationalism", "logistics"],
+    }.get(strat, ["academy_momentum", "steady_advance", "last_stand", "research_corps", "three_musketeers", "agoge"])
     for p in pref:
         if p in offers:
             return p
@@ -1933,6 +2046,17 @@ def apply_wonder(run: RunState, name: str) -> None:
         run.policy_slots = min(5, run.policy_slots + 1)
     elif effect == "replace_troop":
         pass  # handled after each victory via terracotta_replace()
+    elif effect == "parade_grounds":
+        pass  # passive via class_plays in evaluate_play
+    elif effect == "theater_of_war":
+        # Sim: map preferred class → complementary shape class
+        src = preferred_class(run)
+        tgt = {"M": "R", "R": "M", "C": "M", "S": "M"}.get(src, "R")
+        run.theater_map = (src, tgt)
+    elif effect == "scriptoria_spire":
+        run.scriptoria_spire = True
+    elif effect == "safe_conduct":
+        run.safe_conduct_ready = True
 
 
 def terracotta_replace(run: RunState) -> None:
@@ -2004,6 +2128,11 @@ def preferred_class(run: RunState) -> str:
 
 
 def disband_supports(run: RunState) -> None:
+    # Cash Investment Bond if bank is ripe (slot tax payoff)
+    if "investment_bond" in run.blueprints and run.bond_bank >= 25:
+        run.gold += run.bond_bank
+        run.bond_bank = 0
+        run.blueprints.remove("investment_bond")
     # Remove up to 2 supports if gold allows
     supports = [c for c in run.deck if c.kind in ("B", "Y")]
     for c in supports[:2]:
@@ -2070,6 +2199,25 @@ def play_eras(seed: int, strategy: str, max_era: int = 1) -> dict:
         for kind in ("village", "town", "capital"):
             run.settlement_index += 1
             st = make_settlement(kind, rng, era)
+            # Safe Conduct: skip next settlement (half rewards, no shop)
+            if run.skip_next_settlement:
+                run.skip_next_settlement = False
+                won, dmg, used = True, st["defence"], 0
+                results["settlements"].append({
+                    "era": era, "kind": kind, "won": True, "damage": dmg,
+                    "defence": st["defence"], "walls": st["walls"],
+                    "garrison": st["garrison"], "assaults_used": 0,
+                    "tiers": dict(run.tiers), "gold": run.gold,
+                    "overkill": 0, "shortfall": None, "skipped": True,
+                })
+                # Half rewards, skip shop/level-ups density by reducing grants
+                run.gold += int(REWARD_GOLD * 0.5 * (1 + run.gold_bonus_pct))
+                run.science += int(REWARD_SCIENCE * 0.5 * (1 + run.sci_bonus_pct))
+                run.culture += int(REWARD_CULTURE * 0.5 * (1 + run.cul_bonus_pct))
+                run.faith += int(REWARD_FAITH * 0.5 * (1 + run.faith_bonus_pct))
+                if kind == "capital":
+                    results["damage_by_era_capital"][era] = dmg
+                continue
             won, dmg, used = fight_settlement_with_docs(run, st)
             results["settlements"].append({
                 "era": era, "kind": kind, "won": won, "damage": dmg,
