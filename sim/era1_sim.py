@@ -284,6 +284,11 @@ class RunState:
     rng: random.Random
     strategy: str
     era: int = 1
+    # Ablation flags for contribution sims (see sim/contribution_sim.py)
+    # e.g. {"no_science", "no_civics", "no_troop_upgrades", "no_wonders",
+    #       "no_blueprints", "no_doctrines", "no_promotions", "no_editions", "no_policies"}
+    ablation: set = field(default_factory=set)
+    util: dict = field(default_factory=dict)
     deck: list[Card] = field(default_factory=list)
     next_cid: int = 0
     gold: int = 0
@@ -1321,22 +1326,48 @@ def choose_occupy(run: RunState, settlement: dict) -> str:
     return "raze"
 
 
+def _util_inc(run: RunState, key: str, item: str, n: int = 1) -> None:
+    bag = run.util.setdefault(key, {})
+    bag[item] = bag.get(item, 0) + n
+
+
 def process_level_ups(run: RunState) -> dict:
     sci_picks = []
     civ_picks = []
     while run.sci_level < len(SCIENCE_COSTS) and run.science >= SCIENCE_COSTS[run.sci_level]:
+        if "no_science" in run.ablation:
+            # Burn bank so we don't loop; no level-up power
+            run.science = 0
+            break
         run.science -= SCIENCE_COSTS[run.sci_level]
         offers = roll_science_offers(run)
+        if "no_troop_upgrades" in run.ablation:
+            offers = [o for o in offers if not o.startswith("upgrade_")] or ["battle_line_drill"]
+        for o in offers:
+            _util_inc(run, "sci_offers", o)
         pick = choose_science(run, offers)
+        if "no_troop_upgrades" in run.ablation and pick.startswith("upgrade_"):
+            pick = next((o for o in offers if not o.startswith("upgrade_")), "battle_line_drill")
         apply_science(run, pick)
+        _util_inc(run, "sci_picks", pick)
         run.sci_level += 1
         sci_picks.append({"pick": pick, "offers": offers})
         run.events.append({"science_pick": pick, "offers": offers})
     while run.civ_level < len(CIVIC_COSTS) and run.culture >= CIVIC_COSTS[run.civ_level]:
+        if "no_civics" in run.ablation:
+            run.culture = 0
+            break
         run.culture -= CIVIC_COSTS[run.civ_level]
         offers = roll_civic_offers(run)
+        for o in offers:
+            _util_inc(run, "civ_offers", o)
         pick = choose_civic(run, offers)
+        if "no_policies" in run.ablation and pick in (
+                "craftsmanship", "literacy", "patron_games", "guild_charters"):
+            pick = next((o for o in offers if o not in (
+                "craftsmanship", "literacy", "patron_games", "guild_charters")), offers[0])
         apply_civic(run, pick)
+        _util_inc(run, "civ_picks", pick)
         run.civ_level += 1
         civ_picks.append({"pick": pick, "offers": offers})
         run.events.append({"civic_pick": pick, "offers": offers})
@@ -1755,6 +1786,8 @@ def refresh_era_shop_charges(run: RunState) -> None:
 
 
 def draft_policy(run: RunState) -> None:
+    if "no_policies" in run.ablation:
+        return
     if len(run.policies) >= run.policy_slots:
         return
     pool = [p for p in POLICIES if p not in run.policies]
@@ -1789,7 +1822,8 @@ def shop(run: RunState, settlement: dict) -> None:
     synod_n = pack_n + run.synod_pack_bonus
 
     # Once per era: guarantee a Wonder purchase option
-    if not run.era_wonder_offered and run.wonder is None:
+    if (not run.era_wonder_offered and run.wonder is None
+            and "no_wonders" not in run.ablation):
         run.era_wonder_available = rng.choice(list(WONDERS.keys()))
         run.era_wonder_offered = True
 
@@ -1885,17 +1919,23 @@ def _apply_cost_mods(run: RunState, kind: str, cost: int) -> int:
 
 def roll_treasury_offer(run: RunState) -> tuple:
     rng = run.rng
-    if run.wonder is None and rng.random() < WONDER_SHOP_CHANCE:
+    if (run.wonder is None and "no_wonders" not in run.ablation
+            and rng.random() < WONDER_SHOP_CHANCE):
         name = rng.choice(list(WONDERS.keys()))
         return ("wonder", name, WONDERS[name][1])
     r = rng.random()
+    # Ablation: skip categories by rerolling into units
+    if "no_blueprints" in run.ablation and 0.38 <= r < 0.72:
+        r = 0.20
+    if "no_promotions" in run.ablation and 0.72 <= r < 0.92:
+        r = 0.20
     if r < 0.38:
         kind = rng.choice(["M", "R", "C", "S"])
         cost = {1: 8, 2: 12, 3: 18}.get(run.tiers[kind], 12)
         edition = "standard"
         er = rng.random()
         edition_chance = 0.15 * run.edition_weight_mult
-        if er < edition_chance:
+        if "no_editions" not in run.ablation and er < edition_chance:
             edition = rng.choice(["gilded", "scholarly", "devout", "mercantile"])
             cost = int(cost * 1.5)
         cost = _apply_cost_mods(run, "unit", cost)
@@ -1915,6 +1955,8 @@ def roll_treasury_offer(run: RunState) -> tuple:
 
 def roll_synod_offer(run: RunState) -> tuple:
     rng = run.rng
+    if "no_doctrines" in run.ablation:
+        return ("prophet", "sow_dissent", 15)
     if rng.random() < 0.55:
         rarities = [d for d, v in DOCTRINES.items() if v[0] == "C"] * 3 + \
                    [d for d, v in DOCTRINES.items() if v[0] == "U"] * 2 + \
@@ -1934,6 +1976,8 @@ def buy_treasury(run: RunState, offers: list) -> None:
             continue
         if o[0] == "unit":
             _, kind, cost, edition = o
+            if "no_editions" in run.ablation:
+                edition = "standard"
             if _can_pay_gold(run, cost) and want_unit(run, kind):
                 _pay_gold(run, cost)
                 kw = {}
@@ -1943,13 +1987,19 @@ def buy_treasury(run: RunState, offers: list) -> None:
                 if edition != "standard":
                     c.edition = edition
                 run.deck.append(c)
+                _util_inc(run, "bought", f"unit:{kind}")
         elif o[0] == "blueprint":
+            if "no_blueprints" in run.ablation:
+                continue
             _, name, cost = o
             if _can_pay_gold(run, cost) and name not in run.blueprints and len(run.blueprints) < run.blueprint_slots:
                 if want_blueprint(run, name):
                     _pay_gold(run, cost)
                     run.blueprints.append(name)
+                    _util_inc(run, "bought", f"blueprint:{name}")
         elif o[0] == "promotion":
+            if "no_promotions" in run.ablation:
+                continue
             _, name, cost = o
             if _can_pay_gold(run, cost):
                 targets = [c for c in run.deck if c.combat()]
@@ -1958,12 +2008,16 @@ def buy_treasury(run: RunState, offers: list) -> None:
                     pref = preferred_class(run)
                     targets.sort(key=lambda c: (0 if c.kind == pref else 1))
                     targets[0].bonus_might += 2
+                    _util_inc(run, "bought", "promotion")
         elif o[0] == "wonder":
+            if "no_wonders" in run.ablation:
+                continue
             _, name, cost = o
             if run.wonder is None and _can_pay_gold(run, cost) and want_wonder(run, name):
                 _pay_gold(run, cost)
                 apply_wonder(run, name)
                 run.era_wonder_available = None
+                _util_inc(run, "bought", f"wonder:{name}")
 
 
 def _can_pay_gold(run: RunState, cost: int) -> bool:
@@ -1988,11 +2042,14 @@ def _pay_gold(run: RunState, cost: int) -> None:
 def buy_synod(run: RunState, offers: list) -> None:
     for o in offers:
         if o[0] == "doctrine":
+            if "no_doctrines" in run.ablation:
+                continue
             _, name, cost = o
             if run.faith >= cost and name not in run.doctrines and len(run.doctrines) < run.doctrine_slots:
                 if want_doctrine(run, name):
                     run.faith -= cost
                     run.doctrines.append(name)
+                    _util_inc(run, "bought", f"doctrine:{name}")
         elif o[0] == "prophet" and run.faith >= o[2]:
             if run.strategy in ("S5", "S1"):
                 run.faith -= o[2]
@@ -2173,9 +2230,10 @@ def make_settlement(kind: str, rng: random.Random, era: int = 1) -> dict:
 
 # --- Run ----------------------------------------------------------------------
 
-def play_eras(seed: int, strategy: str, max_era: int = 1) -> dict:
+def play_eras(seed: int, strategy: str, max_era: int = 1,
+              ablation: Optional[set] = None) -> dict:
     rng = random.Random(seed)
-    run = RunState(rng=rng, strategy=strategy, era=1)
+    run = RunState(rng=rng, strategy=strategy, era=1, ablation=set(ablation or ()))
     starting_deck(run)
 
     results = {
@@ -2260,6 +2318,11 @@ def play_eras(seed: int, strategy: str, max_era: int = 1) -> dict:
     results["doctrines"] = list(run.doctrines)
     results["gold_end"] = run.gold
     results["deck_size"] = len(run.deck)
+    results["wonder"] = run.wonder
+    results["util"] = run.util
+    results["ablation"] = sorted(run.ablation)
+    results["sci_level"] = run.sci_level
+    results["civ_level"] = run.civ_level
     return results
 
 

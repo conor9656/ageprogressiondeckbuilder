@@ -4,6 +4,11 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-09 — Contribution/ablation plan for next full sim
+- Qualitative hotspots: `BALANCE_HOTSPOTS.md` (S2/Science strong; S5/Builders/Civics/Wonders weak suspects).
+- Next sim must measure **system contribution**, not only strategy clears: ablations for science/civics/troops/BP/Doc/wonders/promos/editions/policies + offer/take util.
+- Scaffold: `sim/contribution_sim.py` + ablation flags on `RunState`. Docs in `SIMULATION.md`.
+
 ## 2026-10-09 — Idea intake batch (Wonders / BP / Policies / Doctrine / Civic)
 - Assessed spoken bonuses in `CARD_ASSESSMENT_IDEAS.md` (placement + tuned numbers).
 - **Skipped** per-class +Mom (dupe of Science tiers / class Policies). Shop Commerce already live.

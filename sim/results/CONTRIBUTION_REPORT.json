@@ -1,0 +1,865 @@
+{
+  "meta": {
+    "runs_per_cell": 15,
+    "eras": 3,
+    "seed": 7,
+    "defence_bases": {
+      "1": 500,
+      "2": 800,
+      "3": 1400,
+      "4": 4500,
+      "5": 12000,
+      "6": 30000,
+      "7": 75000,
+      "8": 150000
+    },
+    "question": "Which systems carry clear rate / capital damage?"
+  },
+  "by_strategy": {
+    "S2": {
+      "baseline": {
+        "clear_through_era": {
+          "1": 0.867,
+          "2": 0.867,
+          "3": 0.733
+        },
+        "power_curve": {
+          "1": {
+            "capital_hp": 1250,
+            "p50_damage": 1373,
+            "mean_damage": 1416.3,
+            "damage_to_hp_ratio_p50": 1.1
+          },
+          "2": {
+            "capital_hp": 2000,
+            "p50_damage": 2361,
+            "mean_damage": 2466.0,
+            "damage_to_hp_ratio_p50": 1.18
+          },
+          "3": {
+            "capital_hp": 3500,
+            "p50_damage": 4013,
+            "mean_damage": 3847.5,
+            "damage_to_hp_ratio_p50": 1.15
+          }
+        },
+        "wonder_own_rate": {
+          "(none)": 0.333,
+          "great_library": 0.133,
+          "big_ben": 0.133,
+          "safe_conduct": 0.067,
+          "pyramids": 0.067,
+          "forbidden_palace": 0.067,
+          "colosseum": 0.067,
+          "parade_grounds": 0.067,
+          "theater_of_war": 0.067
+        },
+        "util": {
+          "sci_offers": {
+            "upgrade_R": 27,
+            "upgrade_S": 25,
+            "upgrade_C": 23,
+            "upgrade_M": 22,
+            "upgrade_B": 19,
+            "battle_line_drill": 13,
+            "skirmish_drill": 11,
+            "surveying": 11,
+            "writing": 10,
+            "dev_shrines": 10,
+            "combined_arms_primer": 7,
+            "edu_scribal_schools": 6,
+            "art_amphitheaters": 6,
+            "vanguard_primer": 6,
+            "edu_lyceum": 5,
+            "art_festivals": 4,
+            "phalanx_drill": 4,
+            "machinery": 3,
+            "dev_monasteries": 3,
+            "pro_ordination": 3,
+            "legion_primer": 2,
+            "bank_markets": 2,
+            "masterwork_code_sci": 2,
+            "art_patron_guilds": 2,
+            "eng_clerk": 2,
+            "dev_temples": 2,
+            "eng_apprenticeship": 2,
+            "networked_command": 1,
+            "edu_cathedral_schools": 1,
+            "pro_canon": 1,
+            "pro_alms": 1,
+            "rapid_deployment": 1,
+            "bank_coinage": 1,
+            "bank_guilds": 1,
+            "imperial_standards": 1
+          },
+          "sci_picks": {
+            "upgrade_M": 22,
+            "upgrade_C": 20,
+            "upgrade_R": 13,
+            "upgrade_S": 9,
+            "upgrade_B": 8,
+            "skirmish_drill": 6,
+            "bank_markets": 1,
+            "bank_guilds": 1
+          },
+          "civ_offers": {
+            "code_of_laws": 20,
+            "fairground_toll": 19,
+            "stall_permits": 16,
+            "early_empire": 15,
+            "corvee_exemption": 14,
+            "craftsmanship": 13,
+            "lay_preachers": 12,
+            "works_department": 12,
+            "theology": 10,
+            "military_training": 10,
+            "literacy": 9,
+            "clerks_retinue": 9,
+            "tithe_rebate": 7,
+            "chaplains_escort": 7,
+            "pedlars_writ": 7,
+            "merchant_guild_charter": 7,
+            "parish_expansion": 7,
+            "treasury_windfall": 6,
+            "citizenship": 6,
+            "patron_games": 6,
+            "state_church": 6,
+            "royal_boon": 5,
+            "courier_privilege": 4,
+            "civil_service": 4,
+            "silent_benediction": 3,
+            "standing_orders": 2,
+            "standing_order_of_works": 2,
+            "guild_charters": 2
+          },
+          "civ_picks": {
+            "craftsmanship": 13,
+            "lay_preachers": 8,
+            "corvee_exemption": 8,
+            "treasury_windfall": 6,
+            "works_department": 5,
+            "stall_permits": 5,
+            "courier_privilege": 4,
+            "code_of_laws": 4,
+            "clerks_retinue": 4,
+            "tithe_rebate": 3,
+            "parish_expansion": 3,
+            "theology": 2,
+            "chaplains_escort": 2,
+            "literacy": 2,
+            "royal_boon": 2,
+            "military_training": 2,
+            "merchant_guild_charter": 2,
+            "silent_benediction": 2,
+            "early_empire": 1,
+            "guild_charters": 1,
+            "fairground_toll": 1
+          },
+          "bought": {
+            "promotion": 102,
+            "unit:M": 65,
+            "blueprint:watchtower": 8,
+            "doctrine:scriptorium": 7,
+            "blueprint:supply_lines": 6,
+            "doctrine:tithe": 5,
+            "blueprint:observatory": 5,
+            "blueprint:forge": 4,
+            "doctrine:zeal": 3,
+            "wonder:safe_conduct": 2,
+            "blueprint:aqueduct": 2,
+            "blueprint:helping_hand": 2,
+            "wonder:great_library": 2,
+            "wonder:big_ben": 2,
+            "wonder:pyramids": 1,
+            "wonder:forbidden_palace": 1,
+            "wonder:colosseum": 1,
+            "wonder:parade_grounds": 1,
+            "doctrine:crusade": 1,
+            "wonder:theater_of_war": 1,
+            "blueprint:siege_tower": 1
+          }
+        },
+        "mean_sci_level": 5.47,
+        "mean_civ_level": 5.33,
+        "mean_bp": 2.47,
+        "mean_doc": 1.33
+      },
+      "no_science": {
+        "clear_through_era": {
+          "1": 0.867,
+          "2": 0.533,
+          "3": 0.067
+        },
+        "clear_delta_vs_baseline": {
+          "1": 0.0,
+          "2": -0.334,
+          "3": -0.666
+        },
+        "cap_damage_hp_p50": 0.54,
+        "cap_ratio_delta": -0.61
+      },
+      "no_civics": {
+        "clear_through_era": {
+          "1": 1.0,
+          "2": 1.0,
+          "3": 0.6
+        },
+        "clear_delta_vs_baseline": {
+          "1": 0.133,
+          "2": 0.133,
+          "3": -0.133
+        },
+        "cap_damage_hp_p50": 1.02,
+        "cap_ratio_delta": -0.13
+      },
+      "no_troop_upgrades": {
+        "clear_through_era": {
+          "1": 1.0,
+          "2": 0.733,
+          "3": 0.267
+        },
+        "clear_delta_vs_baseline": {
+          "1": 0.133,
+          "2": -0.134,
+          "3": -0.466
+        },
+        "cap_damage_hp_p50": 0.93,
+        "cap_ratio_delta": -0.22
+      },
+      "no_blueprints": {
+        "clear_through_era": {
+          "1": 1.0,
+          "2": 1.0,
+          "3": 0.8
+        },
+        "clear_delta_vs_baseline": {
+          "1": 0.133,
+          "2": 0.133,
+          "3": 0.067
+        },
+        "cap_damage_hp_p50": 1.11,
+        "cap_ratio_delta": -0.04
+      },
+      "no_doctrines": {
+        "clear_through_era": {
+          "1": 1.0,
+          "2": 0.867,
+          "3": 0.6
+        },
+        "clear_delta_vs_baseline": {
+          "1": 0.133,
+          "2": 0.0,
+          "3": -0.133
+        },
+        "cap_damage_hp_p50": 1.15,
+        "cap_ratio_delta": 0.0
+      },
+      "no_wonders": {
+        "clear_through_era": {
+          "1": 1.0,
+          "2": 1.0,
+          "3": 0.6
+        },
+        "clear_delta_vs_baseline": {
+          "1": 0.133,
+          "2": 0.133,
+          "3": -0.133
+        },
+        "cap_damage_hp_p50": 1.01,
+        "cap_ratio_delta": -0.14
+      },
+      "no_promotions": {
+        "clear_through_era": {
+          "1": 1.0,
+          "2": 1.0,
+          "3": 0.733
+        },
+        "clear_delta_vs_baseline": {
+          "1": 0.133,
+          "2": 0.133,
+          "3": 0.0
+        },
+        "cap_damage_hp_p50": 1.12,
+        "cap_ratio_delta": -0.03
+      }
+    },
+    "S3": {
+      "baseline": {
+        "clear_through_era": {
+          "1": 0.933,
+          "2": 0.733,
+          "3": 0.533
+        },
+        "power_curve": {
+          "1": {
+            "capital_hp": 1250,
+            "p50_damage": 1468,
+            "mean_damage": 1522.4,
+            "damage_to_hp_ratio_p50": 1.17
+          },
+          "2": {
+            "capital_hp": 2000,
+            "p50_damage": 2385,
+            "mean_damage": 2409.1,
+            "damage_to_hp_ratio_p50": 1.19
+          },
+          "3": {
+            "capital_hp": 3500,
+            "p50_damage": 3737,
+            "mean_damage": 3722.1,
+            "damage_to_hp_ratio_p50": 1.07
+          }
+        },
+        "wonder_own_rate": {
+          "(none)": 0.467,
+          "theater_of_war": 0.133,
+          "pyramids": 0.133,
+          "great_library": 0.133,
+          "grand_bazaar": 0.067,
+          "forbidden_palace": 0.067
+        },
+        "util": {
+          "sci_offers": {
+            "upgrade_C": 18,
+            "upgrade_B": 17,
+            "upgrade_S": 17,
+            "upgrade_R": 16,
+            "upgrade_M": 15,
+            "battle_line_drill": 10,
+            "skirmish_drill": 8,
+            "edu_scribal_schools": 7,
+            "writing": 7,
+            "art_festivals": 6,
+            "combined_arms_primer": 6,
+            "dev_shrines": 6,
+            "surveying": 5,
+            "eng_apprenticeship": 4,
+            "eng_siege": 4,
+            "vanguard_primer": 3,
+            "edu_lyceum": 3,
+            "phalanx_drill": 3,
+            "art_patron_guilds": 3,
+            "legion_primer": 3,
+            "pro_ordination": 3,
+            "bank_markets": 2,
+            "machinery": 2,
+            "eng_clerk": 2,
+            "networked_command": 2,
+            "grand_army_drill": 1,
+            "dev_temples": 1,
+            "dev_monasteries": 1,
+            "masterwork_code_sci": 1,
+            "art_amphitheaters": 1,
+            "edu_cathedral_schools": 1,
+            "imperial_standards": 1,
+            "pro_canon": 1,
+            "bank_guilds": 1,
+            "apostolic_double_sci": 1,
+            "bank_coinage": 1
+          },
+          "sci_picks": {
+            "upgrade_M": 15,
+            "upgrade_R": 13,
+            "upgrade_C": 8,
+            "upgrade_S": 8,
+            "battle_line_drill": 7,
+            "edu_scribal_schools": 3,
+            "upgrade_B": 3,
+            "edu_lyceum": 1,
+            "bank_guilds": 1,
+            "bank_markets": 1,
+            "bank_coinage": 1
+          },
+          "civ_offers": {
+            "fairground_toll": 18,
+            "lay_preachers": 15,
+            "craftsmanship": 12,
+            "corvee_exemption": 12,
+            "works_department": 10,
+            "theology": 9,
+            "code_of_laws": 9,
+            "early_empire": 9,
+            "military_training": 8,
+            "stall_permits": 8,
+            "patron_games": 7,
+            "tithe_rebate": 6,
+            "pedlars_writ": 5,
+            "citizenship": 5,
+            "clerks_retinue": 5,
+            "parish_expansion": 5,
+            "literacy": 4,
+            "treasury_windfall": 3,
+            "state_church": 3,
+            "merchant_guild_charter": 3,
+            "chaplains_escort": 3,
+            "courier_privilege": 2,
+            "guild_charters": 1,
+            "civil_service": 1,
+            "double_stall": 1,
+            "silent_benediction": 1,
+            "royal_boon": 1,
+            "standing_order_of_works": 1,
+            "standing_orders": 1
+          },
+          "civ_picks": {
+            "craftsmanship": 11,
+            "stall_permits": 8,
+            "code_of_laws": 6,
+            "corvee_exemption": 5,
+            "treasury_windfall": 3,
+            "fairground_toll": 3,
+            "patron_games": 2,
+            "clerks_retinue": 2,
+            "merchant_guild_charter": 2,
+            "pedlars_writ": 2,
+            "early_empire": 2,
+            "lay_preachers": 2,
+            "citizenship": 1,
+            "works_department": 1,
+            "parish_expansion": 1,
+            "tithe_rebate": 1,
+            "chaplains_escort": 1,
+            "silent_benediction": 1,
+            "standing_order_of_works": 1,
+            "standing_orders": 1
+          },
+          "bought": {
+            "promotion": 62,
+            "unit:R": 31,
+            "unit:M": 30,
+            "doctrine:tithe": 6,
+            "blueprint:forge": 4,
+            "blueprint:supply_lines": 3,
+            "blueprint:roads": 3,
+            "blueprint:watchtower": 3,
+            "wonder:safe_conduct": 2,
+            "blueprint:magazine": 2,
+            "wonder:theater_of_war": 2,
+            "doctrine:zeal": 2,
+            "wonder:pyramids": 2,
+            "wonder:great_library": 2,
+            "wonder:grand_bazaar": 1,
+            "wonder:forbidden_palace": 1,
+            "blueprint:arsenal": 1,
+            "blueprint:aqueduct": 1,
+            "doctrine:scriptorium": 1,
+            "blueprint:helping_hand": 1,
+            "blueprint:observatory": 1
+          }
+        },
+        "mean_sci_level": 4.2,
+        "mean_civ_level": 3.73,
+        "mean_bp": 2.2,
+        "mean_doc": 1.2
+      },
+      "no_science": {
+        "clear_through_era": {
+          "1": 0.6,
+          "2": 0.2,
+          "3": 0.0
+        },
+        "clear_delta_vs_baseline": {
+          "1": -0.333,
+          "2": -0.533,
+          "3": -0.533
+        },
+        "cap_damage_hp_p50": 0.41,
+        "cap_ratio_delta": -0.66
+      },
+      "no_civics": {
+        "clear_through_era": {
+          "1": 0.867,
+          "2": 0.6,
+          "3": 0.067
+        },
+        "clear_delta_vs_baseline": {
+          "1": -0.066,
+          "2": -0.133,
+          "3": -0.466
+        },
+        "cap_damage_hp_p50": 0.76,
+        "cap_ratio_delta": -0.31
+      },
+      "no_troop_upgrades": {
+        "clear_through_era": {
+          "1": 0.533,
+          "2": 0.333,
+          "3": 0.0
+        },
+        "clear_delta_vs_baseline": {
+          "1": -0.4,
+          "2": -0.4,
+          "3": -0.533
+        },
+        "cap_damage_hp_p50": 0.75,
+        "cap_ratio_delta": -0.32
+      },
+      "no_blueprints": {
+        "clear_through_era": {
+          "1": 0.533,
+          "2": 0.533,
+          "3": 0.2
+        },
+        "clear_delta_vs_baseline": {
+          "1": -0.4,
+          "2": -0.2,
+          "3": -0.333
+        },
+        "cap_damage_hp_p50": 1.0,
+        "cap_ratio_delta": -0.07
+      },
+      "no_doctrines": {
+        "clear_through_era": {
+          "1": 0.733,
+          "2": 0.667,
+          "3": 0.4
+        },
+        "clear_delta_vs_baseline": {
+          "1": -0.2,
+          "2": -0.066,
+          "3": -0.133
+        },
+        "cap_damage_hp_p50": 1.08,
+        "cap_ratio_delta": 0.01
+      },
+      "no_wonders": {
+        "clear_through_era": {
+          "1": 0.667,
+          "2": 0.467,
+          "3": 0.2
+        },
+        "clear_delta_vs_baseline": {
+          "1": -0.266,
+          "2": -0.266,
+          "3": -0.333
+        },
+        "cap_damage_hp_p50": 0.94,
+        "cap_ratio_delta": -0.13
+      },
+      "no_promotions": {
+        "clear_through_era": {
+          "1": 1.0,
+          "2": 0.733,
+          "3": 0.533
+        },
+        "clear_delta_vs_baseline": {
+          "1": 0.067,
+          "2": 0.0,
+          "3": 0.0
+        },
+        "cap_damage_hp_p50": 1.09,
+        "cap_ratio_delta": 0.02
+      }
+    },
+    "S5": {
+      "baseline": {
+        "clear_through_era": {
+          "1": 0.467,
+          "2": 0.333,
+          "3": 0.2
+        },
+        "power_curve": {
+          "1": {
+            "capital_hp": 1250,
+            "p50_damage": 1295,
+            "mean_damage": 1238.3,
+            "damage_to_hp_ratio_p50": 1.04
+          },
+          "2": {
+            "capital_hp": 2000,
+            "p50_damage": 2157,
+            "mean_damage": 2103.4,
+            "damage_to_hp_ratio_p50": 1.08
+          },
+          "3": {
+            "capital_hp": 3500,
+            "p50_damage": 4134,
+            "mean_damage": 3982.0,
+            "damage_to_hp_ratio_p50": 1.18
+          }
+        },
+        "wonder_own_rate": {
+          "(none)": 0.8,
+          "grand_bazaar": 0.067,
+          "forbidden_palace": 0.067,
+          "colosseum": 0.067
+        },
+        "util": {
+          "sci_offers": {
+            "upgrade_R": 8,
+            "upgrade_S": 7,
+            "upgrade_B": 7,
+            "upgrade_M": 6,
+            "upgrade_C": 5,
+            "surveying": 3,
+            "pro_alms": 3,
+            "battle_line_drill": 3,
+            "edu_cathedral_schools": 3,
+            "dev_shrines": 2,
+            "writing": 2,
+            "combined_arms_primer": 2,
+            "edu_lyceum": 2,
+            "phalanx_drill": 2,
+            "imperial_standards": 2,
+            "art_amphitheaters": 2,
+            "legion_primer": 1,
+            "staff_college": 1,
+            "eng_apprenticeship": 1,
+            "bank_coinage": 1,
+            "dev_temples": 1,
+            "machinery": 1,
+            "general_staff_maps": 1,
+            "eng_clerk": 1,
+            "skirmish_drill": 1,
+            "art_festivals": 1
+          },
+          "sci_picks": {
+            "upgrade_M": 5,
+            "upgrade_R": 4,
+            "upgrade_S": 3,
+            "pro_alms": 3,
+            "dev_shrines": 2,
+            "upgrade_C": 2,
+            "surveying": 2,
+            "dev_temples": 1,
+            "upgrade_B": 1
+          },
+          "civ_offers": {
+            "fairground_toll": 6,
+            "military_training": 5,
+            "stall_permits": 4,
+            "corvee_exemption": 4,
+            "patron_games": 4,
+            "code_of_laws": 3,
+            "craftsmanship": 3,
+            "early_empire": 3,
+            "citizenship": 3,
+            "works_department": 3,
+            "lay_preachers": 3,
+            "parish_expansion": 3,
+            "theology": 2,
+            "state_church": 2,
+            "tithe_rebate": 2,
+            "pedlars_writ": 2,
+            "clerks_retinue": 2,
+            "merchant_guild_charter": 1,
+            "guild_charters": 1,
+            "literacy": 1
+          },
+          "civ_picks": {
+            "lay_preachers": 3,
+            "craftsmanship": 2,
+            "theology": 2,
+            "works_department": 2,
+            "corvee_exemption": 2,
+            "parish_expansion": 2,
+            "patron_games": 2,
+            "stall_permits": 1,
+            "citizenship": 1,
+            "tithe_rebate": 1,
+            "early_empire": 1
+          },
+          "bought": {
+            "unit:C": 9,
+            "unit:R": 8,
+            "unit:M": 7,
+            "blueprint:supply_lines": 3,
+            "blueprint:siege_tower": 2,
+            "doctrine:tithe": 2,
+            "blueprint:helping_hand": 2,
+            "doctrine:crusade": 2,
+            "doctrine:pilgrimage": 1,
+            "wonder:grand_bazaar": 1,
+            "blueprint:forge": 1,
+            "blueprint:aqueduct": 1,
+            "doctrine:scriptorium": 1,
+            "wonder:forbidden_palace": 1,
+            "wonder:colosseum": 1,
+            "doctrine:scholastic_order": 1
+          }
+        },
+        "mean_sci_level": 1.53,
+        "mean_civ_level": 1.27,
+        "mean_bp": 1.4,
+        "mean_doc": 1.53
+      },
+      "no_science": {
+        "clear_through_era": {
+          "1": 0.267,
+          "2": 0.0,
+          "3": 0.0
+        },
+        "clear_delta_vs_baseline": {
+          "1": -0.2,
+          "2": -0.333,
+          "3": -0.2
+        },
+        "cap_damage_hp_p50": null,
+        "cap_ratio_delta": null
+      },
+      "no_civics": {
+        "clear_through_era": {
+          "1": 0.667,
+          "2": 0.533,
+          "3": 0.267
+        },
+        "clear_delta_vs_baseline": {
+          "1": 0.2,
+          "2": 0.2,
+          "3": 0.067
+        },
+        "cap_damage_hp_p50": 1.1,
+        "cap_ratio_delta": -0.08
+      },
+      "no_troop_upgrades": {
+        "clear_through_era": {
+          "1": 0.333,
+          "2": 0.267,
+          "3": 0.067
+        },
+        "clear_delta_vs_baseline": {
+          "1": -0.134,
+          "2": -0.066,
+          "3": -0.133
+        },
+        "cap_damage_hp_p50": 0.97,
+        "cap_ratio_delta": -0.21
+      },
+      "no_blueprints": {
+        "clear_through_era": {
+          "1": 0.667,
+          "2": 0.4,
+          "3": 0.133
+        },
+        "clear_delta_vs_baseline": {
+          "1": 0.2,
+          "2": 0.067,
+          "3": -0.067
+        },
+        "cap_damage_hp_p50": 0.79,
+        "cap_ratio_delta": -0.39
+      },
+      "no_doctrines": {
+        "clear_through_era": {
+          "1": 0.533,
+          "2": 0.333,
+          "3": 0.267
+        },
+        "clear_delta_vs_baseline": {
+          "1": 0.066,
+          "2": 0.0,
+          "3": 0.067
+        },
+        "cap_damage_hp_p50": 1.13,
+        "cap_ratio_delta": -0.05
+      },
+      "no_wonders": {
+        "clear_through_era": {
+          "1": 0.533,
+          "2": 0.333,
+          "3": 0.0
+        },
+        "clear_delta_vs_baseline": {
+          "1": 0.066,
+          "2": 0.0,
+          "3": -0.2
+        },
+        "cap_damage_hp_p50": 0.66,
+        "cap_ratio_delta": -0.52
+      },
+      "no_promotions": {
+        "clear_through_era": {
+          "1": 0.533,
+          "2": 0.267,
+          "3": 0.067
+        },
+        "clear_delta_vs_baseline": {
+          "1": 0.066,
+          "2": -0.066,
+          "3": -0.133
+        },
+        "cap_damage_hp_p50": 0.88,
+        "cap_ratio_delta": -0.3
+      }
+    }
+  },
+  "ablation_delta_mean": {
+    "baseline": {
+      "1": 0.756,
+      "2": 0.644,
+      "3": 0.489
+    },
+    "no_science": {
+      "1": 0.578,
+      "2": 0.244,
+      "3": 0.022
+    },
+    "no_civics": {
+      "1": 0.845,
+      "2": 0.711,
+      "3": 0.311
+    },
+    "no_troop_upgrades": {
+      "1": 0.622,
+      "2": 0.444,
+      "3": 0.111
+    },
+    "no_blueprints": {
+      "1": 0.733,
+      "2": 0.644,
+      "3": 0.378
+    },
+    "no_doctrines": {
+      "1": 0.755,
+      "2": 0.622,
+      "3": 0.422
+    },
+    "no_wonders": {
+      "1": 0.733,
+      "2": 0.6,
+      "3": 0.267
+    },
+    "no_promotions": {
+      "1": 0.844,
+      "2": 0.667,
+      "3": 0.444
+    }
+  },
+  "ablation_delta_mean_vs_baseline": {
+    "no_science": {
+      "1": -0.178,
+      "2": -0.4,
+      "3": -0.467
+    },
+    "no_civics": {
+      "1": 0.089,
+      "2": 0.067,
+      "3": -0.178
+    },
+    "no_troop_upgrades": {
+      "1": -0.134,
+      "2": -0.2,
+      "3": -0.378
+    },
+    "no_blueprints": {
+      "1": -0.023,
+      "2": 0.0,
+      "3": -0.111
+    },
+    "no_doctrines": {
+      "1": -0.001,
+      "2": -0.022,
+      "3": -0.067
+    },
+    "no_wonders": {
+      "1": -0.023,
+      "2": -0.044,
+      "3": -0.222
+    },
+    "no_promotions": {
+      "1": 0.088,
+      "2": 0.023,
+      "3": -0.045
+    }
+  }
+}

@@ -72,6 +72,43 @@ With those: sim compares builds to Defence targets and answers “is Rare X brok
 
 ---
 
+## Contribution & ablation (next full sim — locked)
+
+Strategy clear rates alone are not enough. The next multi-era batch must answer **what carries power**.
+
+### Questions
+
+| Question | Method |
+|---|---|
+| Does Science carry the run? | Ablation `no_science` → clear Δ + Capital damage/HP Δ |
+| Are troop upgrades worth picking? | Ablation `no_troop_upgrades` |
+| Do Civics / Culture matter? | Ablation `no_civics` |
+| Builders / Blueprints doing enough? | Ablation `no_blueprints` + BP buy/fire util |
+| Missionaries / Doctrines doing enough? | Ablation `no_doctrines` |
+| Are Wonders moving the needle? | Ablation `no_wonders` + own-rate by Wonder id |
+| Promotions / Editions matter? | Ablations `no_promotions` / `no_editions` |
+| Policies carrying vs fluff? | Ablation `no_policies` |
+| Dead offers (never taken)? | Baseline util: offer count vs pick/buy count |
+
+### Runner
+
+```bash
+python3 sim/contribution_sim.py --eras 3 --runs 80 --seed 42
+# smoke:
+python3 sim/contribution_sim.py --eras 3 --runs 20 --quick
+```
+
+Outputs: `sim/results/CONTRIBUTION_REPORT.json` + `.md`.  
+Qualitative priors: `BALANCE_HOTSPOTS.md`.
+
+### How to read Δ
+
+- **Large negative clear Δ** when a system is removed → that system was **carrying** (buff competitors or nerf that system if one strat monopolises it).  
+- **~0 Δ** → system is **weak / underused** (buff or cut clutter).  
+- **Utilization**: high offers + low picks = unattractive; high picks + low fires = UX/AI issue.
+
+---
+
 ## Old Phase A/B/C notes
 
 Kept for later calibration only:
