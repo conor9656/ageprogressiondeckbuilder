@@ -17,27 +17,27 @@ Strategies: S5 Faith primary; also S6 Science, econ, bosses.
 
 | # | Name | R | Mode | Effect | Serves | Power note |
 |---|---|---|---|---|---|---|
-| D01 | Tithe | C | Flat econ | +15 Gold on victory | S5 | Baseline Faith→Gold |
-| D02 | Scriptorium | C | Flat econ | +Science equal to **8%** of damage dealt this settlement (*cap +40 Science per fire*) | S6 | Cap stops Capital damage printing infinite Science |
-| D03 | Pilgrimage | C | Occupy | +10 Faith; if you **Occupy** this city, its Faith yield ×2 | S5 | |
-| D04 | Alms | C | Flat econ | +8 Culture | slots | |
+| D01 | Tithe | C | Flat econ | **+35 Gold** on victory (**+50** on Capital) | S5 | Buffed ~2.3× — Missionary hand must pay |
+| D02 | Scriptorium | C | Flat econ | +Science equal to **12%** of damage dealt this settlement (*cap +70 Science per fire*) | S6 | Cap raised with %; still mandatory |
+| D03 | Pilgrimage | C | Occupy | **+22 Faith**; if you **Occupy** this city, its Faith yield ×2 | S5 | |
+| D04 | Alms | C | Flat econ | **+18 Culture** | slots | |
 | D05 | Harvest Homily | C | Flat econ | +10 Gold if this settlement was a Village; +5 otherwise | early | |
 | D06 | Relic Dust | C | Flat econ | +6 Faith | S5 | Small Faith pump |
 | D07 | War Chaplaincy | C | Combat | All units +5% Might for the **next** settlement only | S5 | Tiny forward buff |
 | D08 | Census Blessing | C | Flat econ | +1 Gold per 2 cards in your deck | econ | Fat decks; anti-synergy with S2 |
 | D09 | Martyrs' Ledger | C | Scaling | +5 Gold now; permanently **+2 Gold** to this Doctrine each fire (*cap +25 Gold*) | S5 | Classic grow-on-use |
 | D10 | Catechism | C | Scaling | +4 Science now; permanently **+2 Science** to this each fire (*cap +20*) | S6 | Safer than % damage |
-| D11 | Zeal | U | Combat | All units +15% Might for the next **2** settlements | S5 | Strong sticky; duration is the lever |
+| D11 | Zeal | U | Combat | All units **+20%** Might for the next **2** settlements | S5 | Sticky combat aura — Faith's in-fight layer |
 | D12 | Peaceful Conversion | U | Occupy | Occupied city yields ×2 (all resources) | S5 | Occupy mattering |
 | D13 | Relic Hunt | U | Utility | Gain 1 free Great Prophet | S5 | Pack RNG bypass once |
 | D14 | Census | U | Flat econ | +Gold equal to number of cards in deck | econ | Bigger than D08 |
 | D15 | Crusade Charter | U | Combat | Next **Capital**: +20% Might | bosses | Situational |
 | D16 | Synod Tithes | U | Flat econ | +12 Faith; +6 Gold | S5 | Mixed econ |
-| D17 | Scholastic Order | U | Flat econ | +15 Science; +5 Culture | S6 | |
+| D17 | Scholastic Order | U | Flat econ | **+30 Science; +10 Culture** | S6 | |
 | D18 | Pilgrim Roads | U | Occupy | If Occupy, this city also yields +Gold equal to its primary yield | S5 | Dual yield |
 | D19 | Banner of Faith | U | Scaling | Starts +0% Might next settlement; **+5%** permanently to that buff each fire (*applies as next-settlement only buff; cap +25%*) | S5 | Grows commitment to Missionary plays |
 | D20 | Liturgical Calendar | U | Scaling | +0 Faith on victory; **+3 Faith** to this each time you fire it on a **Temple** city (*cap +24*) | S5 | Route synergy |
-| D21 | Missionary Zeal | R | Scaling | This Doctrine’s **Gold and Faith** numeric rewards start at +10/+5 and permanently **+5/+3** each trigger | S5 | Headline snowball — no combat % |
+| D21 | Missionary Zeal | R | Scaling | This Doctrine’s **Gold and Faith** numeric rewards start at **+15/+8** and permanently **+8/+5** each trigger | S5 | Steeper spoils snowball — no combat % |
 | D22 | Holy War | R | Retrigger | Each Missionary in the **winning** scoring formation retriggers all Doctrines already fired this settlement | S5 | Needs multi-Missionary; explosive but gated |
 | D23 | Indulgence | R | Rule | +1 Missionary slot (permanent) | S5 | Slot Rare |
 | D24 | Apostolic Blessing | R | Combat | +25% Might on the **next** settlement only | S5 | Bigger Zeal, shorter |
@@ -59,8 +59,15 @@ Strategies: S5 Faith primary; also S6 Science, econ, bosses.
 | D40 | Eternal Flame | R | Scaling | +3 Faith now; permanently **+1 Faith** per settlement you win for the rest of the run while this Doctrine remains equipped (*not per fire — passive after first fire*) | S5 | Equip-tax snowball; removing it stops growth |
 | D41 | Mercenaries | R | Combat | When fired: rest of this settlement, each Assault **+⌊Gold/5⌋ Might** (Gold snapshotted on fire), **cap +40**. Raw +1 Might/Gold is banned as broken. | econ S4 | See `CARD_ASSESSMENT_NEW.md` |
 | D42 | Prophetic Succession | U | Utility | On victory (if fired this settlement): gain **1 random Great Prophet** | S5 | On-win cousin of Relic Hunt (immediate) |
+| D43 | **Spoils Liturgy** | U | Flat econ | **Victory rewards ×1.5** this settlement (Gold/Sci/Cul/Faith) | S5 | Headline “I think I’ll win” Doctrine |
+| D44 | **War Psalm** | U | Combat | This settlement: formations **+1 Mom** while this Doctrine has fired | S5 | Thin in-fight Faith aura |
+| D45 | **Martyr's Guard** | R | Combat | If you would lose on the **last Assault**, survive and clear once (clutch) | S5 | Faith safety net — not a Blueprint |
 
-**Count: 42.** Soft cuts if needed: D05, D31–D33 (class flavor commons), D38 until boss rules are fully specified.
+**Count: 45.** Soft cuts if needed: D05, D31–D33 (class flavor commons), D38 until boss rules are fully specified.
+
+### Levers v3 note
+
+Sim **does** apply Doctrine victory payouts (`apply_doctrine_rewards`). Contribution Δ≈0 was **magnitude**, not missing wiring. Spoils Liturgy + ×2 commons keep the fantasy: spend a Missionary hand to jackpot the win.
 
 ---
 

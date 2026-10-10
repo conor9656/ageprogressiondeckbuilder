@@ -50,7 +50,12 @@ REWARD_FAITH = 12
 RAZE_GOLD = 28
 CITY_YIELD = 7
 PACK_SIZE = 5  # was 3
-WONDER_SHOP_CHANCE = 0.04  # low chance per pack offer
+WONDER_SHOP_CHANCE = 0.04  # low chance per pack offer (dedicated Wonder slot is separate)
+EDITION_CHANCE = 0.30  # was 0.15 — editions should show up
+PROMO_BAND_START = 0.64  # unit 0–0.36, blueprint 0.36–0.64, promo 0.64–0.92 (~28%)
+PROMO_BAND_END = 0.92
+SCIENCE_OFFER_COUNT = 4  # was 3 — more non-troop room
+WONDER_REROLL_COST = 5
 
 BLUEPRINTS = {
     "battering_ram": ("C", 10, "siege_might"),
@@ -70,18 +75,38 @@ BLUEPRINTS = {
     "kaleidoscope_orders": ("R", 45, "kaleidoscope"),
 }
 DOCTRINES = {
-    "tithe": ("C", 8, "gold15"),
+    # Victory spoils — buffed ~2–2.5× so risking a Missionary hand pays
+    "tithe": ("C", 8, "gold35"),
     "scriptorium": ("C", 8, "sci_pct"),
-    "pilgrimage": ("C", 8, "faith10"),
-    "alms": ("C", 8, "cul8"),
-    "zeal": ("U", 18, "might15_2"),
+    "pilgrimage": ("C", 8, "faith22"),
+    "alms": ("C", 8, "cul18"),
+    "zeal": ("U", 18, "might20_2"),
     "relic_hunt": ("U", 18, "prophet"),
     "crusade": ("U", 18, "capital_might20"),
     "missionary_zeal": ("R", 35, "scale_gold_faith"),
-    "scholastic_order": ("U", 18, "sci20_cul5"),
+    "scholastic_order": ("U", 18, "sci30_cul10"),
     "mercenaries": ("R", 35, "merc_might"),
     "prophetic_succession": ("U", 18, "prophet_on_win"),
+    # Headline Faith cards (levers v3)
+    "spoils_liturgy": ("U", 18, "spoils_x15"),       # victory rewards ×1.5 this settlement
+    "war_psalm": ("U", 18, "war_psalm"),             # +1 Mom while Doctrine fired
+    "martyrs_guard": ("R", 35, "martyrs_guard"),     # clutch: last Assault loss → survive
 }
+PROMOTIONS = {
+    "master_drill": ("C", 12, "might5"),
+    "skirmish_doctrine": ("C", 12, "mom2"),
+    "shock_drill": ("U", 20, "might3_mom1"),
+    "banner_carrier": ("U", 22, "banner12"),
+    "thinking_soldier": ("U", 20, "sci10"),
+    "tithe_sergeant": ("U", 20, "gold8"),
+    "zealots_mark": ("U", 20, "faith8"),
+    "heroic": ("R", 40, "mult175"),
+    "relentless": ("R", 40, "score_twice"),
+}
+EDITION_POOL = [
+    "gilded", "scholarly", "devout", "mercantile",
+    "berserker", "hawk_eyed", "savant", "zealot", "plated",
+]
 POLICIES = {
     "agoge": ("C", "melee_might4"),
     "drill_manual": ("C", "ranged_mom1"),
@@ -110,20 +135,32 @@ POLICIES = {
     "court_fashion": ("U", "mom_per_edition"),     # +1 Mom per Edition unit (cap 4)
 }
 
+# Wonder: (effect_key, base_cost) — early eras pay ~70% via wonder_cost()
 WONDERS = {
-    "colosseum": ("plus_assault", 90),
-    "great_library": ("free_sci_level", 90),
-    "pyramids": ("builder_scale", 90),
-    "hanging_gardens": ("hand_size", 85),
-    "stonehenge": ("faith_burst", 85),
-    "terracotta_army": ("replace_troop", 95),
-    "big_ben": ("interest", 95),
-    "forbidden_palace": ("policy_slot", 90),
-    "grand_bazaar": ("cheap_units", 95),
-    "parade_grounds": ("parade_grounds", 100),
-    "theater_of_war": ("theater_of_war", 100),
-    "scriptoria_spire": ("scriptoria_spire", 110),
-    "safe_conduct": ("safe_conduct", 70),
+    "colosseum": ("plus_assault", 70),
+    "great_library": ("free_sci_level", 70),
+    "pyramids": ("builder_scale", 70),
+    "hanging_gardens": ("hand_size", 65),
+    "stonehenge": ("faith_burst", 65),
+    "terracotta_army": ("replace_troop", 75),
+    "big_ben": ("interest", 75),
+    "forbidden_palace": ("policy_slot", 70),
+    "grand_bazaar": ("cheap_units", 75),
+    "parade_grounds": ("parade_grounds", 80),
+    "theater_of_war": ("theater_of_war", 80),
+    "scriptoria_spire": ("scriptoria_spire", 85),
+    "safe_conduct": ("safe_conduct", 55),
+    # New niches (levers v3)
+    "oracle_of_delphi": ("sci_cost_cut", 70),
+    "museum_of_alexandria": ("sci_gain_pct", 75),
+    "angkor_wat": ("faith_doc_pct", 75),
+    "hagia_sophia": ("float_supports", 80),
+    "machu_picchu": ("support_free_slots", 80),
+    "chichen_itza": ("formation_mom2", 75),
+    "taj_mahal": ("victory_gold_pct", 75),
+    "eiffel_tower": ("mint_of_heroes", 85),
+    "christ_the_redeemer": ("christ_clutch", 70),
+    "petra": ("occupy_x2", 75),
 }
 
 # Formation/misc: (id, era, family) family "drill" = era<=current; "prog" = era==current only
@@ -242,10 +279,18 @@ RARITY_WEIGHT = {"C": 10, "U": 4, "R": 1}
 class Card:
     kind: str  # M R C S B Y
     cid: int
-    # promotions / editions (simplified)
+    # promotions / editions
     bonus_might: int = 0
     bonus_mom: int = 0
-    edition: str = "standard"  # standard, gilded, scholarly, devout, mercantile
+    might_mult: float = 1.0          # Heroic ×1.75
+    banner_might: int = 0            # Banner Carrier formation bonus
+    score_twice: bool = False        # Relentless
+    plated: bool = False             # Plated edition — half Archers penalty
+    on_score_sci_pct: float = 0.0
+    on_score_faith_pct: float = 0.0
+    on_score_gold: int = 0
+    on_score_faith: int = 0
+    edition: str = "standard"
 
     def combat(self) -> bool:
         return self.kind in CLASSES
@@ -257,6 +302,7 @@ class FightMods:
     siege_mom: int = 0
     ignore_walls_next: bool = False
     walls_removed: bool = False
+    free_wall_ignore: bool = False  # S1 once/settlement
     next_might: int = 0
     next_unit_might_pct: float = 0.0
     next_mom: int = 0
@@ -267,6 +313,15 @@ class FightMods:
     doctrines_fired: list = field(default_factory=list)
     helping_hand: bool = False
     merc_might: int = 0  # flat Might per assault from Mercenaries
+    war_psalm_mom: int = 0
+    spoils_mult: float = 1.0
+    martyrs_guard: bool = False
+    # On-score edition/promo economy accrued this settlement
+    scored_sci_pct: float = 0.0
+    scored_faith_pct: float = 0.0
+    scored_gold: int = 0
+    scored_faith: int = 0
+    scored_cids: set = field(default_factory=set)
     # Engineering / Prophecy settlement-scoped flags
     builder_played: bool = False
     draw_on_builder_used: bool = False
@@ -308,8 +363,11 @@ class RunState:
     hand_size: int = 8
     base_assaults: int = 4
     base_regroups: int = 3
-    zeal_settlements_left: int = 0  # +15% might
+    zeal_settlements_left: int = 0  # sticky Might%
+    zeal_might_pct: float = 0.20    # Zeal buffed 15% → 20%
     capital_might_bonus: float = 0.0
+    missionary_zeal_gold: int = 15  # steeper Missionary Zeal steps
+    missionary_zeal_faith: int = 8
     occupied: list[str] = field(default_factory=list)  # scholar/artisan/temple/trade
     writing: bool = False
     last_troop_upgrade: Optional[str] = None
@@ -321,7 +379,9 @@ class RunState:
     events: list = field(default_factory=list)
     era_just_began: bool = True
     wonder: Optional[str] = None
-    era_wonder_available: Optional[str] = None  # forced offer once per era
+    shop_wonder_offer: Optional[str] = None  # dedicated Wonder slot every visit
+    shop_wonder_rerolls_left: int = 1
+    era_wonder_available: Optional[str] = None  # legacy alias
     era_wonder_offered: bool = False
     cheap_units: bool = False
     interest_cap: int = 5
@@ -329,6 +389,15 @@ class RunState:
     gold_bonus_pct: float = 0.0
     faith_bonus_pct: float = 0.0
     cul_bonus_pct: float = 0.0
+    sci_cost_pct: float = 0.0         # Oracle −25% Sci bar
+    victory_gold_pct: float = 0.0     # Taj Mahal
+    doctrine_payout_pct: float = 0.0  # Angkor Wat
+    occupy_yield_mult: float = 1.0    # Petra
+    all_units_editions: bool = False  # Eiffel Tower
+    support_free_slots: bool = False  # Machu Picchu
+    chichen_mom: int = 0
+    christ_ready: bool = False
+    christ_used_era: int = -1
     eng_flags: set = field(default_factory=set)
     pro_flags: set = field(default_factory=set)
     owned_prog: set = field(default_factory=set)
@@ -369,6 +438,12 @@ class RunState:
 
     def soft_cap(self) -> int:
         return ERA_SOFT_CAP.get(self.era, 5)
+
+    def wonder_price(self, name: str) -> int:
+        base = WONDERS[name][1]
+        # Soft-cheaper early: ~55–70 early, ~80–100 late
+        era_mult = {1: 0.85, 2: 0.90, 3: 0.95, 4: 1.0}.get(self.era, 1.05)
+        return max(40, int(base * era_mult))
 
     def tier_of(self, kind: str) -> int:
         if kind in ("M", "R", "C", "S"):
@@ -570,18 +645,23 @@ def evaluate_play(run: RunState, cards: list[Card], fight: FightMods,
         if c.kind == "S":
             um += int(fight.siege_might * run.builder_scale)
             uo += fight.siege_mom
+        um *= c.might_mult
 
         # garrisons
         if garrison == "pikemen" and c.kind == "C":
             um = 0
         if garrison == "archers" and c.kind == "M":
-            um = um / 2
+            um = um / 4 if c.plated else um / 2
         if garrison == "horsemen" and c.kind == "R":
             uo = 0
 
         mult = 2 if (first_double and j == 0) else 1
+        if c.score_twice:
+            mult *= 2
         might += um * mult
         mom += uo * mult
+        if c.banner_might:
+            might += c.banner_might
 
     if "professional_army" in run.policies:
         n_r = sum(1 for c in run.deck if c.kind == "R")
@@ -626,6 +706,10 @@ def evaluate_play(run: RunState, cards: list[Card], fight: FightMods,
         mom += min(3.0, bonus)
     if run.kaleidoscope_mom > 0:
         mom += run.kaleidoscope_mom
+    if run.chichen_mom:
+        mom += run.chichen_mom
+    if fight.war_psalm_mom:
+        mom += fight.war_psalm_mom
 
     # fight bursts
     might += fight.next_might
@@ -637,7 +721,7 @@ def evaluate_play(run: RunState, cards: list[Card], fight: FightMods,
     mom *= fight.next_mom_mult
 
     if run.zeal_settlements_left > 0:
-        might *= 1.15
+        might *= 1.0 + run.zeal_might_pct
     if settlement["kind"] == "capital":
         if "total_war" in run.policies:
             might *= 1.15
@@ -645,15 +729,26 @@ def evaluate_play(run: RunState, cards: list[Card], fight: FightMods,
 
     dmg = might * mom
 
-    if walls and not has_siege_played and not fight.ignore_walls_next:
+    wall_ignore = fight.ignore_walls_next or fight.free_wall_ignore
+    if walls and not has_siege_played and not wall_ignore:
         dmg *= 0.5
 
     if consume_burst:
+        # Accrue on-score edition / promo economy (once per card per settlement)
+        for c in scoring_cards:
+            if c.cid in fight.scored_cids:
+                continue
+            fight.scored_cids.add(c.cid)
+            fight.scored_sci_pct += c.on_score_sci_pct
+            fight.scored_faith_pct += c.on_score_faith_pct
+            fight.scored_gold += c.on_score_gold
+            fight.scored_faith += c.on_score_faith
         fight.next_might = 0
         fight.next_mom = 0
         fight.next_unit_might_pct = 0.0
         fight.next_mom_mult = 1.0
         fight.ignore_walls_next = False
+        fight.free_wall_ignore = False
 
     return {
         "damage": max(0, int(dmg)),
@@ -739,8 +834,17 @@ def trigger_doctrine(run: RunState, name: str, fight: FightMods) -> None:
     if name in fight.doctrines_fired or name not in run.doctrines:
         return
     fight.doctrines_fired.append(name)
-    if DOCTRINES[name][2] == "merc_might":
+    effect = DOCTRINES[name][2]
+    if effect == "merc_might":
         fight.merc_might = max(fight.merc_might, min(40, run.gold // 5))
+    elif effect == "war_psalm":
+        fight.war_psalm_mom = max(fight.war_psalm_mom, 1)
+    elif effect == "spoils_x15":
+        fight.spoils_mult = max(fight.spoils_mult, 1.5)
+    elif effect == "martyrs_guard":
+        fight.martyrs_guard = True
+    elif effect == "might20_2":
+        run.zeal_settlements_left = max(run.zeal_settlements_left, 2)
 
 
 def apply_doctrine_rewards(run: RunState, fight: FightMods, total_damage: int,
@@ -748,34 +852,45 @@ def apply_doctrine_rewards(run: RunState, fight: FightMods, total_damage: int,
     doc_mult = 1.2 if "doctrine_numeric" in run.pro_flags else 1.0
     if "doc_double" in run.pro_flags:
         doc_mult *= 2.0
+    doc_mult *= 1.0 + run.doctrine_payout_pct
+    capital = settlement.get("kind") == "capital"
     for name in fight.doctrines_fired:
         effect = DOCTRINES[name][2]
-        if effect == "gold15":
-            run.gold += int(15 * doc_mult * (1 + run.gold_bonus_pct))
+        if effect in ("gold15", "gold35"):
+            g = 50 if capital else 35
+            if effect == "gold15":
+                g = 15
+            run.gold += int(g * doc_mult * (1 + run.gold_bonus_pct))
         elif effect == "sci_pct":
-            run.science += min(80 if "doc_double" in run.pro_flags else 40,
-                               int(total_damage * 0.08 * doc_mult * (1 + run.sci_bonus_pct)))
-        elif effect == "faith10":
-            run.faith += int(10 * doc_mult * (1 + run.faith_bonus_pct))
+            cap = 140 if "doc_double" in run.pro_flags else 70
+            run.science += min(cap, int(total_damage * 0.12 * doc_mult * (1 + run.sci_bonus_pct)))
+        elif effect in ("faith10", "faith22"):
+            f = 22 if effect == "faith22" else 10
+            run.faith += int(f * doc_mult * (1 + run.faith_bonus_pct))
             if occupied_choice == "temple":
                 pass  # yield handled in occupy
-        elif effect == "cul8":
-            run.culture += int(8 * doc_mult * (1 + run.cul_bonus_pct))
-        elif effect == "might15_2":
+        elif effect in ("cul8", "cul18"):
+            c = 18 if effect == "cul18" else 8
+            run.culture += int(c * doc_mult * (1 + run.cul_bonus_pct))
+        elif effect in ("might15_2", "might20_2"):
             run.zeal_settlements_left = max(run.zeal_settlements_left, 2)
         elif effect == "prophet":
-            # Sow Dissent free next fight approx: store as capital bonus or gold
-            run.gold += int(8 * doc_mult * (1 + run.gold_bonus_pct))
+            run.gold += int(12 * doc_mult * (1 + run.gold_bonus_pct))
         elif effect == "capital_might20":
             run.capital_might_bonus = max(run.capital_might_bonus, 0.20)
         elif effect == "scale_gold_faith":
-            run.gold += int(10 * doc_mult * (1 + run.gold_bonus_pct))
-            run.faith += int(5 * doc_mult * (1 + run.faith_bonus_pct))
-        elif effect == "sci20_cul5":
-            run.science += int(20 * doc_mult * (1 + run.sci_bonus_pct))
-            run.culture += int(5 * doc_mult * (1 + run.cul_bonus_pct))
+            run.gold += int(run.missionary_zeal_gold * doc_mult * (1 + run.gold_bonus_pct))
+            run.faith += int(run.missionary_zeal_faith * doc_mult * (1 + run.faith_bonus_pct))
+            run.missionary_zeal_gold += 8
+            run.missionary_zeal_faith += 5
+        elif effect in ("sci20_cul5", "sci30_cul10"):
+            sci = 30 if effect == "sci30_cul10" else 20
+            cul = 10 if effect == "sci30_cul10" else 5
+            run.science += int(sci * doc_mult * (1 + run.sci_bonus_pct))
+            run.culture += int(cul * doc_mult * (1 + run.cul_bonus_pct))
         elif effect == "prophet_on_win":
             run.prophet_on_win = True
+        # spoils / war_psalm / martyrs applied via fight flags / combat
 
 
 # --- Deck helpers -------------------------------------------------------------
@@ -817,12 +932,13 @@ def greedy_assault(run: RunState, hand: list[Card], fight: FightMods,
     max_k = 5
     free_builder = (
         (fight.helping_hand or "helping_hand" in run.blueprints
+         or run.support_free_slots
          or ("builder_free_slot" in run.eng_flags and not fight.builder_free_slot_used))
         and any(c.kind == "B" for c in hand)
     )
     free_missionary = (
-        "missionary_free_slot" in run.pro_flags
-        and not fight.missionary_free_slot_used
+        (run.support_free_slots
+         or ("missionary_free_slot" in run.pro_flags and not fight.missionary_free_slot_used))
         and any(c.kind == "Y" for c in hand)
     )
     if free_builder or free_missionary:
@@ -854,11 +970,14 @@ def greedy_assault(run: RunState, hand: list[Card], fight: FightMods,
         fe = FightMods(
             siege_might=fight.siege_might, siege_mom=fight.siege_mom,
             ignore_walls_next=fight.ignore_walls_next, walls_removed=fight.walls_removed,
+            free_wall_ignore=fight.free_wall_ignore,
             next_might=fight.next_might, next_unit_might_pct=fight.next_unit_might_pct,
             next_mom=fight.next_mom, next_mom_mult=fight.next_mom_mult,
             blueprints_fired=set(fight.blueprints_fired),
             doctrines_fired=list(fight.doctrines_fired),
             helping_hand=fight.helping_hand, merc_might=fight.merc_might,
+            war_psalm_mom=fight.war_psalm_mom, spoils_mult=fight.spoils_mult,
+            martyrs_guard=fight.martyrs_guard,
             builder_played=fight.builder_played,
             draw_on_builder_used=fight.draw_on_builder_used,
             missionary_free_slot_used=fight.missionary_free_slot_used,
@@ -879,8 +998,13 @@ def greedy_assault(run: RunState, hand: list[Card], fight: FightMods,
             if c.kind == "Y" and docs:
                 pick = pick_doctrine(run, docs)
                 fe.doctrines_fired.append(pick)
-                if DOCTRINES[pick][2] == "merc_might":
+                eff = DOCTRINES[pick][2]
+                if eff == "merc_might":
                     fe.merc_might = max(fe.merc_might, min(40, run.gold // 5))
+                elif eff == "war_psalm":
+                    fe.war_psalm_mom = max(fe.war_psalm_mom, 1)
+                elif eff == "spoils_x15":
+                    fe.spoils_mult = max(fe.spoils_mult, 1.5)
                 docs = [d for d in docs if d != pick]
 
         ev = evaluate_play(run, play, fe, settlement, consume_burst=False)
@@ -923,10 +1047,14 @@ def pick_doctrine(run: RunState, available: list[str]) -> str:
     strat = run.strategy
     pri = []
     if strat == "S5":
-        pri += ["missionary_zeal", "prophetic_succession", "mercenaries", "zeal", "tithe", "pilgrimage", "relic_hunt"]
+        pri += ["spoils_liturgy", "missionary_zeal", "war_psalm", "martyrs_guard",
+                "prophetic_succession", "mercenaries", "zeal", "tithe", "pilgrimage", "relic_hunt"]
     if strat == "S6":
-        pri += ["scriptorium", "scholastic_order", "alms", "tithe"]
-    pri += ["mercenaries", "prophetic_succession", "zeal", "tithe", "scriptorium", "crusade", "alms", "pilgrimage"]
+        pri += ["scriptorium", "scholastic_order", "spoils_liturgy", "alms", "tithe"]
+    if strat == "S1":
+        pri += ["war_psalm", "martyrs_guard", "zeal", "mercenaries"]
+    pri += ["spoils_liturgy", "war_psalm", "mercenaries", "prophetic_succession",
+            "zeal", "tithe", "scriptorium", "crusade", "alms", "pilgrimage", "martyrs_guard"]
     for p in pri:
         if p in available:
             return p
@@ -1155,21 +1283,27 @@ def interest(run: RunState) -> None:
 
 
 def city_yields(run: RunState) -> None:
+    ym = run.occupy_yield_mult
     for t in run.occupied:
         if t == "scholar":
-            run.science += int(CITY_YIELD * (1 + run.sci_bonus_pct))
+            run.science += int(CITY_YIELD * (1 + run.sci_bonus_pct) * ym)
         elif t == "artisan":
-            run.culture += int(CITY_YIELD * (1 + run.cul_bonus_pct))
+            run.culture += int(CITY_YIELD * (1 + run.cul_bonus_pct) * ym)
         elif t == "temple":
-            run.faith += int(CITY_YIELD * (1 + run.faith_bonus_pct))
+            run.faith += int(CITY_YIELD * (1 + run.faith_bonus_pct) * ym)
         elif t == "trade":
-            run.gold += int(CITY_YIELD * (1 + run.gold_bonus_pct))
+            run.gold += int(CITY_YIELD * (1 + run.gold_bonus_pct) * ym)
 
 
 def snapshot_run(run: RunState) -> dict:
     editions = Counter(c.edition for c in run.deck if c.edition != "standard")
     special_units = sum(1 for c in run.deck if c.edition != "standard")
-    promoted = sum(1 for c in run.deck if c.bonus_might > 0 or c.bonus_mom > 0)
+    promoted = sum(
+        1 for c in run.deck
+        if c.bonus_might > 0 or c.bonus_mom > 0 or c.banner_might > 0
+        or c.score_twice or c.might_mult > 1.0 or c.on_score_gold > 0
+        or c.on_score_faith > 0 or c.on_score_sci_pct > 0
+    )
     class_counts = Counter(c.kind for c in run.deck)
     return {
         "gold": run.gold,
@@ -1225,23 +1359,37 @@ def after_victory(run: RunState, settlement: dict, total_damage: int,
     doc_before = set(run.doctrines)
     deck_before = len(run.deck)
     special_before = sum(1 for c in run.deck if c.edition != "standard")
-    promoted_before = sum(1 for c in run.deck if c.bonus_might > 0 or c.bonus_mom > 0)
+    promoted_before = sum(
+        1 for c in run.deck
+        if c.bonus_might > 0 or c.bonus_mom > 0 or c.banner_might > 0
+        or c.score_twice or c.might_mult > 1.0
+    )
     gold_before = run.gold
     faith_before = run.faith
 
     unused = max(0, run.base_assaults - assaults_used)
+    spoils = fight_docs.spoils_mult if fight_docs else 1.0
+    if getattr(run, "_half_reward_clutch", False):
+        spoils *= 0.5
+        run._half_reward_clutch = False  # type: ignore
     base_gold = REWARD_GOLD + unused
-    run.gold += int(base_gold * (1 + run.gold_bonus_pct))
+    run.gold += int(base_gold * (1 + run.gold_bonus_pct + run.victory_gold_pct) * spoils)
     # Clear Letter of Credit debt from victory Gold
     if run.gold_debt > 0:
         pay = min(run.gold, run.gold_debt)
         run.gold -= pay
         run.gold_debt -= pay
-    run.science += int(REWARD_SCIENCE * (1 + run.sci_bonus_pct))
-    run.culture += int(REWARD_CULTURE * (1 + run.cul_bonus_pct))
-    run.faith += int(REWARD_FAITH * (1 + run.faith_bonus_pct))
+    sci_pct = 1 + run.sci_bonus_pct + (fight_docs.scored_sci_pct if fight_docs else 0.0)
+    faith_pct = 1 + run.faith_bonus_pct + (fight_docs.scored_faith_pct if fight_docs else 0.0)
+    run.science += int(REWARD_SCIENCE * sci_pct * spoils)
+    run.culture += int(REWARD_CULTURE * (1 + run.cul_bonus_pct) * spoils)
+    run.faith += int(REWARD_FAITH * faith_pct * spoils)
+    if fight_docs and fight_docs.scored_gold:
+        run.gold += int(fight_docs.scored_gold * (1 + run.gold_bonus_pct) * spoils)
+    if fight_docs and fight_docs.scored_faith:
+        run.faith += int(fight_docs.scored_faith * (1 + run.faith_bonus_pct) * spoils)
     if "rationalism" in run.policies:
-        run.science += max(4, int(REWARD_SCIENCE * 0.25 * (1 + run.sci_bonus_pct)))
+        run.science += max(4, int(REWARD_SCIENCE * 0.25 * sci_pct))
     # Investment Bond accrues while equipped
     if "investment_bond" in run.blueprints:
         run.bond_bank = min(80, run.bond_bank + 5)
@@ -1258,8 +1406,16 @@ def after_victory(run: RunState, settlement: dict, total_damage: int,
             candidates = [c for c in run.deck if c.combat()]
         if candidates:
             src = candidates[0]
-            run.deck.append(run.new_card(src.kind, edition=src.edition,
-                                         bonus_might=src.bonus_might, bonus_mom=src.bonus_mom))
+            clone = run.new_card(
+                src.kind, edition=src.edition,
+                bonus_might=src.bonus_might, bonus_mom=src.bonus_mom,
+                might_mult=src.might_mult, banner_might=src.banner_might,
+                score_twice=src.score_twice, plated=src.plated,
+                on_score_sci_pct=src.on_score_sci_pct,
+                on_score_faith_pct=src.on_score_faith_pct,
+                on_score_gold=src.on_score_gold, on_score_faith=src.on_score_faith,
+            )
+            run.deck.append(clone)
     # Safe Conduct: bots cash it before a Capital they might lose (simple heuristic)
     if run.safe_conduct_ready and settlement["kind"] == "town" and run.rng.random() < 0.35:
         run.safe_conduct_ready = False
@@ -1334,12 +1490,15 @@ def _util_inc(run: RunState, key: str, item: str, n: int = 1) -> None:
 def process_level_ups(run: RunState) -> dict:
     sci_picks = []
     civ_picks = []
-    while run.sci_level < len(SCIENCE_COSTS) and run.science >= SCIENCE_COSTS[run.sci_level]:
+    while run.sci_level < len(SCIENCE_COSTS):
+        sci_cost = max(1, int(SCIENCE_COSTS[run.sci_level] * (1.0 - run.sci_cost_pct)))
+        if run.science < sci_cost:
+            break
         if "no_science" in run.ablation:
             # Burn bank so we don't loop; no level-up power
             run.science = 0
             break
-        run.science -= SCIENCE_COSTS[run.sci_level]
+        run.science -= sci_cost
         offers = roll_science_offers(run)
         if "no_troop_upgrades" in run.ablation:
             offers = [o for o in offers if not o.startswith("upgrade_")] or ["battle_line_drill"]
@@ -1376,7 +1535,8 @@ def process_level_ups(run: RunState) -> dict:
 
 def roll_science_offers(run: RunState) -> list[str]:
     rng = run.rng
-    t_count = 1 if rng.random() < 0.60 else 2
+    # 4 offers; troop-like min 1 max 2 (more non-troop / trees for S5–S6 evening)
+    t_count = 1 if rng.random() < 0.55 else 2
     troops = weighted_troop_offers(run, t_count)
     # Drills: era <= current (+ rare ahead); skip doubles already owned via civic/sci
     pool = []
@@ -1389,6 +1549,9 @@ def roll_science_offers(run: RunState) -> list[str]:
             continue
         if n == "apostolic_double_sci" and "doc_double" in run.pro_flags:
             continue
+        # S3 consistency: slightly denser Battle Line early
+        if n == "battle_line_drill" and run.era <= 2:
+            pool.append(n)
         pool.append(n)
     # Progression: current-era node only, if not already owned
     for tree in (PROG_EDU, PROG_BANK, PROG_DEV, PROG_ART, PROG_ENG, PROG_PRO):
@@ -1398,13 +1561,14 @@ def roll_science_offers(run: RunState) -> list[str]:
                 pool.append(nid)
     rng.shuffle(pool)
     non = []
-    while len(troops) + len(non) < 3 and pool:
+    target = SCIENCE_OFFER_COUNT
+    while len(troops) + len(non) < target and pool:
         n = pool.pop()
         if n not in non:
             non.append(n)
-    while len(troops) + len(non) < 3:
+    while len(troops) + len(non) < target:
         non.append("battle_line_drill")
-    return (troops + non)[:3]
+    return (troops + non)[:target]
 
 
 def weighted_troop_offers(run: RunState, n: int) -> list[str]:
@@ -1450,17 +1614,17 @@ def choose_science(run: RunState, offers: list[str]) -> str:
     strat = run.strategy
     pref = []
     if strat == "S3":
-        pref = ["upgrade_M", "upgrade_R", "battle_line_drill", "edu_", "bank_", "upgrade_C"]
+        pref = ["battle_line_drill", "upgrade_M", "upgrade_R", "edu_", "bank_", "upgrade_C"]
     elif strat == "S1":
-        pref = ["upgrade_S", "upgrade_M", "eng_", "upgrade_B", "combined_arms_primer"]
+        pref = ["upgrade_S", "eng_", "upgrade_M", "upgrade_B", "combined_arms_primer", "machinery"]
     elif strat == "S2":
         pref = ["upgrade_M", "upgrade_C", "skirmish_drill", "bank_", "upgrade_R"]
     elif strat == "S4":
         pref = ["eng_", "upgrade_B", "upgrade_M", "bank_", "writing"]
     elif strat == "S5":
-        pref = ["pro_", "dev_", "upgrade_M", "surveying"]
+        pref = ["pro_", "dev_", "apostolic_double_sci", "upgrade_M", "surveying", "edu_"]
     elif strat == "S6":
-        pref = ["edu_", "upgrade_M", "upgrade_R", "writing", "upgrade_C"]
+        pref = ["edu_", "writing", "upgrade_M", "upgrade_R", "bank_", "upgrade_C"]
     else:
         pref = ["upgrade_M", "edu_", "bank_", "upgrade_R", "battle_line_drill"]
     for p in pref:
@@ -1816,24 +1980,58 @@ def choose_policy(run: RunState, offers: list[str]) -> str:
     return offers[0]
 
 
+def _append_wonder_slot(run: RunState, treasury: list) -> None:
+    """Dedicated Wonder slot every shop visit while you own none."""
+    if run.wonder is not None or "no_wonders" in run.ablation:
+        return
+    if run.shop_wonder_offer is None:
+        run.shop_wonder_offer = run.rng.choice(list(WONDERS.keys()))
+        run.shop_wonder_rerolls_left = 1
+        run.era_wonder_available = run.shop_wonder_offer
+    w = run.shop_wonder_offer
+    treasury.append(("wonder", w, run.wonder_price(w)))
+
+
+def _maybe_reroll_wonder(run: RunState, treasury: list) -> None:
+    """Bots reroll the Wonder slot once if they can't afford / don't want it."""
+    if (run.wonder is not None or run.shop_wonder_offer is None
+            or run.shop_wonder_rerolls_left <= 0):
+        return
+    w = run.shop_wonder_offer
+    cost = run.wonder_price(w)
+    if want_wonder(run, w) and run.gold >= cost + 8:
+        return
+    # Reroll for gold if broke for this Wonder or low score
+    if run.gold >= WONDER_REROLL_COST + 20:
+        run.gold -= WONDER_REROLL_COST
+        run.shop_wonder_rerolls_left -= 1
+        alt = [k for k in WONDERS if k != w]
+        run.shop_wonder_offer = run.rng.choice(alt) if alt else w
+        run.era_wonder_available = run.shop_wonder_offer
+        # Replace wonder row in treasury
+        for i, o in enumerate(treasury):
+            if o[0] == "wonder":
+                nw = run.shop_wonder_offer
+                treasury[i] = ("wonder", nw, run.wonder_price(nw))
+                break
+
+
 def shop(run: RunState, settlement: dict) -> None:
     rng = run.rng
     pack_n = PACK_SIZE + run.pack_bonus
     synod_n = pack_n + run.synod_pack_bonus
 
-    # Once per era: guarantee a Wonder purchase option
-    if (not run.era_wonder_offered and run.wonder is None
-            and "no_wonders" not in run.ablation):
-        run.era_wonder_available = rng.choice(list(WONDERS.keys()))
+    # Fresh dedicated Wonder offer each visit if still unequipped
+    if run.wonder is None and "no_wonders" not in run.ablation:
+        run.shop_wonder_offer = rng.choice(list(WONDERS.keys()))
+        run.shop_wonder_rerolls_left = 1
+        run.era_wonder_available = run.shop_wonder_offer
         run.era_wonder_offered = True
 
     treasury = [roll_treasury_offer(run) for _ in range(pack_n)]
     synod = [roll_synod_offer(run) for _ in range(synod_n)]
-
-    # Append forced era wonder as an extra buyable row item
-    if run.era_wonder_available and run.wonder is None:
-        w = run.era_wonder_available
-        treasury.append(("wonder", w, WONDERS[w][1]))
+    _append_wonder_slot(run, treasury)
+    _maybe_reroll_wonder(run, treasury)
 
     # Royal Boon: zero out random offer(s) once per era
     while run.era_free_item_left > 0:
@@ -1869,15 +2067,11 @@ def shop(run: RunState, settlement: dict) -> None:
         if run.era_free_reroll_left > 0:
             run.era_free_reroll_left -= 1
             treasury = [roll_treasury_offer(run) for _ in range(pack_n)]
-            if run.era_wonder_available and run.wonder is None:
-                w = run.era_wonder_available
-                treasury.append(("wonder", w, WONDERS[w][1]))
+            _append_wonder_slot(run, treasury)
         elif run.gold >= run.reroll_cost:
             run.gold -= run.reroll_cost
             treasury = [roll_treasury_offer(run) for _ in range(pack_n)]
-            if run.era_wonder_available and run.wonder is None:
-                w = run.era_wonder_available
-                treasury.append(("wonder", w, WONDERS[w][1]))
+            _append_wonder_slot(run, treasury)
 
     if run.strategy == "S5" and not any(o[0] == "doctrine" for o in synod):
         if run.era_free_synod_reroll_left > 0:
@@ -1917,37 +2111,100 @@ def _apply_cost_mods(run: RunState, kind: str, cost: int) -> int:
     return cost
 
 
+def _roll_promotion_offer(run: RunState) -> tuple:
+    rarities = [p for p, v in PROMOTIONS.items() if v[0] == "C"] * 3 + \
+               [p for p, v in PROMOTIONS.items() if v[0] == "U"] * 2 + \
+               [p for p, v in PROMOTIONS.items() if v[0] == "R"]
+    name = run.rng.choice(rarities)
+    return ("promotion", name, _apply_cost_mods(run, "promotion", PROMOTIONS[name][1]))
+
+
+def _stamp_edition(run: RunState, force: bool = False) -> str:
+    if "no_editions" in run.ablation:
+        return "standard"
+    chance = EDITION_CHANCE * run.edition_weight_mult
+    if run.all_units_editions:
+        chance = 1.0
+    if force or run.rng.random() < chance:
+        return run.rng.choice(EDITION_POOL)
+    return "standard"
+
+
+def apply_edition_to_card(c: Card) -> None:
+    """Bake combat/on-score stats from edition stamp."""
+    ed = c.edition
+    if ed == "gilded":
+        c.bonus_might += 3
+    elif ed == "berserker":
+        c.bonus_might += 4
+    elif ed == "hawk_eyed":
+        c.bonus_mom += 2
+    elif ed == "plated":
+        c.bonus_might += 3
+        c.plated = True
+    elif ed == "scholarly":
+        c.on_score_sci_pct += 0.10
+    elif ed == "devout":
+        c.on_score_faith_pct += 0.10
+    elif ed == "mercantile":
+        c.on_score_gold += 5
+    elif ed == "savant":
+        c.on_score_sci_pct += 0.20
+    elif ed == "zealot":
+        c.on_score_faith_pct += 0.20
+
+
+def apply_promotion_to_card(c: Card, name: str) -> None:
+    effect = PROMOTIONS[name][2]
+    if effect == "might5":
+        c.bonus_might += 5
+    elif effect == "mom2":
+        c.bonus_mom += 2
+    elif effect == "might3_mom1":
+        c.bonus_might += 3
+        c.bonus_mom += 1
+    elif effect == "banner12":
+        c.banner_might += 12
+    elif effect == "sci10":
+        c.on_score_sci_pct += 0.10
+    elif effect == "gold8":
+        c.on_score_gold += 8
+    elif effect == "faith8":
+        c.on_score_faith += 8
+    elif effect == "mult175":
+        c.might_mult = max(c.might_mult, 1.75)
+    elif effect == "score_twice":
+        c.score_twice = True
+
+
 def roll_treasury_offer(run: RunState) -> tuple:
     rng = run.rng
     if (run.wonder is None and "no_wonders" not in run.ablation
             and rng.random() < WONDER_SHOP_CHANCE):
         name = rng.choice(list(WONDERS.keys()))
-        return ("wonder", name, WONDERS[name][1])
+        return ("wonder", name, run.wonder_price(name))
     r = rng.random()
     # Ablation: skip categories by rerolling into units
-    if "no_blueprints" in run.ablation and 0.38 <= r < 0.72:
+    if "no_blueprints" in run.ablation and 0.36 <= r < PROMO_BAND_START:
         r = 0.20
-    if "no_promotions" in run.ablation and 0.72 <= r < 0.92:
+    if "no_promotions" in run.ablation and PROMO_BAND_START <= r < PROMO_BAND_END:
         r = 0.20
-    if r < 0.38:
+    if r < 0.36:
         kind = rng.choice(["M", "R", "C", "S"])
         cost = {1: 8, 2: 12, 3: 18}.get(run.tiers[kind], 12)
-        edition = "standard"
-        er = rng.random()
-        edition_chance = 0.15 * run.edition_weight_mult
-        if "no_editions" not in run.ablation and er < edition_chance:
-            edition = rng.choice(["gilded", "scholarly", "devout", "mercantile"])
+        edition = _stamp_edition(run)
+        if edition != "standard":
             cost = int(cost * 1.5)
         cost = _apply_cost_mods(run, "unit", cost)
         return ("unit", kind, cost, edition)
-    if r < 0.72:
+    if r < PROMO_BAND_START:
         rarities = [b for b, v in BLUEPRINTS.items() if v[0] == "C"] * 3 + \
                    [b for b, v in BLUEPRINTS.items() if v[0] == "U"] * 2 + \
                    [b for b, v in BLUEPRINTS.items() if v[0] == "R"]
         name = rng.choice(rarities)
         return ("blueprint", name, _apply_cost_mods(run, "blueprint", BLUEPRINTS[name][1]))
-    if r < 0.92:
-        return ("promotion", "master_drill", _apply_cost_mods(run, "promotion", 10))
+    if r < PROMO_BAND_END:
+        return _roll_promotion_offer(run)
     kind = rng.choice(["M", "R", "C", "S"])
     cost = _apply_cost_mods(run, "unit", 8)
     return ("unit", kind, cost, "standard")
@@ -1980,12 +2237,9 @@ def buy_treasury(run: RunState, offers: list) -> None:
                 edition = "standard"
             if _can_pay_gold(run, cost) and want_unit(run, kind):
                 _pay_gold(run, cost)
-                kw = {}
-                if edition == "gilded":
-                    kw["bonus_might"] = 2
-                c = run.new_card(kind, edition=edition, **kw)
+                c = run.new_card(kind, edition=edition)
                 if edition != "standard":
-                    c.edition = edition
+                    apply_edition_to_card(c)
                 run.deck.append(c)
                 _util_inc(run, "bought", f"unit:{kind}")
         elif o[0] == "blueprint":
@@ -2001,14 +2255,17 @@ def buy_treasury(run: RunState, offers: list) -> None:
             if "no_promotions" in run.ablation:
                 continue
             _, name, cost = o
+            if name not in PROMOTIONS:
+                name = "master_drill"
             if _can_pay_gold(run, cost):
                 targets = [c for c in run.deck if c.combat()]
                 if targets and want_promotion(run):
                     _pay_gold(run, cost)
                     pref = preferred_class(run)
-                    targets.sort(key=lambda c: (0 if c.kind == pref else 1))
-                    targets[0].bonus_might += 2
-                    _util_inc(run, "bought", "promotion")
+                    targets.sort(key=lambda c: (0 if c.kind == pref else 1,
+                                                -(c.bonus_might + c.bonus_mom)))
+                    apply_promotion_to_card(targets[0], name)
+                    _util_inc(run, "bought", f"promotion:{name}")
         elif o[0] == "wonder":
             if "no_wonders" in run.ablation:
                 continue
@@ -2017,6 +2274,7 @@ def buy_treasury(run: RunState, offers: list) -> None:
                 _pay_gold(run, cost)
                 apply_wonder(run, name)
                 run.era_wonder_available = None
+                run.shop_wonder_offer = None
                 _util_inc(run, "bought", f"wonder:{name}")
 
 
@@ -2065,7 +2323,7 @@ def treasury_score(run: RunState, o: tuple) -> float:
     if o[0] == "unit":
         return 3 if want_unit(run, o[1]) else 0.5
     if o[0] == "promotion":
-        return 2 if want_promotion(run) else 0
+        return 4 if want_promotion(run) else 0
     return 0
 
 
@@ -2073,8 +2331,18 @@ def want_wonder(run: RunState, name: str) -> bool:
     if run.wonder is not None:
         return False
     # Buy if affordable with a small gold buffer for next fight
-    cost = WONDERS[name][1]
-    return run.gold >= cost + 10
+    cost = run.wonder_price(name)
+    # Prefer strategy-fitting Wonders slightly lower buffer
+    fit = {
+        "S5": {"angkor_wat", "hagia_sophia", "machu_picchu", "stonehenge", "christ_the_redeemer"},
+        "S6": {"oracle_of_delphi", "museum_of_alexandria", "great_library", "scriptoria_spire"},
+        "S1": {"colosseum", "chichen_itza", "pyramids", "petra"},
+        "S3": {"colosseum", "chichen_itza", "parade_grounds"},
+        "S4": {"pyramids", "machu_picchu", "grand_bazaar", "eiffel_tower"},
+        "S2": {"colosseum", "eiffel_tower", "terracotta_army", "scriptoria_spire"},
+    }.get(run.strategy, set())
+    buf = 6 if name in fit else 10
+    return run.gold >= cost + buf
 
 
 def apply_wonder(run: RunState, name: str) -> None:
@@ -2114,6 +2382,29 @@ def apply_wonder(run: RunState, name: str) -> None:
         run.scriptoria_spire = True
     elif effect == "safe_conduct":
         run.safe_conduct_ready = True
+    elif effect == "sci_cost_cut":
+        run.sci_cost_pct = max(run.sci_cost_pct, 0.25)
+    elif effect == "sci_gain_pct":
+        run.sci_bonus_pct += 0.25
+    elif effect == "faith_doc_pct":
+        run.faith_bonus_pct += 0.25
+        run.doctrine_payout_pct = max(run.doctrine_payout_pct, 0.25)
+    elif effect == "float_supports":
+        run.eng_flags.add("float_builder")
+        run.pro_flags.add("float_missionary")
+    elif effect == "support_free_slots":
+        run.support_free_slots = True
+    elif effect == "formation_mom2":
+        run.chichen_mom = max(run.chichen_mom, 2)
+    elif effect == "victory_gold_pct":
+        run.victory_gold_pct = max(run.victory_gold_pct, 0.50)
+    elif effect == "mint_of_heroes":
+        run.all_units_editions = True
+        run.promo_cost_pct = max(run.promo_cost_pct, 0.30)
+    elif effect == "christ_clutch":
+        run.christ_ready = True
+    elif effect == "occupy_x2":
+        run.occupy_yield_mult = max(run.occupy_yield_mult, 2.0)
 
 
 def terracotta_replace(run: RunState) -> None:
@@ -2126,13 +2417,11 @@ def terracotta_replace(run: RunState) -> None:
     old = run.rng.choice(combat)
     run.deck.remove(old)
     kind = run.rng.choice(list(CLASSES))
-    edition = "standard"
-    kw = {}
-    if run.rng.random() < 0.25:
-        edition = run.rng.choice(["gilded", "scholarly", "devout", "mercantile"])
-        if edition == "gilded":
-            kw["bonus_might"] = 2
-    run.deck.append(run.new_card(kind, edition=edition, **kw))
+    edition = _stamp_edition(run, force=run.rng.random() < 0.25)
+    c = run.new_card(kind, edition=edition)
+    if edition != "standard":
+        apply_edition_to_card(c)
+    run.deck.append(c)
 
 
 def want_unit(run: RunState, kind: str) -> bool:
@@ -2172,12 +2461,14 @@ def want_doctrine(run: RunState, name: str) -> bool:
     if run.strategy == "S5":
         return True
     if run.strategy == "S6":
-        return name in ("scriptorium", "alms", "tithe", "zeal")
-    return name in ("tithe", "zeal", "scriptorium", "crusade")
+        return name in ("scriptorium", "scholastic_order", "spoils_liturgy", "alms", "tithe", "zeal")
+    if run.strategy == "S1":
+        return name in ("war_psalm", "martyrs_guard", "zeal", "mercenaries", "tithe", "spoils_liturgy")
+    return name in ("tithe", "zeal", "scriptorium", "crusade", "spoils_liturgy", "war_psalm")
 
 
 def want_promotion(run: RunState) -> bool:
-    return run.strategy in ("S2", "S3", "S6")
+    return run.strategy in ("S2", "S3", "S6", "S1", "S5")
 
 
 def preferred_class(run: RunState) -> str:
@@ -2249,6 +2540,8 @@ def play_eras(seed: int, strategy: str, max_era: int = 1,
         run.era_just_began = True
         run.era_wonder_offered = False
         run.era_wonder_available = None
+        run.shop_wonder_offer = None
+        run.shop_wonder_rerolls_left = 1
         refresh_era_shop_charges(run)
         # Prophetic Tradition: free Great Prophet proxy at era start
         if "free_prophet_era" in run.pro_flags:
@@ -2339,8 +2632,26 @@ def fight_settlement_with_docs(run: RunState, settlement: dict) -> tuple[bool, i
     discard: list[Card] = []
     hand: list[Card] = []
     refill_hand(hand, draw, discard, run.hand_size, rng)
+    if "float_builder" in run.eng_flags:
+        _pull_floating_support(hand, draw, discard, "B", rng)
+    if "float_missionary" in run.pro_flags:
+        _pull_floating_support(hand, draw, discard, "Y", rng)
 
     fight = FightMods()
+    fight.unused_regroups_snapshot = run.base_regroups
+    # S1 evening: free wall-ignore once per settlement
+    if run.strategy == "S1" and settlement.get("walls"):
+        fight.free_wall_ignore = True
+    if "bp_without_builder" in run.eng_flags and run.blueprints:
+        avail = list(run.blueprints)
+        bp = pick_blueprint(run, avail, settlement, fight)
+        trigger_blueprint(run, bp, fight, hand, draw, discard)
+        fight.bp_without_builder_used = True
+    if "doctrine_without_missionary" in run.pro_flags and run.doctrines:
+        avail = list(run.doctrines)
+        trigger_doctrine(run, pick_doctrine(run, avail), fight)
+        fight.doctrine_without_missionary_used = True
+
     assaults = run.base_assaults
     regroups = run.base_regroups
     defence = settlement["defence"]
@@ -2348,6 +2659,7 @@ def fight_settlement_with_docs(run: RunState, settlement: dict) -> tuple[bool, i
     st["defence_left"] = defence
     total_damage = 0
     assaults_used = 0
+    half_reward_clutch = False
 
     while defence > 0 and assaults > 0:
         st["defence_left"] = defence
@@ -2360,6 +2672,10 @@ def fight_settlement_with_docs(run: RunState, settlement: dict) -> tuple[bool, i
                     hand.remove(c)
                     discard.append(c)
             refill_hand(hand, draw, discard, run.hand_size, rng)
+            if "float_builder" in run.eng_flags and not any(c.kind == "B" for c in hand):
+                _pull_floating_support(hand, draw, discard, "B", rng)
+            if "float_missionary" in run.pro_flags and not any(c.kind == "Y" for c in hand):
+                _pull_floating_support(hand, draw, discard, "Y", rng)
             regroups -= 1
             continue
 
@@ -2370,10 +2686,19 @@ def fight_settlement_with_docs(run: RunState, settlement: dict) -> tuple[bool, i
                 if avail:
                     bp = pick_blueprint(run, avail, st, fight)
                     trigger_blueprint(run, bp, fight, hand, draw, discard)
+                if "draw_on_builder" in run.eng_flags and not fight.draw_on_builder_used:
+                    draw_cards(hand, draw, discard, 1, rng)
+                    fight.draw_on_builder_used = True
+                if "builder_free_slot" in run.eng_flags and not fight.builder_free_slot_used:
+                    fight.builder_free_slot_used = True
             if c.kind == "Y":
                 avail = [d for d in run.doctrines if d not in fight.doctrines_fired]
                 if avail:
                     trigger_doctrine(run, pick_doctrine(run, avail), fight)
+                if "faith_on_missionary" in run.pro_flags:
+                    run.faith += int(4 * (1 + run.faith_bonus_pct))
+                if "missionary_free_slot" in run.pro_flags and not fight.missionary_free_slot_used:
+                    fight.missionary_free_slot_used = True
 
         if fight.plus_assault:
             assaults += fight.plus_assault
@@ -2394,11 +2719,22 @@ def fight_settlement_with_docs(run: RunState, settlement: dict) -> tuple[bool, i
                 discard.append(c)
         refill_hand(hand, draw, discard, run.hand_size, rng)
 
+    # Martyr's Guard: if last Assault would lose, clutch-clear once
+    if defence > 0 and fight.martyrs_guard:
+        defence = 0
+        total_damage = max(total_damage, settlement["defence"])
+    # Christ the Redeemer: once/era Capital clutch, half rewards
+    if (defence > 0 and settlement.get("kind") == "capital" and run.christ_ready
+            and run.christ_used_era != run.era):
+        defence = 0
+        total_damage = max(total_damage, settlement["defence"])
+        run.christ_used_era = run.era
+        run.christ_ready = False
+        half_reward_clutch = True
+
     won = defence <= 0
-    if run.zeal_settlements_left > 0:
-        # decrement only after settlement resolves in after_victory path
-        pass
     run._last_fight = fight  # type: ignore
+    run._half_reward_clutch = half_reward_clutch  # type: ignore
     if won and run.zeal_settlements_left > 0:
         run.zeal_settlements_left -= 1
     return won, total_damage, assaults_used

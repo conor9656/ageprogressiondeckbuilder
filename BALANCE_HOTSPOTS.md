@@ -46,13 +46,22 @@ Add specials only where contribution sim shows a **hole** (e.g. Faith still dead
 
 ---
 
+## Levers v3 applied (pending re-sim)
+
+Design + sim wiring in `BALANCE_LEVERS_V3.md` / `era1_sim.py`:
+- Faith: Doctrine spoils ×~2, Spoils Liturgy, War Psalm, Martyr's Guard; Zeal +20%
+- Promos/Editions: +5 Might / +2 Mom / Banner +12 / Heroic ×1.75 / Relentless; 30% stamps; Berserker etc.
+- Wonder funnel: dedicated slot **every visit** + 1 reroll; 10 new Wonders; cheaper early
+- Science: **4 offers**, max 2 troop; S1 free wall-ignore once/settlement
+- **Do not nerf S2** — raise others toward S2’s E3 ~71% feel
+
 ## What the next full sim must answer (locked)
 
 Not only “which strategy wins,” but **which systems carry**:
 
-1. **Strategy clear curves** — S1–S6, eras 1→N  
-2. **Ablation deltas** — turn one system off, measure clear % and Capital damage/HP  
-3. **Utilization** — offer / take / fire rates for Science picks, Civics, BP, Doc, Wonders, Promotions, Editions  
-4. **Outliers** — runs where one card/Wonder correlates with huge overkill or with never being taken when offered  
+1. **Strategy clear curves** — S1–S6, eras 1→N (target: others rise toward S2, not S2 down)  
+2. **Ablation deltas** — especially `no_doctrines` / `no_promotions` / `no_editions` / `no_wonders` should move  
+3. **Utilization** — Wonder own-rate, Doctrine fire rate, promo take rate  
+4. **Outliers** — Spoils Liturgy / Oracle / Eiffel correlation with clears  
 
 See `SIMULATION.md` § Contribution & ablation and `sim/contribution_sim.py`.

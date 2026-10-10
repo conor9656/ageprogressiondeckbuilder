@@ -4,6 +4,14 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-10 — Balance levers v3 implemented (pre re-sim)
+- Design notes: `BALANCE_LEVERS_V3.md`. Wired into `era1_sim.py` + `DOCTRINES.md` / `GAME_DESIGN.md` / `CONTENT_CATALOG.md`.
+- **Faith:** Tithe/Scriptorium/etc. ×~2; Spoils Liturgy (×1.5 victory); War Psalm (+1 Mom); Martyr's Guard; Zeal +20%; steeper Missionary Zeal.
+- **Promos/Editions:** Master Drill +5 / Skirmish +2 Mom / Shock / Banner +12 / Heroic ×1.75 / Relentless; edition chance 30%; Berserker, Hawk-Eyed, Savant, Zealot, Plated; promo band ~28%.
+- **Wonders:** dedicated shop slot **every visit** + 1 Gold reroll; Oracle/Alexandria/Angkor/Hagia/Machu/Chichen/Taj/Eiffel/Christ/Petra; cheaper era-scaled costs.
+- **Evening:** Science **4-offers** (max 2 troop); S1 free wall-ignore once/settlement; S3 Battle Line preference; no S2 nerf.
+- **Next:** re-run contribution sim and compare Doc/Promo/Wonder ablations + S5/S6 clears vs S2 target.
+
 ## 2026-10-10 — Full contribution sim (eras 1–3, N=80)
 - Runner: `sim/contribution_sim.py --eras 3 --runs 80 --seed 42`
 - **Science carries** (E3 clear Δ −37%; E2 −53%). Troop upgrades real (−28%). Civics (−18%), Blueprints (−14%), Policies (−10%).

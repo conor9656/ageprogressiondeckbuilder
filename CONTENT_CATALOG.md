@@ -109,12 +109,15 @@ See `GAME_DESIGN.md` §8 for rules. Stubs below. Commerce civics already buff pa
 
 | Pack | Offers per visit | Reroll |
 |---|---|---|
-| Treasury (Gold) | **5** from: Unit (Standard/Edition), Promotion, Blueprint; low-chance Wonder; **+1 guaranteed Wonder slot once per era** | 1× / visit for Gold |
+| Treasury (Gold) | **5** from: Unit (Standard/Edition), Promotion, Blueprint; low-chance Wonder; **+1 dedicated Wonder slot every visit** (while unequipped); Wonder **reroll once**/visit (~5 Gold) | 1× / visit for Gold |
 | Synod (Faith) | **5** from: Doctrine, Great Prophet; tiny chance Wonder | 1× / visit for Faith |
 | Disband | Always available, not a pack offer | — |
 
-Weights (Treasury, rough): Unit 40% · Blueprint 35% · Promotion 20% · Wonder 5% (then Wonder usually still fails a second rarity check).  
+Weights (Treasury, rough): Unit **~36%** · Blueprint **~28%** · Promotion **~28%** · Wonder spill **~4%** (plus dedicated Wonder slot).  
+Edition stamp rate on unit offers: **~30%**.  
 Weights (Synod): Doctrine 55% · Prophet 40% · Wonder 5%.
+
+Science level-ups: **pick 1 of 4** (was 3); troop upgrades **min 1, max 2**.
 
 ### Item costs (provisional)
 
@@ -122,13 +125,14 @@ Weights (Synod): Doctrine 55% · Prophet 40% · Wonder 5%.
 |---|---|
 | Unit Standard (by tier) | 8 / 12 / 18 / 28 / 40 Gold |
 | Unit Edition U / R | ×1.5 / ×2.0 of Standard |
-| Promotion C / U / R | 10 / 20 / 40 Gold |
+| Promotion C / U / R | **12 / 20–22 / 40** Gold |
 | Blueprint C / U / R | 10 / 22 / 45 Gold |
 | Doctrine C / U / R | 8 / 18 / 35 Faith |
 | Great Prophet | 15–20 Faith (only if rolled — not a fixed catalogue) |
 | Disband | 5 Gold (+1 each disband this run) |
 | Reroll Treasury / Synod | 3 Gold / 3 Faith (once each per visit) |
-| Wonder | 80–120 Gold **or** 60–90 Faith depending on which pack showed it |
+| Wonder slot reroll | **5 Gold** (once per visit) |
+| Wonder | **~55–100 Gold** (era-scaled; cheaper early) |
 
 Village win stub: **+38 Gold, +16 Science, +16 Culture, +12 Faith**, +1 Gold per unused Assault, then interest. (balance v2)
 

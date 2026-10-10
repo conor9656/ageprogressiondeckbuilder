@@ -245,7 +245,7 @@ Opens after every conquered settlement. The shop is **not** an open catalogue �
 - **You cannot buy a named Great Prophet / Blueprint à la carte from a fixed price list.** You buy (or skip) whatever the pack rolled.
 - **Disband** sits outside both packs: pay Gold to remove a card from the deck (always available).
 - **Reroll:** each pack can be rerolled **once per shop visit** (once per settlement). Gold rerolls Treasury; Faith rerolls Synod. No second reroll that visit.
-- **Wonders:** **one guaranteed Wonder offer per era** (random which Wonder), plus a **low chance (~4%)** to appear as a normal Treasury slot. Same Wonder rules as below (one per run; skip → rival builds it).
+- **Wonders:** **dedicated Wonder slot every shop visit** while you own none (not buried in the 5-pack RNG), **reroll that Wonder once** per visit for Gold (~5), plus a **low chance (~4%)** to appear as a normal Treasury slot. Same Wonder rules as below (one per run; skip → rival builds it). Early costs softer (~55–70); late ~80–100.
 
 Provisional pack costs (pay to *refresh into view* is wrong — the visit is free; you pay per item). Optional later: small fee to open a second packed row — not required for v1.
 
@@ -267,30 +267,37 @@ When a unit offer appears, it may be stamped:
 | Edition | Rarity weight | Effect (provisional) |
 |---|---|---|---|
 | **Standard** | Common | No extra — base unit at current tier |
-| **Gilded** | Uncommon | This card +2 Might permanently (or +1 Momentum for Ranged) |
+| **Gilded** | Uncommon | This card **+3 Might** permanently |
 | **Scholarly** | Uncommon | If this card **scored** at least once this settlement, +10% Science from this victory |
 | **Devout** | Uncommon | If scored at least once, +10% Faith from this victory |
 | **Mercantile** | Uncommon | If scored at least once, +5 Gold on victory |
+| **Berserker** | Uncommon | **+4 Might** |
+| **Hawk-Eyed** | Uncommon | **+2 Momentum** |
+| **Savant** | Uncommon | If scored → **+20% Science** this victory |
+| **Zealot** | Uncommon | If scored → **+20% Faith** this victory |
+| **Plated** | Uncommon | +3 Might; ignore half of Archers-garrison penalty on this card |
 | **Veteran** | Rare | This card scores twice the first time it scores each settlement |
 | **Relic** | Rare | This card +1 Momentum and counts as any class for **formation shape** only |
 
-Edition units cost more than Standard (roughly +50% / +100% for U / R stamps).
+Base edition stamp chance **~30%** (was 15%). Edition units cost more than Standard (roughly +50% / +100% for U / R stamps).
 
 ### Promotions (upgrade a card you already own)
 
-Separate Treasury offers: pick one unit in your deck and apply a promotion. A card may hold a limited number of promotions (provisional: **1**, or **2** if a civic allows).
+Separate Treasury offers: pick one unit in your deck and apply a promotion. A card may hold a limited number of promotions (provisional: **1**, or **2** if a civic allows). Promotion band **~28%** of Treasury rolls.
 
-| Promotion | Rarity | Effect (provisional) |
-|---|---|---|
-| Master Drill | C | +2 Might on this card |
-| Skirmish Doctrine | C | +1 Momentum on this card |
-| Thinking Soldier | U | If this card scored this settlement → +10% Science on victory |
-| Tithe Sergeant | U | If scored → +8 Gold on victory |
-| Zealot's Mark | U | If scored → +8 Faith on victory |
-| Banner Carrier | U | While this card is in the scoring formation, formation +5 Might |
-| Wallbreaker Bit | U | If this card is Siege and scores, ignore walls this Assault |
-| Heroic | R | This card permanently ×1.5 Might |
-| Mentor | R | When this card scores, a random other scoring unit gains +1 Might permanently |
+| Promotion | Rarity | Cost | Effect |
+|---|---|---|---|
+| Master Drill | C | 12 | **+5 Might** on this card |
+| Skirmish Doctrine | C | 12 | **+2 Momentum** on this card |
+| Shock Drill | U | 20 | **+3 Might and +1 Mom** |
+| Thinking Soldier | U | 20 | If this card scored this settlement → +10% Science on victory |
+| Tithe Sergeant | U | 20 | If scored → +8 Gold on victory |
+| Zealot's Mark | U | 20 | If scored → +8 Faith on victory |
+| Banner Carrier | U | 22 | While this card is in the scoring formation, formation **+12 Might** |
+| Wallbreaker Bit | U | 22 | If this card is Siege and scores, ignore walls this Assault |
+| Heroic | R | 40 | This card permanently **×1.75** Might |
+| Relentless | R | 40 | This card **scores twice** each settlement |
+| Mentor | R | 40 | When this card scores, a random other scoring unit gains +1 Might permanently |
 
 End-of-fight bonuses on Editions/Promotions are **on-score economy**, distinct from Doctrines (which need a Missionary play and a Doctrine slot). Doctrines stay the big Faith-engine; Scholarly/Thinking Soldier are thin sticky rewards for using that body.
 
@@ -308,13 +315,23 @@ End-of-fight bonuses on Editions/Promotions are **on-score economy**, distinct f
 | Hanging Gardens | +1 hand size |
 | Stonehenge | Free Great Prophet each era |
 | Forbidden Palace | +1 Policy slot |
-| Terracotta Army | After each victory, replace one combat unit in your deck with a random combat unit at current class tier; **25%** chance it is an Edition (Gilded/Scholarly/Devout/Mercantile/etc.) |
+| Terracotta Army | After each victory, replace one combat unit in your deck with a random combat unit at current class tier; **25%** chance it is an Edition |
 | Big Ben | Interest cap doubled |
 | Grand Bazaar | Unit offers in Treasury cost **25%** less |
 | **Parade Grounds** | Track scoring-class plays. Formations **+0.05 Mom per prior play** of each scoring class in the hand (*cap +3.0 Mom* from this Wonder) |
 | **Theater of War** | On acquire: pick Source→Target class. Source units **count as Target for formation shape** (Might/Mom stay Source) while owned |
 | **Scriptoria Spire** | After each victory: **duplicate one combat unit** (deck soft-cap 30) |
 | **Safe Conduct** | No passive. **Once:** discard Wonder → **skip next settlement** (auto-clear, half rewards, no shop) |
+| **Oracle of Delphi** | Science bar costs **−25%** |
+| **Museum of Alexandria** | **+25% Science** from all sources |
+| **Angkor Wat** | **+25% Faith**; Doctrine numeric rewards **+25%** |
+| **Hagia Sophia** | Opening hand: **float Builder + float Missionary** |
+| **Machu Picchu** | Played Builder/Missionary **never consume formation slots** |
+| **Chichen Itza** | All formations **+2 Mom** |
+| **Taj Mahal** | Victory Gold **+50%** |
+| **Eiffel Tower** | All Treasury units are **Editions**; promotions **−30%** cost |
+| **Christ the Redeemer** | Once/era: if Capital would kill you, auto-clear (half rewards) |
+| **Petra** | Occupied city yields **×2** |
 
 ---
 

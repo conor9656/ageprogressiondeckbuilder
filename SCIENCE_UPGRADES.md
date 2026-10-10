@@ -1,6 +1,6 @@
 # Science & Civics level-ups
 
-Random **pick 1 of 3** when the Science or Culture bar fills.  
+Random **pick 1 of 4** (Science; was 3) / **pick 1 of 3** (Civics) when the Science or Culture bar fills.  
 Replaces a fixed clickable tech/civic tree. Numbers provisional.
 
 ---
@@ -8,7 +8,7 @@ Replaces a fixed clickable tech/civic tree. Numbers provisional.
 ## 1. Does this make sense? (design lock)
 
 **Yes.** It matches the shop’s luck-with-choice feel:
-- Player always has agency (pick 1 of 3).
+- Player always has agency (pick 1 of N).
 - Can’t perfectly path “Melee every time.”
 - Troop identity stays simple: **Upgrade Melee**, not named era techs.
 - Rare ahead-of-era troop bumps create exciting spikes without making Ancient→tier V common.
@@ -59,7 +59,7 @@ When rolling 3 Science choices:
 
 | Slot rule | Value |
 |---|---|
-| Troop-like offers (Melee/Ranged/Cavalry/Siege/**Builders**) | **min 1, max 2** of the three |
+| Troop-like offers (Melee/Ranged/Cavalry/Siege/**Builders**) | **min 1, max 2** of the **four** Science offers |
 | Other Science upgrades | the remaining **1–2** |
 
 Procedure (provisional):
