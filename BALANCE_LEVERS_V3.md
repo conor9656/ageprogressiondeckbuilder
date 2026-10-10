@@ -137,4 +137,11 @@ When rolling Science: show **4 offers**; troop-like **min 1, max 2** (same as be
 3. ✅ Wonder every shop visit + reroll once + 10 new Wonders + cheaper era-scaled costs  
 4. ✅ Science **4-offer** (max 2 troop) + S1 free wall-ignore + S3/S5/S6 pick prefs  
 
-**Next:** re-run `python3 -m sim.contribution_sim --eras 3 --runs 80 --seed 42` and compare to prior CONTRIBUTION_REPORT (S2 target; raise S5/S6/S1).
+**Re-sim done** (`--eras 3 --runs 80 --seed 42`): see `sim/results/CONTRIBUTION_REPORT.md`.
+
+| Lever | Outcome |
+|---|---|
+| Promos / editions | **Win** — promo E3 Δ −15% (was ~0) |
+| Doctrine spoils + combat | Partial — Doc −5% mean; S5 −10% |
+| Wonder funnel | Own-rate up; effect Δ still −4% |
+| Evening to S2 | S5/S6/S1 up a lot; **S2 also +18pp** on shared buffs — need asymmetric next |

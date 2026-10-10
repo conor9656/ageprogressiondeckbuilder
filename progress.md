@@ -4,6 +4,14 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-10 — Contribution sim after levers v3
+- Runner: `python3 sim/contribution_sim.py --eras 3 --runs 80 --seed 42`
+- Baseline mean clear **E1 82% / E2 72% / E3 56%** (was 80/68/38).
+- **Promotions fixed:** E3 Δ **−15%** (was ~0). Editions −4%, Doctrines −5%.
+- Science still #1 (−48%). Wonder own-rate up; mean Wonder Δ still −4%.
+- Evening: S5 28→42, S6 20→45, S1 26→65; **S2 also rose 71→89** (ate promo buffs). Gap 51→44pp.
+- Report: `sim/results/CONTRIBUTION_REPORT.md`. Next: asymmetric S4/S5 buffs, not more global combat.
+
 ## 2026-10-10 — Balance levers v3 implemented (pre re-sim)
 - Design notes: `BALANCE_LEVERS_V3.md`. Wired into `era1_sim.py` + `DOCTRINES.md` / `GAME_DESIGN.md` / `CONTENT_CATALOG.md`.
 - **Faith:** Tithe/Scriptorium/etc. ×~2; Spoils Liturgy (×1.5 victory); War Psalm (+1 Mom); Martyr's Guard; Zeal +20%; steeper Missionary Zeal.

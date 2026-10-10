@@ -1,67 +1,51 @@
-# Balance hotspots (pre–full-sim qualitative)
+# Balance hotspots (post levers-v3 sim)
 
-Quick read from prior sims (balance v2, average-run trajectory) + current content density.  
-**Not a substitute for contribution sims** — those numbers come next (§ below + `SIMULATION.md`).
+Quick read from contribution sims.  
+Latest: **levers v3** · N=80 · eras 1–3 · seed 42 · `sim/results/CONTRIBUTION_REPORT.md`
 
 ---
 
-## Confirmed by full contribution sim (2026-10-10)
-
-N=80 · eras 1–3 · seed 42 · `sim/results/CONTRIBUTION_REPORT.md`
+## Confirmed by levers-v3 contribution sim (2026-10-10)
 
 | Area | E3 mean clear Δ | Status |
 |---|---|---|
-| **Science level-ups** | **−37%** (E2 −53%) | **Confirmed too central** — nerf Sci Mom stack |
-| **Troop upgrades** | **−28%** | **Confirmed valuable** — keep; good reward for Sci picks |
-| **Civics** | **−18%** | Healthy contributor |
-| **Blueprints** | **−14%** | OK; S4 hurts more (−30%) |
-| **Policies** | **−10%** | Moderate |
-| **Wonders** | **−4%** | **Too weak / under-owned** (most runs: none) |
-| **Doctrines** | **~0%** | **Confirmed too weak** for clears |
-| **Promotions / Editions** | **~0%** | **Confirmed underpowered** despite high promo buy rate |
-| **S2 vs field** | E3 **71%** vs S6 **20%** / S5 **28%** | **Confirmed too strong** |
+| **Science level-ups** | **−48%** | Still too central |
+| **Troop upgrades** | **−30%** | Healthy reward |
+| **Civics** | **−23%** | Healthy |
+| **Blueprints** | **−19%** | OK; S4 −30% |
+| **Promotions** | **−15%** | **Fixed** (was ~0%) |
+| **Policies** | **−14%** | Moderate |
+| **Doctrines** | **−5%** | Moved; still weak for clears |
+| **Editions** | **−4%** | Small but real |
+| **Wonders** | **−4%** | Own-rate up; effect still soft |
+| **S2 vs field** | E3 **89%** vs S6 **45%** / S5 **42%** | Gap narrowed (51→44pp) but S2 also rose |
 
-## Prior suspects (updated)
+Baseline mean clear: **E1 82% · E2 72% · E3 56%** (was 80 / 68 / 38).
 
-| Area | Note |
+## What the levers did
+
+| Lever | Result |
 |---|---|
-| Academy Mom + Tech Literacy | Inside Science carry — primary nerf knobs |
-| S2 + long survival | S2 also takes 5.5 Sci levels / 71% Wonder own — feedback loop |
-| Faith in-fight | Doctrines bought but don’t move clears — need combat auras |
-| Promotions | Gold sink; +2 Might not enough — retune or cut weight |
+| Promo scale + editions 30% | **Success** — promotions carry; S2/S5/S6 promo ablation −21–23% |
+| Doctrine spoils ×2 + Spoils/War Psalm | Partial — mean −5%; S5 −10%, S3 −15% |
+| Wonder every shop + reroll | Own-rate up (S2 none 14%; others ~35–62%); mean Δ still −4% |
+| Science 4-offer + S1 wall ignore | S1 E3 26%→65%; S6 20%→45% |
+| Don’t nerf S2 | S2 rose 71%→89% on shared combat buffs |
 
-## “Probably fine / watch”
+## Next levers (asymmetric evening)
 
-- Formation drills — steady, not flashy; check if ever chosen vs currency trees.  
-- Banking/Education % trees — new; watch Gold/Sci explosion era 4+.  
-- Safe Conduct — skip feels strong but costs Wonder slot + half rewards; measure use rate.
+Prefer buffs S4/S5/S6 can eat that S2 cannot:
 
-## Special cards — do we need more?
+1. **Faith combat / earlier Doctrine slots** — S5 still dies before spoils snowball; War Psalm–class density or free Missionary slot earlier.  
+2. **Builder / S4** — flat at 38% E3; BP path needs more mid-game damage or cheaper Aqueduct density.  
+3. **Wonder effect power** (not just funnel) — Oracle/Alexandria/Angkor weight toward S5/S6 shop prefs.  
+4. Optional: **Thin Legion promo soft-cap** (1 strong promo vs stacking) so global promo buffs don’t lift S2 as hard.  
+5. Science Mom stack still the #1 “everything is Sci” knob if we want less centrality.
 
-**Not more volume yet** — pools are fat (40+ each + new idea batch). Next sim should answer **utilization**, not count:
-- Offer rate vs take rate vs “equipped but never fired”
-- Outlier cards that appear in top 10% damage runs vs bottom 10%
+## What the next full sim must answer
 
-Add specials only where contribution sim shows a **hole** (e.g. Faith still dead after Buffs, or no mid-game Builder identity).
+1. Strategy clears after *asymmetric* evening (S4/S5 vs S2)  
+2. Ablations: Doc / Wonder should move more if Faith/Wonder effect buffs land  
+3. Utilization: Spoils Liturgy fire rate, Wonder id take rates, promo type mix  
 
----
-
-## Levers v3 applied (pending re-sim)
-
-Design + sim wiring in `BALANCE_LEVERS_V3.md` / `era1_sim.py`:
-- Faith: Doctrine spoils ×~2, Spoils Liturgy, War Psalm, Martyr's Guard; Zeal +20%
-- Promos/Editions: +5 Might / +2 Mom / Banner +12 / Heroic ×1.75 / Relentless; 30% stamps; Berserker etc.
-- Wonder funnel: dedicated slot **every visit** + 1 reroll; 10 new Wonders; cheaper early
-- Science: **4 offers**, max 2 troop; S1 free wall-ignore once/settlement
-- **Do not nerf S2** — raise others toward S2’s E3 ~71% feel
-
-## What the next full sim must answer (locked)
-
-Not only “which strategy wins,” but **which systems carry**:
-
-1. **Strategy clear curves** — S1–S6, eras 1→N (target: others rise toward S2, not S2 down)  
-2. **Ablation deltas** — especially `no_doctrines` / `no_promotions` / `no_editions` / `no_wonders` should move  
-3. **Utilization** — Wonder own-rate, Doctrine fire rate, promo take rate  
-4. **Outliers** — Spoils Liturgy / Oracle / Eiffel correlation with clears  
-
-See `SIMULATION.md` § Contribution & ablation and `sim/contribution_sim.py`.
+See `SIMULATION.md` and `sim/contribution_sim.py`.
