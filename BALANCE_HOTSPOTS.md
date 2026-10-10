@@ -5,27 +5,30 @@ Quick read from prior sims (balance v2, average-run trajectory) + current conten
 
 ---
 
-## Suspected too strong (nerf candidates)
+## Confirmed by full contribution sim (2026-10-10)
 
-| Area | Why it smells strong | What to measure |
+N=80 · eras 1–3 · seed 42 · `sim/results/CONTRIBUTION_REPORT.md`
+
+| Area | E3 mean clear Δ | Status |
 |---|---|---|
-| **S2 Thin Legion** | E3 clear ~64% vs mean ~39%; thin deck + Conscription / Triple Mom spikes | Clear Δ vs other strats; damage share from promotions vs tiers |
-| **Science as a whole** | Tech Literacy + Academy Mom + Research Corps + troop tiers all ride Sci levels; S6 and “any strat that takes sci” may be carried | Ablation: freeze Science level-ups → clear Δ |
-| **Academy Momentum (Policy R)** | Mom ×(1+0.1×sci) stacks with always-on Tech Literacy | Ablation: ban this Policy; also Sci-levels-only curve |
-| **S2 + promotions** | Thin decks multiply per-card promotions harder than fat decks | Ablation: no promotions / no editions |
-| **Scriptoria Spire** (new) | Copy-a-unit every win → deck snowball or thin-deck god rolls | Pickup rate + clear Δ when Wonder present vs absent |
-| **Kaleidoscope + Academy Mom** (new) | Flat Mom aura × multipliers | Runs with both equipped vs neither |
+| **Science level-ups** | **−37%** (E2 −53%) | **Confirmed too central** — nerf Sci Mom stack |
+| **Troop upgrades** | **−28%** | **Confirmed valuable** — keep; good reward for Sci picks |
+| **Civics** | **−18%** | Healthy contributor |
+| **Blueprints** | **−14%** | OK; S4 hurts more (−30%) |
+| **Policies** | **−10%** | Moderate |
+| **Wonders** | **−4%** | **Too weak / under-owned** (most runs: none) |
+| **Doctrines** | **~0%** | **Confirmed too weak** for clears |
+| **Promotions / Editions** | **~0%** | **Confirmed underpowered** despite high promo buy rate |
+| **S2 vs field** | E3 **71%** vs S6 **20%** / S5 **28%** | **Confirmed too strong** |
 
-## Suspected too weak (buff candidates)
+## Prior suspects (updated)
 
-| Area | Why it smells weak | What to measure |
-|---|---|---|
-| **S5 Faith / Missionaries** | E3 ~24%; Doctrines still mostly *after* win → little in-fight power | Ablation: no Doctrines; also “Doctrine fired rate” and damage with/without Missionary in play |
-| **Troop tier reward feel** | Tiers matter, but Policies/Blueprints/Sci Mom may dwarf +2–4 Might on a class | Ablation: freeze troop tiers at I; compare Capital damage share |
-| **Builders (S4)** | E3 ~32%; slots + BP fire once/settlement — easy to under-fire | % assaults with Builder; BP fire rate; clear Δ no-Blueprints |
-| **Civics / Culture** | Avg-run showed ~1.4 civ levels by E1 Cap — shop/Works lines are new and unproven | Ablation: no Civics; pickup rates for Commerce vs Works vs drafts |
-| **Wonders (pre-new batch)** | Guaranteed offer/era but bots often skip if gold-tight; unclear if owned Wonder moves clear rate | Own-rate × clear Δ by Wonder id |
-| **Editions as a system** | Court Fashion helps, but edition density was ~0.2 specials early | Ablation: no editions; % packs that rolled editions |
+| Area | Note |
+|---|---|
+| Academy Mom + Tech Literacy | Inside Science carry — primary nerf knobs |
+| S2 + long survival | S2 also takes 5.5 Sci levels / 71% Wonder own — feedback loop |
+| Faith in-fight | Doctrines bought but don’t move clears — need combat auras |
+| Promotions | Gold sink; +2 Might not enough — retune or cut weight |
 
 ## “Probably fine / watch”
 

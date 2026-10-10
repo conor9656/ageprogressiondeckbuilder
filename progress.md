@@ -4,6 +4,12 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-10 — Full contribution sim (eras 1–3, N=80)
+- Runner: `sim/contribution_sim.py --eras 3 --runs 80 --seed 42`
+- **Science carries** (E3 clear Δ −37%; E2 −53%). Troop upgrades real (−28%). Civics (−18%), Blueprints (−14%), Policies (−10%).
+- **Near-zero:** Doctrines, Promotions, Editions. Wonders weak (−4%) and under-owned.
+- S2 still king (E3 71% vs S6 20%). Report: `sim/results/CONTRIBUTION_REPORT.md`. Hotspots updated.
+
 ## 2026-10-09 — Contribution/ablation plan for next full sim
 - Qualitative hotspots: `BALANCE_HOTSPOTS.md` (S2/Science strong; S5/Builders/Civics/Wonders weak suspects).
 - Next sim must measure **system contribution**, not only strategy clears: ablations for science/civics/troops/BP/Doc/wonders/promos/editions/policies + offer/take util.
