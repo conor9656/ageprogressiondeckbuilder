@@ -2589,6 +2589,11 @@ def play_eras(seed: int, strategy: str, max_era: int = 1,
                 results["doctrines"] = list(run.doctrines)
                 results["gold_end"] = run.gold
                 results["deck_size"] = len(run.deck)
+                results["wonder"] = run.wonder
+                results["util"] = run.util
+                results["ablation"] = sorted(run.ablation)
+                results["sci_level"] = run.sci_level
+                results["civ_level"] = run.civ_level
                 results["trajectory"] = results.get("trajectory", [])
                 return results
             post = after_victory(run, st, dmg, used, run._last_fight)  # type: ignore

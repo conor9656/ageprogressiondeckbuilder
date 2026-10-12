@@ -4,6 +4,13 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-12 — 8-era contribution sim (levers v3)
+- Runner: `python3 sim/contribution_sim.py --eras 8 --runs 60 --seed 42` → `CONTRIBUTION_REPORT_E8.*`
+- **Cliff at E4:** mean clear E1 81% · E2 73% · E3 57% · **E4 ~10%** · E5 ~1% · E6–E8 ~0%.
+- S2 only real E4 foothold (27%); S5 12%; S4 0%. Capitals/towns at Medieval kill the field.
+- Ablations past E4 → 0 (nobody alive). Promos still −16% E3 / −9% E4. Doc/Wonder still weak for clears.
+- Bugfix: fail-path now snapshots wonder/sci/civ/util. Next: retune E4 defence or mid-game power spike — don’t tune E7–E8 yet.
+
 ## 2026-10-10 — Contribution sim after levers v3
 - Runner: `python3 sim/contribution_sim.py --eras 3 --runs 80 --seed 42`
 - Baseline mean clear **E1 82% / E2 72% / E3 56%** (was 80/68/38).

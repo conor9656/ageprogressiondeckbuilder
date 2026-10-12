@@ -155,16 +155,17 @@ def main():
         if name != "baseline"
     }
 
-    out = Path("/workspace/sim/results/CONTRIBUTION_REPORT.json")
+    # Era-tagged outputs so an 8-era run does not clobber the E3 report
+    tag = f"E{args.eras}"
+    out = Path(f"/workspace/sim/results/CONTRIBUTION_REPORT_{tag}.json")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2))
+    # Keep legacy untagged names in sync for the default 3-era workflow
+    if args.eras == 3:
+        Path("/workspace/sim/results/CONTRIBUTION_REPORT.json").write_text(
+            json.dumps(report, indent=2))
 
     # Markdown summary
-    md = ["# Contribution / ablation report", "",
-          f"Eras 1–{args.eras} · N={args.runs}/strategy/ablation · seed {args.seed}", "",
-          "## Mean clear-through Δ vs baseline (across strategies)", "",
-          "| Ablation | " + " | ".join(f"E{e}" for e in range(1, args.eras + 1)) + " |",
-          "|---|---|---|---|"[:2 + args.eras * 4]]  # fix below
     md = ["# Contribution / ablation report", "",
           f"Eras 1–{args.eras} · N={args.runs}/strategy/ablation · seed {args.seed}", "",
           "Negative Δ = that system was carrying clears (removing it hurts).", "",
@@ -173,16 +174,18 @@ def main():
           "|" + "---|" * (args.eras + 1)]
     for name, deltas in report["ablation_delta_mean_vs_baseline"].items():
         md.append("| " + name + " | " + " | ".join(
-            f"{deltas.get(str(e), 0):+.0%}".replace("%", "")  # keep as fraction
-            if False else f"{deltas.get(str(e), 0):+.3f}"
+            f"{deltas.get(str(e), 0):+.3f}"
             for e in range(1, args.eras + 1)
         ) + " |")
     md += ["", "Baseline mean clear:",
            ", ".join(f"E{e}={base_mean.get(str(e))}" for e in range(1, args.eras + 1)),
-           "", "Per-strategy detail + utilization: `sim/results/CONTRIBUTION_REPORT.json`",
+           "", f"Per-strategy detail + utilization: `{out.name}`",
            "", "Interpretation guide: `BALANCE_HOTSPOTS.md` + `SIMULATION.md` § Contribution."]
-    md_path = Path("/workspace/sim/results/CONTRIBUTION_REPORT.md")
+    md_path = Path(f"/workspace/sim/results/CONTRIBUTION_REPORT_{tag}.md")
     md_path.write_text("\n".join(md) + "\n")
+    if args.eras == 3:
+        Path("/workspace/sim/results/CONTRIBUTION_REPORT.md").write_text(
+            "\n".join(md) + "\n")
     print(f"Wrote {out} and {md_path}")
     print("Mean Δ:", json.dumps(report["ablation_delta_mean_vs_baseline"], indent=2))
 

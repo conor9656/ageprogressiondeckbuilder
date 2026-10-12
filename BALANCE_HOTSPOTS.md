@@ -1,7 +1,21 @@
 # Balance hotspots (post levers-v3 sim)
 
 Quick read from contribution sims.  
-Latest: **levers v3** · N=80 · eras 1–3 · seed 42 · `sim/results/CONTRIBUTION_REPORT.md`
+Latest long-horizon: **eras 1–8** · N=60 · seed 42 · `sim/results/CONTRIBUTION_REPORT_E8.md`  
+3-era detail: N=80 · `sim/results/CONTRIBUTION_REPORT.md`
+
+---
+
+## 8-era cliff (2026-10-12)
+
+| Era | Mean clear | Note |
+|---|---|---|
+| E1–E3 | 81% → 57% | Feels good / on-target early |
+| **E4** | **~10%** | **Hard gate** (base def 1400→4500) |
+| E5+ | ~1% → 0% | Don’t tune yet — nobody arrives |
+
+S2 E4 **27%**; S5 12%; S6 8%; S1 7%; S3 3%; **S4 0%**.  
+S2 p50 dmg/HP: E3 ~1.15 → E4 ~0.92 (median shortfall).
 
 ---
 
