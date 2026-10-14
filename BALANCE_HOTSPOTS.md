@@ -6,16 +6,15 @@ Latest long-horizon: **eras 1–8** · N=60 · seed 42 · `sim/results/CONTRIBUT
 
 ---
 
-## 8-era cliff (2026-10-12)
+## 8-era cliff (2026-10-12) → E4+ escalation applied (2026-10-14)
 
-| Era | Mean clear | Note |
+| Era | Mean clear (pre) | Note |
 |---|---|---|
 | E1–E3 | 81% → 57% | Feels good / on-target early |
-| **E4** | **~10%** | **Hard gate** (base def 1400→4500) |
-| E5+ | ~1% → 0% | Don’t tune yet — nobody arrives |
+| **E4** | **~10%** | Was hard gate — now eased HP + exponential growth pack |
+| E5+ | ~1% → 0% | Re-measure after escalation |
 
-S2 E4 **27%**; S5 12%; S6 8%; S1 7%; S3 3%; **S4 0%**.  
-S2 p50 dmg/HP: E3 ~1.15 → E4 ~0.92 (median shortfall).
+**Escalation pack** (`BALANCE_E4_ESCALATION.md`): E4 def 4500→3600; tier soft-caps + VI; era Sci/Cul income; breakthrough; Age Power. Awaiting re-sim.
 
 ---
 

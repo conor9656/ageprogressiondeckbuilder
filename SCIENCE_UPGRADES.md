@@ -38,18 +38,25 @@ Missionary tier stays Faith-side (not Science) unless we later add a rare Scienc
 |---|---|---|
 | 1 Ancient | II | First bump is the normal Ancient spike |
 | 2 Classical | III | |
-| 3 Medieval | III | Extra Science goes to non-troop / catching lagging classes |
-| 4 Renaissance | IV | |
-| 5 Industrial | IV | |
-| 6 Modern | V | |
-| 7 Atomic | V | |
-| 8 Information | V | |
+| 3 Medieval | **IV** | Was III — can enter Renaissance already hot |
+| 4 Renaissance | **V** | |
+| 5 Industrial | **V** | |
+| 6 Modern | **VI** | New hard max tier |
+| 7 Atomic | **VI** | |
+| 8 Information | **VI** | |
 
 **At or below soft-cap:** normal offer weight.  
 **One tier above soft-cap:** rare weight.  
-**Two+ above soft-cap:** do not offer (hard stop).
+**Two+ above soft-cap:** do not offer (hard stop).  
+**Hard max:** combat **VI**, Builder **IV** (E4+).
 
-Builder soft-cap: Era 1 → II, Era 3+ → III (provisional).
+Builder soft-cap: Era 1 → II, Era 3 → III, Era 4+ → **IV**.
+
+### E4+ escalation (see `BALANCE_E4_ESCALATION.md`)
+
+- Era-scaled Sci/Cul victory + city yields (×1.75 at E4 → ×4.3 at E8).  
+- Era ≥4: Sci/Civ bar costs **−20%**.  
+- **Renaissance Breakthrough** on era start ≥4: free Sci level + free Civ level + preferred-class tier if under soft-cap.
 
 ---
 

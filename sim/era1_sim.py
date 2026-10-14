@@ -22,11 +22,21 @@ from typing import Any, Callable, Optional
 CLASSES = ("M", "R", "C", "S")  # Melee, Ranged, Cavalry, Siege
 SUPPORTS = ("B", "Y")  # Builder, MissionarY
 
-# Early-weighted unit buff (~+30–40% at tier I, tapering at high tiers)
-UNIT_MIGHT = {"M": [0, 7, 15, 24, 36, 55], "R": [0, 3, 5, 8, 12, 18],
-              "C": [0, 11, 20, 30, 44, 65], "S": [0, 4, 8, 12, 18, 26]}
-UNIT_MOM = {"M": [0, 0, 0, 0, 0, 0], "R": [0, 1, 2, 2, 3, 3],
-            "C": [0, 0, 0, 0, 0, 0], "S": [0, 0, 0, 0, 0, 0]}
+# Unit tiers I–VI (index 0 unused). Tier VI ~×1.55 of V for E4+ exponential headroom.
+UNIT_MIGHT = {
+    "M": [0, 7, 15, 24, 36, 55, 85],
+    "R": [0, 3, 5, 8, 12, 18, 28],
+    "C": [0, 11, 20, 30, 44, 65, 100],
+    "S": [0, 4, 8, 12, 18, 26, 40],
+}
+UNIT_MOM = {
+    "M": [0, 0, 0, 0, 0, 0, 0],
+    "R": [0, 1, 2, 2, 3, 3, 4],
+    "C": [0, 0, 0, 0, 0, 0, 1],
+    "S": [0, 0, 0, 0, 0, 0, 0],
+}
+MAX_COMBAT_TIER = 6
+MAX_BUILDER_TIER = 4
 
 FORM_LEVEL_BONUS = {
     "skirmish": (3, 0), "pair": (3, 0), "triple": (3, 0),
@@ -35,12 +45,17 @@ FORM_LEVEL_BONUS = {
     "vanguard": (8, 1), "imperial_guard": (8, 1), "legion": (8, 1),
 }
 
-ERA_SOFT_CAP = {1: 2, 2: 3, 3: 3, 4: 4, 5: 4, 6: 5, 7: 5, 8: 5}
-ERA_BASE_DEFENCE = {1: 500, 2: 800, 3: 1400, 4: 4500, 5: 12000, 6: 30000, 7: 75000, 8: 150000}
+# Soft-caps raised so Medieval can reach IV and later eras unlock VI
+ERA_SOFT_CAP = {1: 2, 2: 3, 3: 4, 4: 5, 5: 5, 6: 6, 7: 6, 8: 6}
+# Slightly eased E4–E6 cliff; E7–E8 untouched until mid-game clears exist
+ERA_BASE_DEFENCE = {1: 500, 2: 800, 3: 1400, 4: 3600, 5: 10000, 6: 26000, 7: 75000, 8: 150000}
 
-# Cheaper / earlier level-ups so stacks build before Medieval
-SCIENCE_COSTS = [8, 12, 16, 22, 28, 36, 46, 58, 72, 88, 106, 126, 148, 172, 198]
-CIVIC_COSTS = [8, 12, 16, 22, 28, 36, 46, 58, 72, 88, 106, 126, 148, 172, 198]
+# Longer tables + flatter mid-game growth (levels keep coming into E4+)
+SCIENCE_COSTS = [
+    8, 12, 16, 22, 28, 36, 46, 58, 72, 88, 106, 126, 148, 172, 198,
+    220, 245, 270, 300, 330, 365, 400, 440, 480, 520,
+]
+CIVIC_COSTS = list(SCIENCE_COSTS)
 
 # Settlement rewards (was 25/8/8/5)
 REWARD_GOLD = 38
@@ -49,6 +64,18 @@ REWARD_CULTURE = 16
 REWARD_FAITH = 12
 RAZE_GOLD = 28
 CITY_YIELD = 7
+# Era income mult — Sci/Cul track HP curve; Gold/Faith use a milder factor
+ERA_INCOME_MULT = {
+    1: 1.00, 2: 1.15, 3: 1.35, 4: 1.75,
+    5: 2.20, 6: 2.80, 7: 3.50, 8: 4.30,
+}
+ERA_GOLD_FAITH_MULT = {
+    1: 1.00, 2: 1.10, 3: 1.20, 4: 1.45,
+    5: 1.70, 6: 2.00, 7: 2.40, 8: 2.80,
+}
+TECH_LITERACY_PER_SCI = 0.055  # was 0.04
+AGE_POWER_MIGHT_PER_SCI = 0.025  # era ≥4 baseline Might scaler
+MIDGAME_BAR_DISCOUNT = 0.20  # era ≥4 Sci/Civ cost cut
 PACK_SIZE = 5  # was 3
 WONDER_SHOP_CHANCE = 0.04  # low chance per pack offer (dedicated Wonder slot is separate)
 EDITION_CHANCE = 0.30  # was 0.15 — editions should show up
@@ -437,7 +464,15 @@ class RunState:
     prophet_on_win: bool = False
 
     def soft_cap(self) -> int:
-        return ERA_SOFT_CAP.get(self.era, 5)
+        return ERA_SOFT_CAP.get(self.era, 6)
+
+    def income_mult(self, kind: str = "sci") -> float:
+        if kind in ("gold", "faith"):
+            return ERA_GOLD_FAITH_MULT.get(self.era, 1.0)
+        return ERA_INCOME_MULT.get(self.era, 1.0)
+
+    def bar_cost_mult(self) -> float:
+        return (1.0 - MIDGAME_BAR_DISCOUNT) if self.era >= 4 else 1.0
 
     def wonder_price(self, name: str) -> int:
         base = WONDERS[name][1]
@@ -677,9 +712,13 @@ def evaluate_play(run: RunState, cards: list[Card], fight: FightMods,
     if form_id in ("vanguard", "legion") and "leveee" in run.policies:
         mom += 3
 
-    # Baseline Tech Literacy — Science levels always scale Momentum slightly
-    # (stacks with Academy Momentum policy). At 5 sci levels: ×1.2 Mom.
-    mom *= 1.0 + 0.04 * run.sci_level
+    # Baseline Tech Literacy — Science levels always scale Momentum
+    # (stacks with Academy Momentum policy). At 10 sci levels: ×1.55 Mom.
+    mom *= 1.0 + TECH_LITERACY_PER_SCI * run.sci_level
+
+    # Age Power (E4+): well-played Sci stacks convert into Might toward the HP curve
+    if run.era >= 4 and run.sci_level > 0:
+        might *= 1.0 + AGE_POWER_MIGHT_PER_SCI * run.sci_level
 
     # Scaling / exponential-style policies (stack with sci levels & owned cards)
     if "workshop_network" in run.policies:
@@ -1284,15 +1323,19 @@ def interest(run: RunState) -> None:
 
 def city_yields(run: RunState) -> None:
     ym = run.occupy_yield_mult
+    sci_m = run.income_mult("sci")
+    cul_m = run.income_mult("cul")
+    faith_m = run.income_mult("faith")
+    gold_m = run.income_mult("gold")
     for t in run.occupied:
         if t == "scholar":
-            run.science += int(CITY_YIELD * (1 + run.sci_bonus_pct) * ym)
+            run.science += int(CITY_YIELD * (1 + run.sci_bonus_pct) * ym * sci_m)
         elif t == "artisan":
-            run.culture += int(CITY_YIELD * (1 + run.cul_bonus_pct) * ym)
+            run.culture += int(CITY_YIELD * (1 + run.cul_bonus_pct) * ym * cul_m)
         elif t == "temple":
-            run.faith += int(CITY_YIELD * (1 + run.faith_bonus_pct) * ym)
+            run.faith += int(CITY_YIELD * (1 + run.faith_bonus_pct) * ym * faith_m)
         elif t == "trade":
-            run.gold += int(CITY_YIELD * (1 + run.gold_bonus_pct) * ym)
+            run.gold += int(CITY_YIELD * (1 + run.gold_bonus_pct) * ym * gold_m)
 
 
 def snapshot_run(run: RunState) -> dict:
@@ -1372,8 +1415,12 @@ def after_victory(run: RunState, settlement: dict, total_damage: int,
     if getattr(run, "_half_reward_clutch", False):
         spoils *= 0.5
         run._half_reward_clutch = False  # type: ignore
+    gold_m = run.income_mult("gold")
+    sci_m = run.income_mult("sci")
+    cul_m = run.income_mult("cul")
+    faith_m = run.income_mult("faith")
     base_gold = REWARD_GOLD + unused
-    run.gold += int(base_gold * (1 + run.gold_bonus_pct + run.victory_gold_pct) * spoils)
+    run.gold += int(base_gold * (1 + run.gold_bonus_pct + run.victory_gold_pct) * spoils * gold_m)
     # Clear Letter of Credit debt from victory Gold
     if run.gold_debt > 0:
         pay = min(run.gold, run.gold_debt)
@@ -1381,15 +1428,15 @@ def after_victory(run: RunState, settlement: dict, total_damage: int,
         run.gold_debt -= pay
     sci_pct = 1 + run.sci_bonus_pct + (fight_docs.scored_sci_pct if fight_docs else 0.0)
     faith_pct = 1 + run.faith_bonus_pct + (fight_docs.scored_faith_pct if fight_docs else 0.0)
-    run.science += int(REWARD_SCIENCE * sci_pct * spoils)
-    run.culture += int(REWARD_CULTURE * (1 + run.cul_bonus_pct) * spoils)
-    run.faith += int(REWARD_FAITH * faith_pct * spoils)
+    run.science += int(REWARD_SCIENCE * sci_pct * spoils * sci_m)
+    run.culture += int(REWARD_CULTURE * (1 + run.cul_bonus_pct) * spoils * cul_m)
+    run.faith += int(REWARD_FAITH * faith_pct * spoils * faith_m)
     if fight_docs and fight_docs.scored_gold:
-        run.gold += int(fight_docs.scored_gold * (1 + run.gold_bonus_pct) * spoils)
+        run.gold += int(fight_docs.scored_gold * (1 + run.gold_bonus_pct) * spoils * gold_m)
     if fight_docs and fight_docs.scored_faith:
-        run.faith += int(fight_docs.scored_faith * (1 + run.faith_bonus_pct) * spoils)
+        run.faith += int(fight_docs.scored_faith * (1 + run.faith_bonus_pct) * spoils * faith_m)
     if "rationalism" in run.policies:
-        run.science += max(4, int(REWARD_SCIENCE * 0.25 * sci_pct))
+        run.science += max(4, int(REWARD_SCIENCE * 0.25 * sci_pct * sci_m))
     # Investment Bond accrues while equipped
     if "investment_bond" in run.blueprints:
         run.bond_bank = min(80, run.bond_bank + 5)
@@ -1491,7 +1538,8 @@ def process_level_ups(run: RunState) -> dict:
     sci_picks = []
     civ_picks = []
     while run.sci_level < len(SCIENCE_COSTS):
-        sci_cost = max(1, int(SCIENCE_COSTS[run.sci_level] * (1.0 - run.sci_cost_pct)))
+        sci_cost = max(1, int(SCIENCE_COSTS[run.sci_level]
+                               * (1.0 - run.sci_cost_pct) * run.bar_cost_mult()))
         if run.science < sci_cost:
             break
         if "no_science" in run.ablation:
@@ -1512,11 +1560,14 @@ def process_level_ups(run: RunState) -> dict:
         run.sci_level += 1
         sci_picks.append({"pick": pick, "offers": offers})
         run.events.append({"science_pick": pick, "offers": offers})
-    while run.civ_level < len(CIVIC_COSTS) and run.culture >= CIVIC_COSTS[run.civ_level]:
+    while run.civ_level < len(CIVIC_COSTS):
+        civ_cost = max(1, int(CIVIC_COSTS[run.civ_level] * run.bar_cost_mult()))
+        if run.culture < civ_cost:
+            break
         if "no_civics" in run.ablation:
             run.culture = 0
             break
-        run.culture -= CIVIC_COSTS[run.civ_level]
+        run.culture -= civ_cost
         offers = roll_civic_offers(run)
         for o in offers:
             _util_inc(run, "civ_offers", o)
@@ -1577,15 +1628,17 @@ def weighted_troop_offers(run: RunState, n: int) -> list[str]:
     weights = []
     for cls, key in [("M", "M"), ("R", "R"), ("C", "C"), ("S", "S"), ("B", "B")]:
         cur = run.tiers[key]
-        if key == "B" and cur >= 3:
+        hard = MAX_BUILDER_TIER if key == "B" else MAX_COMBAT_TIER
+        if cur >= hard:
             continue
-        if cur >= 5:
-            continue
-        soft_use = soft if key != "B" else (2 if run.era < 3 else 3)
+        if key == "B":
+            soft_use = 2 if run.era < 3 else (3 if run.era < 4 else 4)
+        else:
+            soft_use = soft
         gap = soft_use - cur
         if gap >= 1:
             w = 14.0 if run.era_just_began else 10.0
-        elif gap == 0 and cur + 1 <= min(5, soft_use + 1):
+        elif gap == 0 and cur + 1 <= min(hard, soft_use + 1):
             w = 1.0  # ahead of era
         else:
             continue
@@ -1637,10 +1690,11 @@ def choose_science(run: RunState, offers: list[str]) -> str:
 def apply_science(run: RunState, pick: str) -> None:
     if pick.startswith("upgrade_"):
         key = pick.split("_")[1]
-        run.tiers[key] = min(5 if key != "B" else 3, run.tiers[key] + 1)
+        cap = MAX_BUILDER_TIER if key == "B" else MAX_COMBAT_TIER
+        run.tiers[key] = min(cap, run.tiers[key] + 1)
         run.last_troop_upgrade = key
         if key == "B":
-            run.builder_scale = {1: 1.0, 2: 1.5, 3: 2.0}[run.tiers["B"]]
+            run.builder_scale = {1: 1.0, 2: 1.5, 3: 2.0, 4: 2.5}[run.tiers["B"]]
         run.era_just_began = False
         return
 
@@ -2191,7 +2245,7 @@ def roll_treasury_offer(run: RunState) -> tuple:
         r = 0.20
     if r < 0.36:
         kind = rng.choice(["M", "R", "C", "S"])
-        cost = {1: 8, 2: 12, 3: 18}.get(run.tiers[kind], 12)
+        cost = {1: 8, 2: 12, 3: 18, 4: 28, 5: 40, 6: 55}.get(run.tiers[kind], 18)
         edition = _stamp_edition(run)
         if edition != "standard":
             cost = int(cost * 1.5)
@@ -2521,6 +2575,45 @@ def make_settlement(kind: str, rng: random.Random, era: int = 1) -> dict:
 
 # --- Run ----------------------------------------------------------------------
 
+def era_breakthrough(run: RunState) -> dict:
+    """Renaissance+: free Sci + Civ level-up so stacks can track the HP curve."""
+    out = {"sci": None, "civ": None}
+    if run.era < 4:
+        return out
+    if "no_science" not in run.ablation and run.sci_level < len(SCIENCE_COSTS):
+        offers = roll_science_offers(run)
+        if "no_troop_upgrades" in run.ablation:
+            offers = [o for o in offers if not o.startswith("upgrade_")] or ["battle_line_drill"]
+        pick = choose_science(run, offers)
+        if "no_troop_upgrades" in run.ablation and pick.startswith("upgrade_"):
+            pick = next((o for o in offers if not o.startswith("upgrade_")), "battle_line_drill")
+        apply_science(run, pick)
+        run.sci_level += 1
+        _util_inc(run, "sci_picks", f"breakthrough:{pick}")
+        out["sci"] = pick
+        run.events.append({"era_breakthrough_sci": pick, "era": run.era})
+    if "no_civics" not in run.ablation and run.civ_level < len(CIVIC_COSTS):
+        offers = roll_civic_offers(run)
+        pick = choose_civic(run, offers)
+        if "no_policies" in run.ablation and pick in (
+                "craftsmanship", "literacy", "patron_games", "guild_charters"):
+            pick = next((o for o in offers if o not in (
+                "craftsmanship", "literacy", "patron_games", "guild_charters")), offers[0])
+        apply_civic(run, pick)
+        run.civ_level += 1
+        _util_inc(run, "civ_picks", f"breakthrough:{pick}")
+        out["civ"] = pick
+        run.events.append({"era_breakthrough_civ": pick, "era": run.era})
+    # Preferred-class tier bump if still under soft-cap (extra exponential lever)
+    pref = preferred_class(run)
+    hard = MAX_COMBAT_TIER
+    if run.tiers.get(pref, 1) < min(run.soft_cap(), hard) and "no_troop_upgrades" not in run.ablation:
+        run.tiers[pref] = min(hard, run.tiers[pref] + 1)
+        out["tier"] = pref
+        run.events.append({"era_breakthrough_tier": pref, "era": run.era})
+    return out
+
+
 def play_eras(seed: int, strategy: str, max_era: int = 1,
               ablation: Optional[set] = None) -> dict:
     rng = random.Random(seed)
@@ -2533,6 +2626,7 @@ def play_eras(seed: int, strategy: str, max_era: int = 1,
         "settlements": [], "tiers_end": None, "policies": None,
         "blueprints": None, "doctrines": None, "gold_end": 0,
         "damage_by_era_capital": {},
+        "breakthroughs": [],
     }
 
     for era in range(1, max_era + 1):
@@ -2547,6 +2641,11 @@ def play_eras(seed: int, strategy: str, max_era: int = 1,
         if "free_prophet_era" in run.pro_flags:
             run.faith += int(15 * (1 + run.faith_bonus_pct))
             run.gold += int(10 * (1 + run.gold_bonus_pct))
+        # Renaissance+ Breakthrough — free Sci/Civ (+ preferred tier if room)
+        if era >= 4:
+            br = era_breakthrough(run)
+            if any(br.values()):
+                results["breakthroughs"].append({"era": era, **br})
         for kind in ("village", "town", "capital"):
             run.settlement_index += 1
             st = make_settlement(kind, rng, era)
@@ -2562,10 +2661,14 @@ def play_eras(seed: int, strategy: str, max_era: int = 1,
                     "overkill": 0, "shortfall": None, "skipped": True,
                 })
                 # Half rewards, skip shop/level-ups density by reducing grants
-                run.gold += int(REWARD_GOLD * 0.5 * (1 + run.gold_bonus_pct))
-                run.science += int(REWARD_SCIENCE * 0.5 * (1 + run.sci_bonus_pct))
-                run.culture += int(REWARD_CULTURE * 0.5 * (1 + run.cul_bonus_pct))
-                run.faith += int(REWARD_FAITH * 0.5 * (1 + run.faith_bonus_pct))
+                run.gold += int(REWARD_GOLD * 0.5 * (1 + run.gold_bonus_pct)
+                                * run.income_mult("gold"))
+                run.science += int(REWARD_SCIENCE * 0.5 * (1 + run.sci_bonus_pct)
+                                   * run.income_mult("sci"))
+                run.culture += int(REWARD_CULTURE * 0.5 * (1 + run.cul_bonus_pct)
+                                   * run.income_mult("cul"))
+                run.faith += int(REWARD_FAITH * 0.5 * (1 + run.faith_bonus_pct)
+                                 * run.income_mult("faith"))
                 if kind == "capital":
                     results["damage_by_era_capital"][era] = dmg
                 continue

@@ -4,6 +4,13 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-14 — E4+ escalation pack (growth into the curve)
+- Design: `BALANCE_E4_ESCALATION.md`. Wired in `era1_sim.py`.
+- Slightly eased defence: E4 **3600**, E5 **10000**, E6 **26000**.
+- Soft-caps ↑ (E3 IV … E6+ VI); hard max tier **VI**; Builder IV @ E4+.
+- Era-scaled Sci/Cul income; E4+ bar −20%; Renaissance Breakthrough (free Sci+Civ+tier); Tech Literacy 0.055; Age Power Might ×(1+0.025×sci) from E4.
+- Quick baseline N=40: mean E4 **~10%→55%**, E5 **~32%**. S2 E4 92%; S6 62%; S5/S4 still soft. Report: `E4_ESCALATION_QUICK.md`.
+
 ## 2026-10-12 — 8-era contribution sim (levers v3)
 - Runner: `python3 sim/contribution_sim.py --eras 8 --runs 60 --seed 42` → `CONTRIBUTION_REPORT_E8.*`
 - **Cliff at E4:** mean clear E1 81% · E2 73% · E3 57% · **E4 ~10%** · E5 ~1% · E6–E8 ~0%.
