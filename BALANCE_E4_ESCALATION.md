@@ -52,13 +52,13 @@ On entering era **≥ 4**: free **1 Science level-up** + **1 Civic level-up** (p
 - From era ≥ 4: **Might × (1 + 0.025 × sci_levels)** baseline (“Age of Reason”) — stacks with Research Corps if owned
 - Together, a 12-Sci run at E4 gets ~Mom ×1.66 and Might ×1.30 before formations — toward the 3× HP gap when combined with tier ups
 
-### F. Soften E4–E6 defence *(implement, slight)*
-| Era | Old | New |
-|---|---|---|
-| 4 | 4500 | **3600** |
-| 5 | 12000 | **10000** |
-| 6 | 30000 | **26000** |
-| 7–8 | keep | keep (don’t tune until E5–E6 clears exist) |
+### F. Soften E4–E6 defence *(implement, then retune)*
+| Era | Original | Hot pack | **Retune (S2 E4≈75%)** |
+|---|---|---|---|
+| 4 | 4500 | 3600 | **4100** |
+| 5 | 12000 | 10000 | **11000** |
+| 6 | 30000 | 26000 | **28000** |
+| 7–8 | keep | keep | keep |
 
 ### G. Parked ideas (next pass if still short)
 - **Mastery ranks** past soft-cap: +8% class Might per extra level (infinite soft growth)
@@ -71,15 +71,13 @@ On entering era **≥ 4**: free **1 Science level-up** + **1 Civic level-up** (p
 
 ## Target feel after this pack
 
-| Era | Mean clear (aim) | Quick sim N=40 |
+| Era | Mean clear (aim) | Retune N=40 |
 |---|---|---|
-| E1–E2 | ~80–90% | 84% / 77% ✓ |
-| E3 | ~55–70% | **68%** ✓ |
-| **E4** | **~25–40%** | **~55%** (hot — cliff fixed; can tighten later) |
-| E5 | ~10–20% | **~32%** (new soft gate) |
+| E1–E2 | ~80–90% | 83% / 75% ✓ |
+| E3 | ~55–70% | **65%** ✓ |
+| **E4** | mean ~35–45%; **S2 ~75%** | mean **40%**; **S2 75%** ✓ |
+| E5 | ~10–20% | **14%** ✓ |
 | E6+ | rising from 0 | not measured this pass |
-
-S2 still leads (E4 92%) but S1/S6/S3 now have real E4 footholds. S5/S4 still lag.
 
 Quick report: `sim/results/E4_ESCALATION_QUICK.md`.
 
@@ -87,11 +85,11 @@ Quick report: `sim/results/E4_ESCALATION_QUICK.md`.
 
 ## Implementation checklist
 
-1. ✅ Defence table soften E4–E6  
+1. ✅ Defence table soften E4–E6 (retuned 4100/11000/28000)  
 2. ✅ Soft-caps + tier VI unit stats + hard max 6  
 3. ✅ Era income mult on Sci/Cul/(mild Gold/Faith) + city yields  
-4. ✅ Era ≥4 Sci/Civ cost −20%; longer cost tables  
-5. ✅ Era ≥4 breakthrough free Sci + Civ + preferred tier  
-6. ✅ Tech Literacy 0.055 + Age Power Might scaler  
+4. ✅ Era ≥4 Sci/Civ cost −15%; longer cost tables  
+5. ✅ Era ≥4 breakthrough free Sci + Civ (tier bump removed)  
+6. ✅ Tech Literacy 0.05 + Age Power 0.015  
 7. ✅ Docs: GDD defence, SCIENCE soft-caps, progress  
-8. ✅ Quick sim eras 1–5 N=40
+8. ✅ Quick sim eras 1–5 N=40 — **S2 E4 = 75%**

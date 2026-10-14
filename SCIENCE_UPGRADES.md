@@ -54,9 +54,9 @@ Builder soft-cap: Era 1 → II, Era 3 → III, Era 4+ → **IV**.
 
 ### E4+ escalation (see `BALANCE_E4_ESCALATION.md`)
 
-- Era-scaled Sci/Cul victory + city yields (×1.75 at E4 → ×4.3 at E8).  
-- Era ≥4: Sci/Civ bar costs **−20%**.  
-- **Renaissance Breakthrough** on era start ≥4: free Sci level + free Civ level + preferred-class tier if under soft-cap.
+- Era-scaled Sci/Cul victory + city yields (×**1.55** at E4 → ×4.0 at E8).  
+- Era ≥4: Sci/Civ bar costs **−15%**.  
+- **Renaissance Breakthrough** on era start ≥4: free Sci level + free Civ level (no free tier — was overshooting S2 E4).
 
 ---
 

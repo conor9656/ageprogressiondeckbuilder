@@ -41,9 +41,9 @@ Tuned after Ancient-era Monte Carlo (`sim/results/ERA1_REPORT.md`) and balance�
 
 | Era | 1 Ancient | 2 Classical | 3 Medieval | 4 Renaissance | 5 Industrial | 6 Modern | 7 Atomic | 8 Information |
 |---|---|---|---|---|---|---|---|---|
-| Base Defence | **500** | **800** | **1,400** | **3,600** | **10,000** | **26,000** | 75,000 | 150,000 |
+| Base Defence | **500** | **800** | **1,400** | **4,100** | **11,000** | **28,000** | 75,000 | 150,000 |
 
-E4–E6 eased slightly (was 4,500 / 12,000 / 30,000). Growth into the curve is primarily via **E4+ escalation** (`BALANCE_E4_ESCALATION.md`): raised tier soft-caps + tier VI, era-scaled Sci/Cul income, mid-game bar discount, Renaissance Breakthrough, Age Power Might scaler.
+E4–E6 eased vs original cliff (was 4,500 / 12,000 / 30,000); retuned so **S2 E4 ≈ 75%**. Growth via **E4+ escalation** (`BALANCE_E4_ESCALATION.md`): tier soft-caps + VI, era Sci/Cul income, mid-game bar discount, Renaissance Breakthrough (Sci+Civ), Age Power.
 
 Village = ×1, Town = ×1.5, Capital = ×2.5 of the era base.
 
@@ -80,9 +80,9 @@ Damage = Might × Momentum   (then apply settlement modifiers, e.g. walls)
 - The game automatically selects the **highest-ranking formation** the played cards make. Only the units that form it are **scoring**; other combat units played contribute nothing.
 - Modifiers resolve in a fixed order: units → Blueprints → Policies (left to right by slot) → Wonders → settlement modifiers.
 
-**Tech Literacy:** all formations gain Momentum ×(1 + **0.055** × Science levels taken this run). Stacks with Policy/Blueprint scalers such as Academy Momentum (Mom ×(1 + 0.1 × sci levels)).
+**Tech Literacy:** all formations gain Momentum ×(1 + **0.05** × Science levels taken this run). Stacks with Policy/Blueprint scalers such as Academy Momentum (Mom ×(1 + 0.1 × sci levels)).
 
-**Age Power (era ≥ 4):** Might ×(1 + **0.025** × Science levels) baseline — exponential Sci→damage so well-played runs track Renaissance+ HP.
+**Age Power (era ≥ 4):** Might ×(1 + **0.015** × Science levels) baseline — Sci→damage so well-played runs track Renaissance+ HP (trimmed so S2 E4 ≈ 75%).
 
 ### Formations
 

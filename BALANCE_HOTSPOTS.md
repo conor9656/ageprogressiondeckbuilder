@@ -14,7 +14,7 @@ Latest long-horizon: **eras 1–8** · N=60 · seed 42 · `sim/results/CONTRIBUT
 | **E4** | **~10%** | Was hard gate — now eased HP + exponential growth pack |
 | E5+ | ~1% → 0% | Re-measure after escalation |
 
-**Escalation pack** (`BALANCE_E4_ESCALATION.md`): E4 def 4500→3600; tier soft-caps + VI; era Sci/Cul income; breakthrough; Age Power. Awaiting re-sim.
+**Escalation pack** (`BALANCE_E4_ESCALATION.md`): retuned — E4 def **4100**, Age Power 0.015, Breakthrough Sci+Civ. Quick N=40: **S2 E4 75%**, mean E4 40%, E5 14%.
 
 ---
 
