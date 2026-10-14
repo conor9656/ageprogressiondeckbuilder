@@ -47,8 +47,8 @@ FORM_LEVEL_BONUS = {
 
 # Soft-caps raised so Medieval can reach IV and later eras unlock VI
 ERA_SOFT_CAP = {1: 2, 2: 3, 3: 4, 4: 5, 5: 5, 6: 6, 7: 6, 8: 6}
-# Slightly eased E4–E6 cliff; E7–E8 untouched until mid-game clears exist
-ERA_BASE_DEFENCE = {1: 500, 2: 800, 3: 1400, 4: 3600, 5: 10000, 6: 26000, 7: 75000, 8: 150000}
+# E4 retarget: S2 clear ~75% (was 92% @ 3600). E5–E6 still eased vs original cliff.
+ERA_BASE_DEFENCE = {1: 500, 2: 800, 3: 1400, 4: 4100, 5: 11000, 6: 28000, 7: 75000, 8: 150000}
 
 # Longer tables + flatter mid-game growth (levels keep coming into E4+)
 SCIENCE_COSTS = [
@@ -66,16 +66,16 @@ RAZE_GOLD = 28
 CITY_YIELD = 7
 # Era income mult — Sci/Cul track HP curve; Gold/Faith use a milder factor
 ERA_INCOME_MULT = {
-    1: 1.00, 2: 1.15, 3: 1.35, 4: 1.75,
-    5: 2.20, 6: 2.80, 7: 3.50, 8: 4.30,
+    1: 1.00, 2: 1.15, 3: 1.30, 4: 1.55,
+    5: 1.95, 6: 2.50, 7: 3.20, 8: 4.00,
 }
 ERA_GOLD_FAITH_MULT = {
-    1: 1.00, 2: 1.10, 3: 1.20, 4: 1.45,
-    5: 1.70, 6: 2.00, 7: 2.40, 8: 2.80,
+    1: 1.00, 2: 1.10, 3: 1.20, 4: 1.35,
+    5: 1.55, 6: 1.85, 7: 2.20, 8: 2.60,
 }
-TECH_LITERACY_PER_SCI = 0.055  # was 0.04
-AGE_POWER_MIGHT_PER_SCI = 0.025  # era ≥4 baseline Might scaler
-MIDGAME_BAR_DISCOUNT = 0.20  # era ≥4 Sci/Civ cost cut
+TECH_LITERACY_PER_SCI = 0.05  # was 0.055 (escalation) / 0.04 (v2)
+AGE_POWER_MIGHT_PER_SCI = 0.015  # was 0.025 — trim S2 E4 overshoot toward ~75%
+MIDGAME_BAR_DISCOUNT = 0.15  # was 0.20
 PACK_SIZE = 5  # was 3
 WONDER_SHOP_CHANCE = 0.04  # low chance per pack offer (dedicated Wonder slot is separate)
 EDITION_CHANCE = 0.30  # was 0.15 — editions should show up
@@ -2604,13 +2604,7 @@ def era_breakthrough(run: RunState) -> dict:
         _util_inc(run, "civ_picks", f"breakthrough:{pick}")
         out["civ"] = pick
         run.events.append({"era_breakthrough_civ": pick, "era": run.era})
-    # Preferred-class tier bump if still under soft-cap (extra exponential lever)
-    pref = preferred_class(run)
-    hard = MAX_COMBAT_TIER
-    if run.tiers.get(pref, 1) < min(run.soft_cap(), hard) and "no_troop_upgrades" not in run.ablation:
-        run.tiers[pref] = min(hard, run.tiers[pref] + 1)
-        out["tier"] = pref
-        run.events.append({"era_breakthrough_tier": pref, "era": run.era})
+    # Tier bump removed — was overshooting S2 E4 clears (92% → target ~75%)
     return out
 
 
