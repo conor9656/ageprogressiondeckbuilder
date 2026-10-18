@@ -82,6 +82,14 @@ LINE_ERA_FLAT_MOM = 2  # E5+ Battle Line / Combined Arms / Phalanx flat Mom
 LINE_ERA_MOM_PER_FORM_LV = 1  # +Mom per form level on those shapes (cap below)
 LINE_ERA_MOM_FORM_CAP = 3
 LINE_ERA_FORMS = ("battle_line", "combined_arms", "phalanx")
+# Battlefield supports (not deck RNG) — 1 charge/battle; +1 charge per upgrade
+SUPPORT_CHARGE_CAP = 4
+# Gold cost to buy the next charge (instant). Index = new charge count.
+SUPPORT_CHARGE_GOLD = {2: 50, 3: 80, 4: 120}
+# Science unlock: can offer/buy upgrade when sci_level >= 2 * current_charges
+# (every 2 Sci levels → another charge upgrade opportunity)
+# Chance a charge-upgrade node appears in a Science offer when unlocked
+SUPPORT_CHARGE_SCI_CHANCE = 0.40
 PACK_SIZE = 5  # was 3
 WONDER_SHOP_CHANCE = 0.04  # low chance per pack offer (dedicated Wonder slot is separate)
 EDITION_CHANCE = 0.30  # was 0.15 — editions should show up
@@ -324,6 +332,8 @@ class Card:
     on_score_gold: int = 0
     on_score_faith: int = 0
     edition: str = "standard"
+    # Ephemeral battlefield support (not in deck/hand)
+    battlefield: bool = False
 
     def combat(self) -> bool:
         return self.kind in CLASSES
@@ -349,6 +359,11 @@ class FightMods:
     war_psalm_mom: int = 0
     spoils_mult: float = 1.0
     martyrs_guard: bool = False
+    # Battlefield support charges remaining this settlement
+    builder_charges_left: int = 0
+    missionary_charges_left: int = 0
+    used_battlefield_builder: bool = False
+    used_battlefield_missionary: bool = False
     # On-score edition/promo economy accrued this settlement
     scored_sci_pct: float = 0.0
     scored_faith_pct: float = 0.0
@@ -474,6 +489,12 @@ class RunState:
     faith_combat_mom: int = 0          # Revival Tent
     foundry_bp_mult: float = 1.0       # Foundry Contract
     industrial_siege_wall_ease: bool = False  # optional Foundry/S1 side
+    # Battlefield supports — always available, charge-limited per settlement
+    builder_charges_max: int = 1
+    missionary_charges_max: int = 1
+    builder_charges_left: int = 1
+    missionary_charges_left: int = 1
+    support_uses: dict = field(default_factory=lambda: {"B": 0, "Y": 0})
 
     def soft_cap(self) -> int:
         return ERA_SOFT_CAP.get(self.era, 6)
@@ -504,9 +525,119 @@ class RunState:
 
 
 def starting_deck(run: RunState) -> None:
-    for kind, n in [("M", 6), ("R", 5), ("C", 3), ("S", 2), ("B", 2), ("Y", 2)]:
+    # Combat deck only — Builders/Missionaries are battlefield entities with charges
+    for kind, n in [("M", 6), ("R", 5), ("C", 3), ("S", 2)]:
         for _ in range(n):
             run.deck.append(run.new_card(kind))
+    run.builder_charges_max = 1
+    run.missionary_charges_max = 1
+    run.builder_charges_left = 1
+    run.missionary_charges_left = 1
+
+
+def refill_support_charges(run: RunState, fight: FightMods) -> None:
+    """Reset battlefield support charges at settlement start."""
+    run.builder_charges_left = run.builder_charges_max
+    run.missionary_charges_left = run.missionary_charges_max
+    fight.builder_charges_left = run.builder_charges_max
+    fight.missionary_charges_left = run.missionary_charges_max
+
+
+def support_charge_unlock_sci(charges_max: int) -> int:
+    """Next charge upgrade unlocks every 2 Science levels."""
+    return 2 * charges_max
+
+
+def can_upgrade_support_charges(run: RunState, kind: str) -> bool:
+    cur = run.builder_charges_max if kind == "B" else run.missionary_charges_max
+    if cur >= SUPPORT_CHARGE_CAP:
+        return False
+    return run.sci_level >= support_charge_unlock_sci(cur)
+
+
+def support_charge_gold_cost(kind: str, run: RunState) -> int:
+    cur = run.builder_charges_max if kind == "B" else run.missionary_charges_max
+    return SUPPORT_CHARGE_GOLD.get(cur + 1, 150)
+
+
+def upgrade_support_charges(run: RunState, kind: str, source: str = "gold") -> bool:
+    if not can_upgrade_support_charges(run, kind):
+        return False
+    if kind == "B":
+        run.builder_charges_max = min(SUPPORT_CHARGE_CAP, run.builder_charges_max + 1)
+        run.builder_charges_left = run.builder_charges_max
+    else:
+        run.missionary_charges_max = min(SUPPORT_CHARGE_CAP, run.missionary_charges_max + 1)
+        run.missionary_charges_left = run.missionary_charges_max
+    _util_inc(run, "support_charge_up", f"{kind}:{source}")
+    run.events.append({"support_charge_up": kind, "source": source,
+                       "max": run.builder_charges_max if kind == "B" else run.missionary_charges_max})
+    return True
+
+
+def make_battlefield_support(run: RunState, kind: str) -> Card:
+    """Ephemeral Builder/Missionary attached from battlefield charges (not deck)."""
+    c = run.new_card(kind)
+    c.battlefield = True
+    return c
+
+
+def builder_free_available(run: RunState, fight: FightMods) -> bool:
+    return bool(
+        fight.helping_hand or "helping_hand" in run.blueprints
+        or run.support_free_slots
+        or ("builder_free_slot" in run.eng_flags and not fight.builder_free_slot_used)
+    )
+
+
+def missionary_free_available(run: RunState, fight: FightMods) -> bool:
+    return bool(
+        run.support_free_slots
+        or ("missionary_free_slot" in run.pro_flags and not fight.missionary_free_slot_used)
+    )
+
+
+def spend_support_charge(run: RunState, fight: FightMods, kind: str) -> None:
+    if kind == "B":
+        fight.builder_charges_left = max(0, fight.builder_charges_left - 1)
+        run.builder_charges_left = fight.builder_charges_left
+        fight.used_battlefield_builder = True
+        fight.builder_played = True
+        run.support_uses["B"] = run.support_uses.get("B", 0) + 1
+        _util_inc(run, "support_uses", "B")
+    else:
+        fight.missionary_charges_left = max(0, fight.missionary_charges_left - 1)
+        run.missionary_charges_left = fight.missionary_charges_left
+        fight.used_battlefield_missionary = True
+        run.support_uses["Y"] = run.support_uses.get("Y", 0) + 1
+        _util_inc(run, "support_uses", "Y")
+
+
+def try_buy_support_charges_gold(run: RunState) -> None:
+    """Shop: instant gold lump-sum to raise charges/battle when Sci gate is met."""
+    order = []
+    if run.strategy == "S4":
+        order = ["B", "Y"]
+    elif run.strategy == "S5":
+        order = ["Y", "B"]
+    elif run.strategy == "S1":
+        order = ["B", "Y"]
+    elif run.strategy == "S2":
+        # Legion path rarely needs supports early — still buy if rich
+        order = ["B", "Y"] if run.gold >= 100 else []
+    else:
+        order = ["B", "Y"]
+    for kind in order:
+        if not can_upgrade_support_charges(run, kind):
+            continue
+        cost = support_charge_gold_cost(kind, run)
+        if run.gold < cost:
+            continue
+        # Keep a small reserve so unit/BP buys aren't starved
+        if run.gold - cost < 12 and run.strategy not in ("S4", "S5"):
+            continue
+        run.gold -= cost
+        upgrade_support_charges(run, kind, source="gold")
 
 
 # --- Formations ---------------------------------------------------------------
@@ -986,102 +1117,142 @@ def refill_hand(hand: list[Card], draw: list[Card], discard: list[Card],
 
 # --- Combat AI ----------------------------------------------------------------
 
+def _dry_fight_copy(fight: FightMods) -> FightMods:
+    return FightMods(
+        siege_might=fight.siege_might, siege_mom=fight.siege_mom,
+        ignore_walls_next=fight.ignore_walls_next, walls_removed=fight.walls_removed,
+        free_wall_ignore=fight.free_wall_ignore,
+        next_might=fight.next_might, next_unit_might_pct=fight.next_unit_might_pct,
+        next_mom=fight.next_mom, next_mom_mult=fight.next_mom_mult,
+        blueprints_fired=set(fight.blueprints_fired),
+        doctrines_fired=list(fight.doctrines_fired),
+        helping_hand=fight.helping_hand, merc_might=fight.merc_might,
+        war_psalm_mom=fight.war_psalm_mom, spoils_mult=fight.spoils_mult,
+        martyrs_guard=fight.martyrs_guard,
+        builder_played=fight.builder_played,
+        draw_on_builder_used=fight.draw_on_builder_used,
+        missionary_free_slot_used=fight.missionary_free_slot_used,
+        bp_without_builder_used=fight.bp_without_builder_used,
+        doctrine_without_missionary_used=fight.doctrine_without_missionary_used,
+        builder_free_slot_used=fight.builder_free_slot_used,
+        builder_charges_left=fight.builder_charges_left,
+        missionary_charges_left=fight.missionary_charges_left,
+    )
+
+
+def _apply_supports_dry(run: RunState, play: list[Card], fe: FightMods,
+                        settlement: dict) -> None:
+    bps = [b for b in run.blueprints if b not in fe.blueprints_fired]
+    docs = [d for d in run.doctrines if d not in fe.doctrines_fired]
+    for c in play:
+        if c.kind == "B" and bps:
+            pick = pick_blueprint(run, bps, settlement, fe)
+            apply_bp_to_fight(pick, fe, run.builder_scale, run.sci_level,
+                              wall_bonus="wall_bp_bonus" in run.eng_flags)
+            fe.blueprints_fired.add(pick)
+            bps = [b for b in bps if b != pick]
+        if c.kind == "Y" and docs:
+            pick = pick_doctrine(run, docs)
+            fe.doctrines_fired.append(pick)
+            eff = DOCTRINES[pick][2]
+            if eff == "merc_might":
+                fe.merc_might = max(fe.merc_might, min(40, run.gold // 5))
+            elif eff == "war_psalm":
+                fe.war_psalm_mom = max(fe.war_psalm_mom, 1)
+            elif eff == "spoils_x15":
+                fe.spoils_mult = max(fe.spoils_mult, 1.5)
+            docs = [d for d in docs if d != pick]
+
+
+def _support_attach_ok(combat_n: int, use_b: bool, use_y: bool,
+                       free_b: bool, free_y: bool) -> bool:
+    """Formation size: supports take a slot unless free-slot ability is active."""
+    if combat_n > 5 or combat_n < 1:
+        return False
+    slots = combat_n
+    if use_b and not free_b:
+        slots += 1
+    if use_y and not free_y:
+        slots += 1
+    # One free support may push total to 6 (5 combat + free attach)
+    total = combat_n + (1 if use_b else 0) + (1 if use_y else 0)
+    if slots > 5:
+        return False
+    if total > 6:
+        return False
+    if total > 5 and not ((use_b and free_b) or (use_y and free_y)):
+        return False
+    return True
+
+
 def greedy_assault(run: RunState, hand: list[Card], fight: FightMods,
                    settlement: dict) -> tuple[list[Card], dict]:
-    """Enumerate subsets size 1..5 (or 6 with Helping Hand / Evangelists free slot)."""
+    """Combat subsets from hand; optionally attach battlefield B/Y from charges."""
     best_dmg = -1
     best_play: list[Card] = []
     best_eval: dict = {"damage": 0, "form": "none"}
 
-    max_k = 5
-    free_builder = (
-        (fight.helping_hand or "helping_hand" in run.blueprints
-         or run.support_free_slots
-         or ("builder_free_slot" in run.eng_flags and not fight.builder_free_slot_used))
-        and any(c.kind == "B" for c in hand)
-    )
-    free_missionary = (
-        (run.support_free_slots
-         or ("missionary_free_slot" in run.pro_flags and not fight.missionary_free_slot_used))
-        and any(c.kind == "Y" for c in hand)
-    )
-    if free_builder or free_missionary:
-        max_k = 6
+    combat_hand = [c for c in hand if c.combat()]
+    free_b = builder_free_available(run, fight)
+    free_y = missionary_free_available(run, fight)
+    can_b = fight.builder_charges_left > 0 and bool(run.blueprints)
+    can_y = fight.missionary_charges_left > 0 and bool(run.doctrines)
+    # Even without BP/Doc, allow attach for eng/pro side effects (draw/faith)
+    if fight.builder_charges_left > 0 and (
+            "draw_on_builder" in run.eng_flags or run.strategy in ("S4", "S1")):
+        can_b = True
+    if fight.missionary_charges_left > 0 and (
+            "faith_on_missionary" in run.pro_flags or run.strategy == "S5"):
+        can_y = True
 
-    idxs = list(range(len(hand)))
+    idxs = list(range(len(combat_hand)))
     candidates = []
-    for k in range(1, min(max_k, len(hand)) + 1):
+    for k in range(1, min(5, len(combat_hand)) + 1):
         candidates.extend(itertools.combinations(idxs, k))
-
     if len(candidates) > 2500:
         candidates = candidates[:2500]
 
+    # Attach options: none / B / Y / both (when charges + slot allow)
+    attach_opts: list[tuple[bool, bool]] = [(False, False)]
+    if can_b:
+        attach_opts.append((True, False))
+    if can_y:
+        attach_opts.append((False, True))
+    if can_b and can_y:
+        attach_opts.append((True, True))
+
     for comb in candidates:
-        play = [hand[i] for i in comb]
-        builders = sum(1 for c in play if c.kind == "B")
-        missionaries = sum(1 for c in play if c.kind == "Y")
-        combat_n = sum(1 for c in play if c.combat())
-        # Without free-slot support, max 5 cards
-        if combat_n > 5:
-            continue
-        if len(play) > 5:
-            ok = (builders >= 1 and free_builder) or (missionaries >= 1 and free_missionary)
-            if not ok:
+        combat_play = [combat_hand[i] for i in comb]
+        combat_n = len(combat_play)
+        for use_b, use_y in attach_opts:
+            if not _support_attach_ok(combat_n, use_b, use_y, free_b, free_y):
                 continue
-        # Simulate blueprint triggers without mutating much — dry eval first
-        # Actually apply supports: prefer firing unused BP/Doc if present
-        # Dry-run fight copy
-        fe = FightMods(
-            siege_might=fight.siege_might, siege_mom=fight.siege_mom,
-            ignore_walls_next=fight.ignore_walls_next, walls_removed=fight.walls_removed,
-            free_wall_ignore=fight.free_wall_ignore,
-            next_might=fight.next_might, next_unit_might_pct=fight.next_unit_might_pct,
-            next_mom=fight.next_mom, next_mom_mult=fight.next_mom_mult,
-            blueprints_fired=set(fight.blueprints_fired),
-            doctrines_fired=list(fight.doctrines_fired),
-            helping_hand=fight.helping_hand, merc_might=fight.merc_might,
-            war_psalm_mom=fight.war_psalm_mom, spoils_mult=fight.spoils_mult,
-            martyrs_guard=fight.martyrs_guard,
-            builder_played=fight.builder_played,
-            draw_on_builder_used=fight.draw_on_builder_used,
-            missionary_free_slot_used=fight.missionary_free_slot_used,
-            bp_without_builder_used=fight.bp_without_builder_used,
-            doctrine_without_missionary_used=fight.doctrine_without_missionary_used,
-            builder_free_slot_used=fight.builder_free_slot_used,
-        )
-        # Trigger one BP/Doc per support in play (order: builders then missionaries)
-        bps = [b for b in run.blueprints if b not in fe.blueprints_fired]
-        docs = [d for d in run.doctrines if d not in fe.doctrines_fired]
-        for c in play:
-            if c.kind == "B" and bps:
-                pick = pick_blueprint(run, bps, settlement, fe)
-                apply_bp_to_fight(pick, fe, run.builder_scale, run.sci_level,
-                                  wall_bonus="wall_bp_bonus" in run.eng_flags)
-                fe.blueprints_fired.add(pick)
-                bps = [b for b in bps if b != pick]
-            if c.kind == "Y" and docs:
-                pick = pick_doctrine(run, docs)
-                fe.doctrines_fired.append(pick)
-                eff = DOCTRINES[pick][2]
-                if eff == "merc_might":
-                    fe.merc_might = max(fe.merc_might, min(40, run.gold // 5))
-                elif eff == "war_psalm":
-                    fe.war_psalm_mom = max(fe.war_psalm_mom, 1)
-                elif eff == "spoils_x15":
-                    fe.spoils_mult = max(fe.spoils_mult, 1.5)
-                docs = [d for d in docs if d != pick]
+            play = list(combat_play)
+            if use_b:
+                play.append(make_battlefield_support(run, "B"))
+            if use_y:
+                play.append(make_battlefield_support(run, "Y"))
 
-        ev = evaluate_play(run, play, fe, settlement, consume_burst=False)
-        # Small bias: prefer higher rank / using siege on walls
-        score = ev["damage"]
-        if settlement["walls"] and not fe.walls_removed and any(c.kind == "S" for c in play):
-            score += 1
-        if score > best_dmg:
-            best_dmg = score
-            best_play = play
-            best_eval = ev
+            fe = _dry_fight_copy(fight)
+            _apply_supports_dry(run, play, fe, settlement)
+            ev = evaluate_play(run, play, fe, settlement, consume_burst=False)
+            score = ev["damage"]
+            if settlement["walls"] and not fe.walls_removed and any(c.kind == "S" for c in play):
+                score += 1
+            # Bias: fire unused BP/Doc when attaching is free/cheap
+            if use_b and any(b not in fight.blueprints_fired for b in run.blueprints):
+                score += 2
+            if use_y and any(d not in fight.doctrines_fired for d in run.doctrines):
+                score += 2
+            if score > best_dmg:
+                best_dmg = score
+                best_play = play
+                best_eval = ev
 
-    if not best_play and hand:
+    if not best_play and combat_hand:
+        best_play = [combat_hand[0]]
+        best_eval = evaluate_play(run, best_play, fight, settlement, False)
+    elif not best_play and hand:
         best_play = [hand[0]]
         best_eval = evaluate_play(run, best_play, fight, settlement, False)
 
@@ -1215,6 +1386,37 @@ def _pull_floating_support(hand: list[Card], draw: list[Card], discard: list[Car
     # Nothing to pull
 
 
+def _commit_support_play(run: RunState, play: list[Card], fight: FightMods,
+                         settlement: dict, hand: list[Card], draw: list[Card],
+                         discard: list[Card]) -> None:
+    """Fire BP/Doc and spend battlefield charges for supports in the play."""
+    rng = run.rng
+    for c in play:
+        if c.kind == "B":
+            if getattr(c, "battlefield", False) or c not in hand:
+                spend_support_charge(run, fight, "B")
+            avail = [b for b in run.blueprints if b not in fight.blueprints_fired]
+            if avail:
+                bp = pick_blueprint(run, avail, settlement, fight)
+                trigger_blueprint(run, bp, fight, hand, draw, discard)
+            if "draw_on_builder" in run.eng_flags and not fight.draw_on_builder_used:
+                draw_cards(hand, draw, discard, 1, rng)
+                fight.draw_on_builder_used = True
+            if "builder_free_slot" in run.eng_flags and not fight.builder_free_slot_used:
+                fight.builder_free_slot_used = True
+            fight.builder_played = True
+        if c.kind == "Y":
+            if getattr(c, "battlefield", False) or c not in hand:
+                spend_support_charge(run, fight, "Y")
+            avail = [d for d in run.doctrines if d not in fight.doctrines_fired]
+            if avail:
+                trigger_doctrine(run, pick_doctrine(run, avail), fight)
+            if "faith_on_missionary" in run.pro_flags:
+                run.faith += int(4 * (1 + run.faith_bonus_pct))
+            if "missionary_free_slot" in run.pro_flags and not fight.missionary_free_slot_used:
+                fight.missionary_free_slot_used = True
+
+
 def fight_settlement(run: RunState, settlement: dict) -> tuple[bool, int, int]:
     """Returns (won, damage, assaults_used)."""
     rng = run.rng
@@ -1223,12 +1425,9 @@ def fight_settlement(run: RunState, settlement: dict) -> tuple[bool, int, int]:
     discard: list[Card] = []
     hand: list[Card] = []
     refill_hand(hand, draw, discard, run.hand_size, rng)
-    if "float_builder" in run.eng_flags:
-        _pull_floating_support(hand, draw, discard, "B", rng)
-    if "float_missionary" in run.pro_flags:
-        _pull_floating_support(hand, draw, discard, "Y", rng)
 
     fight = FightMods()
+    refill_support_charges(run, fight)
     fight.unused_regroups_snapshot = run.base_regroups
     # Workshop Relay / Standing Order: fire one Blueprint at settlement start without Builder
     if "bp_without_builder" in run.eng_flags and run.blueprints:
@@ -1258,43 +1457,15 @@ def fight_settlement(run: RunState, settlement: dict) -> tuple[bool, int, int]:
         if should_regroup(run, hand, fight, settlement, regroups, assaults):
             dump = regroup_discard(hand, run)
             for c in dump:
-                hand.remove(c)
-                discard.append(c)
-            target = run.hand_size
-            # Keep floating supports above hand size after regroup
-            refill_hand(hand, draw, discard, target, rng)
-            if "float_builder" in run.eng_flags and not any(c.kind == "B" for c in hand):
-                _pull_floating_support(hand, draw, discard, "B", rng)
-            if "float_missionary" in run.pro_flags and not any(c.kind == "Y" for c in hand):
-                _pull_floating_support(hand, draw, discard, "Y", rng)
+                if c in hand:
+                    hand.remove(c)
+                    discard.append(c)
+            refill_hand(hand, draw, discard, run.hand_size, rng)
             regroups -= 1
-            if fight.plus_regroup:
-                # already consumed as extra stock at start — handle below
-                pass
             continue
 
         play, _ = greedy_assault(run, hand, fight, settlement)
-        # Apply supports for real
-        for c in play:
-            if c.kind == "B":
-                avail = [b for b in run.blueprints if b not in fight.blueprints_fired]
-                if avail:
-                    bp = pick_blueprint(run, avail, settlement, fight)
-                    trigger_blueprint(run, bp, fight, hand, draw, discard)
-                if "draw_on_builder" in run.eng_flags and not fight.draw_on_builder_used:
-                    draw_cards(hand, draw, discard, 1, rng)
-                    fight.draw_on_builder_used = True
-                if "builder_free_slot" in run.eng_flags and not fight.builder_free_slot_used:
-                    fight.builder_free_slot_used = True
-                fight.builder_played = True
-            if c.kind == "Y":
-                avail = [d for d in run.doctrines if d not in fight.doctrines_fired]
-                if avail:
-                    trigger_doctrine(run, pick_doctrine(run, avail), fight)
-                if "faith_on_missionary" in run.pro_flags:
-                    run.faith += int(4 * (1 + run.faith_bonus_pct))
-                if "missionary_free_slot" in run.pro_flags and not fight.missionary_free_slot_used:
-                    fight.missionary_free_slot_used = True
+        _commit_support_play(run, play, fight, settlement, hand, draw, discard)
 
         # Extra assaults/regroups from BP
         if fight.plus_assault:
@@ -1325,8 +1496,11 @@ def fight_settlement(run: RunState, settlement: dict) -> tuple[bool, int, int]:
                 run.kaleidoscope_mom = 0.0
                 run.last_formation_id = form_id
         for c in play:
-            hand.remove(c)
-            discard.append(c)
+            if getattr(c, "battlefield", False):
+                continue  # ephemeral — never in hand/deck
+            if c in hand:
+                hand.remove(c)
+                discard.append(c)
         refill_hand(hand, draw, discard, run.hand_size, rng)
 
         run.events.append({
@@ -1397,6 +1571,9 @@ def snapshot_run(run: RunState) -> dict:
         "base_assaults": run.base_assaults,
         "base_regroups": run.base_regroups,
         "builder_scale": run.builder_scale,
+        "builder_charges_max": run.builder_charges_max,
+        "missionary_charges_max": run.missionary_charges_max,
+        "support_uses": dict(run.support_uses),
         "deck_size": len(run.deck),
         "class_counts": dict(class_counts),
         "special_unit_count": special_units,
@@ -1635,6 +1812,11 @@ def roll_science_offers(run: RunState) -> list[str]:
             nid, _, _ = tree[run.era]
             if nid not in run.owned_prog:
                 pool.append(nid)
+    # Battlefield support charge upgrades (chance) when Sci gate met
+    if can_upgrade_support_charges(run, "B") and rng.random() < SUPPORT_CHARGE_SCI_CHANCE:
+        pool.append("support_charge_B")
+    if can_upgrade_support_charges(run, "Y") and rng.random() < SUPPORT_CHARGE_SCI_CHANCE:
+        pool.append("support_charge_Y")
     rng.shuffle(pool)
     non = []
     target = SCIENCE_OFFER_COUNT
@@ -1692,19 +1874,25 @@ def choose_science(run: RunState, offers: list[str]) -> str:
     strat = run.strategy
     pref = []
     if strat == "S3":
-        pref = ["battle_line_drill", "upgrade_M", "upgrade_R", "edu_", "bank_", "upgrade_C"]
+        pref = ["battle_line_drill", "upgrade_M", "upgrade_R", "edu_", "bank_",
+                "support_charge_B", "upgrade_C"]
     elif strat == "S1":
-        pref = ["upgrade_S", "eng_", "upgrade_M", "upgrade_B", "combined_arms_primer", "machinery"]
+        pref = ["upgrade_S", "eng_", "support_charge_B", "upgrade_M", "upgrade_B",
+                "combined_arms_primer", "machinery"]
     elif strat == "S2":
-        pref = ["upgrade_M", "upgrade_C", "skirmish_drill", "bank_", "upgrade_R"]
+        pref = ["upgrade_M", "upgrade_C", "skirmish_drill", "bank_", "upgrade_R",
+                "support_charge_B"]
     elif strat == "S4":
-        pref = ["eng_", "upgrade_B", "upgrade_M", "bank_", "writing"]
+        pref = ["support_charge_B", "eng_", "upgrade_B", "upgrade_M", "bank_", "writing"]
     elif strat == "S5":
-        pref = ["pro_", "dev_", "apostolic_double_sci", "upgrade_M", "surveying", "edu_"]
+        pref = ["support_charge_Y", "pro_", "dev_", "apostolic_double_sci", "upgrade_M",
+                "surveying", "edu_"]
     elif strat == "S6":
-        pref = ["edu_", "writing", "upgrade_M", "upgrade_R", "bank_", "upgrade_C"]
+        pref = ["edu_", "writing", "upgrade_M", "upgrade_R", "bank_", "upgrade_C",
+                "support_charge_Y"]
     else:
-        pref = ["upgrade_M", "edu_", "bank_", "upgrade_R", "battle_line_drill"]
+        pref = ["upgrade_M", "edu_", "bank_", "support_charge_B", "support_charge_Y",
+                "upgrade_R", "battle_line_drill"]
     for p in pref:
         for o in offers:
             if o == p or (p.endswith("_") and o.startswith(p)):
@@ -1720,6 +1908,15 @@ def apply_science(run: RunState, pick: str) -> None:
         run.last_troop_upgrade = key
         if key == "B":
             run.builder_scale = {1: 1.0, 2: 1.5, 3: 2.0, 4: 2.5}[run.tiers["B"]]
+        run.era_just_began = False
+        return
+
+    if pick == "support_charge_B":
+        upgrade_support_charges(run, "B", source="science")
+        run.era_just_began = False
+        return
+    if pick == "support_charge_Y":
+        upgrade_support_charges(run, "Y", source="science")
         run.era_just_began = False
         return
 
@@ -2165,6 +2362,8 @@ def shop(run: RunState, settlement: dict) -> None:
 
     buy_treasury(run, treasury)
     buy_synod(run, synod)
+    # Instant gold path: lump-sum charge upgrades when Sci gate is met
+    try_buy_support_charges_gold(run)
 
     if run.strategy == "S2":
         disband_supports(run)
@@ -2560,16 +2759,13 @@ def disband_supports(run: RunState) -> None:
         run.gold += run.bond_bank
         run.bond_bank = 0
         run.blueprints.remove("investment_bond")
-    # Remove up to 2 supports if gold allows
+    # Legacy: strip any leftover deck B/Y (supports are battlefield charges now)
     supports = [c for c in run.deck if c.kind in ("B", "Y")]
-    for c in supports[:2]:
+    for c in supports:
+        run.deck.remove(c)
         if run.free_disbands_left > 0:
             run.free_disbands_left -= 1
-            run.deck.remove(c)
-        elif run.gold >= run.disband_cost:
-            run.gold -= run.disband_cost
-            run.deck.remove(c)
-            run.disband_cost += 1
+        # no gold cost — cleaning obsolete deck supports
 
 
 # --- Settlement generation ----------------------------------------------------
@@ -2808,6 +3004,9 @@ def play_eras(seed: int, strategy: str, max_era: int = 1,
                 results["ablation"] = sorted(run.ablation)
                 results["sci_level"] = run.sci_level
                 results["civ_level"] = run.civ_level
+                results["builder_charges_max"] = run.builder_charges_max
+                results["missionary_charges_max"] = run.missionary_charges_max
+                results["support_uses"] = dict(run.support_uses)
                 results["trajectory"] = results.get("trajectory", [])
                 return results
             post = after_victory(run, st, dmg, used, run._last_fight)  # type: ignore
@@ -2835,6 +3034,9 @@ def play_eras(seed: int, strategy: str, max_era: int = 1,
     results["ablation"] = sorted(run.ablation)
     results["sci_level"] = run.sci_level
     results["civ_level"] = run.civ_level
+    results["builder_charges_max"] = run.builder_charges_max
+    results["missionary_charges_max"] = run.missionary_charges_max
+    results["support_uses"] = dict(run.support_uses)
     return results
 
 
@@ -2851,12 +3053,9 @@ def fight_settlement_with_docs(run: RunState, settlement: dict) -> tuple[bool, i
     discard: list[Card] = []
     hand: list[Card] = []
     refill_hand(hand, draw, discard, run.hand_size, rng)
-    if "float_builder" in run.eng_flags:
-        _pull_floating_support(hand, draw, discard, "B", rng)
-    if "float_missionary" in run.pro_flags:
-        _pull_floating_support(hand, draw, discard, "Y", rng)
 
     fight = FightMods()
+    refill_support_charges(run, fight)
     fight.unused_regroups_snapshot = run.base_regroups
     # S1 evening: free wall-ignore once per settlement
     if run.strategy == "S1" and settlement.get("walls"):
@@ -2891,33 +3090,11 @@ def fight_settlement_with_docs(run: RunState, settlement: dict) -> tuple[bool, i
                     hand.remove(c)
                     discard.append(c)
             refill_hand(hand, draw, discard, run.hand_size, rng)
-            if "float_builder" in run.eng_flags and not any(c.kind == "B" for c in hand):
-                _pull_floating_support(hand, draw, discard, "B", rng)
-            if "float_missionary" in run.pro_flags and not any(c.kind == "Y" for c in hand):
-                _pull_floating_support(hand, draw, discard, "Y", rng)
             regroups -= 1
             continue
 
         play, _ = greedy_assault(run, hand, fight, st)
-        for c in play:
-            if c.kind == "B":
-                avail = [b for b in run.blueprints if b not in fight.blueprints_fired]
-                if avail:
-                    bp = pick_blueprint(run, avail, st, fight)
-                    trigger_blueprint(run, bp, fight, hand, draw, discard)
-                if "draw_on_builder" in run.eng_flags and not fight.draw_on_builder_used:
-                    draw_cards(hand, draw, discard, 1, rng)
-                    fight.draw_on_builder_used = True
-                if "builder_free_slot" in run.eng_flags and not fight.builder_free_slot_used:
-                    fight.builder_free_slot_used = True
-            if c.kind == "Y":
-                avail = [d for d in run.doctrines if d not in fight.doctrines_fired]
-                if avail:
-                    trigger_doctrine(run, pick_doctrine(run, avail), fight)
-                if "faith_on_missionary" in run.pro_flags:
-                    run.faith += int(4 * (1 + run.faith_bonus_pct))
-                if "missionary_free_slot" in run.pro_flags and not fight.missionary_free_slot_used:
-                    fight.missionary_free_slot_used = True
+        _commit_support_play(run, play, fight, st, hand, draw, discard)
 
         if fight.plus_assault:
             assaults += fight.plus_assault
@@ -2933,6 +3110,8 @@ def fight_settlement_with_docs(run: RunState, settlement: dict) -> tuple[bool, i
         assaults_used += 1
         assaults -= 1
         for c in play:
+            if getattr(c, "battlefield", False):
+                continue
             if c in hand:
                 hand.remove(c)
                 discard.append(c)
