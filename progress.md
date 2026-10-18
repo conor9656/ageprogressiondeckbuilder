@@ -4,6 +4,12 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-18 — Battlefield support charges (B/Y not deck RNG)
+- Design: `BALANCE_SUPPORT_CHARGES.md`. Wired in `era1_sim.py`: always-on B/Y with 1 charge/settlement; slot cost until free-slot; Sci chance (~40%) or Gold (50/80/120) upgrades every 2 Sci levels (cap 4).
+- Sim N=40 S1–S5 eras 1–5: **100% runs use Builder**; Y strong esp. S5 (11.5 mean uses). B/settlement ~0.8–1.25.
+- Clears rose vs E5-evening (S2 E5 60→80, S1 28→62, S4 2→15). Report: `sim/results/SUPPORT_CHARGES_S1_5.md`.
+- Next: if keeping S2 E4≈75% target, retune after this power bump.
+
 ## 2026-10-18 — E5 evening first-pass (no HP edits)
 - Design: `BALANCE_E5_EVENING.md`. Wired: +1 Assault @ E5, Line Mom (BL/CA/Phalanx), Industrial Toolkit.
 - Quick N=40: **S2 E4 held 75%**; mean E5 **14%→22%**; S1 E5 10%→28%; S5 8%→15%; S2 E5 42%→60%.
