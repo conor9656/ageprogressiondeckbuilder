@@ -4,6 +4,11 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-18 — E5 evening first-pass (no HP edits)
+- Design: `BALANCE_E5_EVENING.md`. Wired: +1 Assault @ E5, Line Mom (BL/CA/Phalanx), Industrial Toolkit.
+- Quick N=40: **S2 E4 held 75%**; mean E5 **14%→22%**; S1 E5 10%→28%; S5 8%→15%; S2 E5 42%→60%.
+- S4 still dies pre-toolkit. Report: `sim/results/E5_EVENING_QUICK.md`. Ready to promote to GDD if desired.
+
 ## 2026-10-14 — E4+ escalation pack (growth into the curve)
 - Design: `BALANCE_E4_ESCALATION.md`. Wired in `era1_sim.py`.
 - Retuned for **S2 E4 ≈ 75%**: def E4 **4100** / E5 11000 / E6 28000; Age Power 0.015; Literacy 0.05; income ×1.55; bar −15%; Breakthrough Sci+Civ only.

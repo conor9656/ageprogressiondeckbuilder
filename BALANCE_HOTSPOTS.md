@@ -16,6 +16,8 @@ Latest long-horizon: **eras 1–8** · N=60 · seed 42 · `sim/results/CONTRIBUT
 
 **Escalation pack** (`BALANCE_E4_ESCALATION.md`): retuned — E4 def **4100**, Age Power 0.015, Breakthrough Sci+Civ. Quick N=40: **S2 E4 75%**, mean E4 40%, E5 14%.
 
+**E5 evening first-pass** (`BALANCE_E5_EVENING.md`, no HP edits): +1 Assault @ E5, Line Mom, Industrial Toolkit. Quick N=40: S2 E4 **still 75%**; mean E5 **22%**; S1 E5 **28%**. S4 still fails before toolkit.
+
 ---
 
 ## Confirmed by levers-v3 contribution sim (2026-10-10)

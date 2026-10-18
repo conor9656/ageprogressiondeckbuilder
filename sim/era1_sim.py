@@ -76,6 +76,12 @@ ERA_GOLD_FAITH_MULT = {
 TECH_LITERACY_PER_SCI = 0.05  # was 0.055 (escalation) / 0.04 (v2)
 AGE_POWER_MIGHT_PER_SCI = 0.015  # was 0.025 — trim S2 E4 overshoot toward ~75%
 MIDGAME_BAR_DISCOUNT = 0.15  # was 0.20
+# E5 first-pass evening (no HP edits) — see BALANCE_E5_EVENING.md
+INDUSTRIAL_ASSAULT_BONUS = 1  # +1 base Assault from era 5
+LINE_ERA_FLAT_MOM = 2  # E5+ Battle Line / Combined Arms / Phalanx flat Mom
+LINE_ERA_MOM_PER_FORM_LV = 1  # +Mom per form level on those shapes (cap below)
+LINE_ERA_MOM_FORM_CAP = 3
+LINE_ERA_FORMS = ("battle_line", "combined_arms", "phalanx")
 PACK_SIZE = 5  # was 3
 WONDER_SHOP_CHANCE = 0.04  # low chance per pack offer (dedicated Wonder slot is separate)
 EDITION_CHANCE = 0.30  # was 0.15 — editions should show up
@@ -462,6 +468,12 @@ class RunState:
     last_formation_id: Optional[str] = None
     kaleidoscope_armed: bool = False
     prophet_on_win: bool = False
+    # E5 Industrial evening
+    industrial_assault_granted: bool = False
+    industrial_toolkit: Optional[str] = None
+    faith_combat_mom: int = 0          # Revival Tent
+    foundry_bp_mult: float = 1.0       # Foundry Contract
+    industrial_siege_wall_ease: bool = False  # optional Foundry/S1 side
 
     def soft_cap(self) -> int:
         return ERA_SOFT_CAP.get(self.era, 6)
@@ -720,6 +732,16 @@ def evaluate_play(run: RunState, cards: list[Card], fight: FightMods,
     if run.era >= 4 and run.sci_level > 0:
         might *= 1.0 + AGE_POWER_MIGHT_PER_SCI * run.sci_level
 
+    # E5+ Line Doctrine — Mom parity for non-Legion shapes (does NOT buff Vanguard/Legion)
+    if run.era >= 5 and form_id in LINE_ERA_FORMS:
+        mom += LINE_ERA_FLAT_MOM
+        mom += min(LINE_ERA_MOM_FORM_CAP,
+                   LINE_ERA_MOM_PER_FORM_LV * run.form_levels.get(form_id, 0))
+
+    # Industrial Toolkit: Revival Tent — flat Mom if Faith path took it
+    if run.faith_combat_mom:
+        mom += run.faith_combat_mom
+
     # Scaling / exponential-style policies (stack with sci levels & owned cards)
     if "workshop_network" in run.policies:
         might += 6 * len(run.blueprints)
@@ -768,7 +790,10 @@ def evaluate_play(run: RunState, cards: list[Card], fight: FightMods,
 
     dmg = might * mom
 
-    wall_ignore = fight.ignore_walls_next or fight.free_wall_ignore
+    wall_ignore = (
+        fight.ignore_walls_next or fight.free_wall_ignore
+        or (run.industrial_siege_wall_ease and run.era >= 5)
+    )
     if walls and not has_siege_played and not wall_ignore:
         dmg *= 0.5
 
@@ -815,7 +840,7 @@ def _grant_doctrine_slot(run: RunState) -> None:
 
 
 def _bp_scale(run: RunState, name: str) -> float:
-    sc = run.builder_scale
+    sc = run.builder_scale * run.foundry_bp_mult
     if name in WALL_BLUEPRINTS and "wall_bp_bonus" in run.eng_flags:
         sc *= 1.5
     if "bp_double" in run.eng_flags:
@@ -2608,6 +2633,93 @@ def era_breakthrough(run: RunState) -> dict:
     return out
 
 
+def _preferred_form_for_drill(run: RunState) -> str:
+    strat = run.strategy
+    if strat == "S3":
+        return "battle_line"
+    if strat == "S1":
+        return "combined_arms"
+    if strat == "S2":
+        # Prefer Legion if any form levels already, else Vanguard — small E5 help without Age Power++
+        return "legion" if run.form_levels.get("legion", 0) >= run.form_levels.get("vanguard", 0) \
+            else "vanguard"
+    if strat == "S4":
+        return "combined_arms"
+    if strat == "S6":
+        return "battle_line"
+    return "battle_line"
+
+
+def choose_industrial_toolkit(run: RunState) -> str:
+    """Strategy-biased Industrial Toolkit pick (sim: auto-choose best for path)."""
+    strat = run.strategy
+    # Prefer path identity; Powder Magazine is weaker now that +1 Assault is global
+    pref = {
+        "S1": "foundry_contract",
+        "S2": "drill_sergeant",
+        "S3": "drill_sergeant",
+        "S4": "foundry_contract",
+        "S5": "revival_tent",
+        "S6": "seminar",
+    }.get(strat, "drill_sergeant")
+    return pref
+
+
+def apply_industrial_toolkit(run: RunState, pick: str) -> None:
+    run.industrial_toolkit = pick
+    if pick == "drill_sergeant":
+        form = _preferred_form_for_drill(run)
+        run.form_levels[form] = run.form_levels.get(form, 0) + 2
+        _util_inc(run, "industrial_toolkit", f"drill_sergeant:{form}")
+    elif pick == "foundry_contract":
+        run.foundry_bp_mult = max(run.foundry_bp_mult, 1.5)
+        if run.strategy == "S1":
+            run.industrial_siege_wall_ease = True
+        _util_inc(run, "industrial_toolkit", "foundry_contract")
+    elif pick == "revival_tent":
+        run.faith_combat_mom = max(run.faith_combat_mom, 2)
+        _util_inc(run, "industrial_toolkit", "revival_tent")
+    elif pick == "seminar":
+        if "no_science" not in run.ablation and run.sci_level < len(SCIENCE_COSTS):
+            offers = roll_science_offers(run)
+            # Prefer Education / writing / non-troop
+            edu = [o for o in offers if o.startswith("edu_") or o == "writing"]
+            non_troop = [o for o in offers if not o.startswith("upgrade_")]
+            if edu:
+                pick_sci = edu[0]
+            elif non_troop:
+                pick_sci = non_troop[0]
+            else:
+                pick_sci = choose_science(run, offers)
+            apply_science(run, pick_sci)
+            run.sci_level += 1
+            _util_inc(run, "industrial_toolkit", f"seminar:{pick_sci}")
+        else:
+            _util_inc(run, "industrial_toolkit", "seminar:skipped")
+    elif pick == "powder_magazine":
+        # Redundant with global +1 Assault; keep as optional extra Assault
+        run.base_assaults += 1
+        _util_inc(run, "industrial_toolkit", "powder_magazine")
+    run.events.append({"industrial_toolkit": pick, "era": run.era})
+
+
+def industrial_era_start(run: RunState) -> dict:
+    """E5 evening: +1 Assault once, Line Mom is passive, Toolkit pick once."""
+    out = {}
+    if run.era < 5:
+        return out
+    if not run.industrial_assault_granted:
+        run.base_assaults += INDUSTRIAL_ASSAULT_BONUS
+        run.industrial_assault_granted = True
+        out["assault_bonus"] = INDUSTRIAL_ASSAULT_BONUS
+        run.events.append({"industrial_assault": INDUSTRIAL_ASSAULT_BONUS, "era": run.era})
+    if run.era == 5 and run.industrial_toolkit is None:
+        pick = choose_industrial_toolkit(run)
+        apply_industrial_toolkit(run, pick)
+        out["toolkit"] = pick
+    return out
+
+
 def play_eras(seed: int, strategy: str, max_era: int = 1,
               ablation: Optional[set] = None) -> dict:
     rng = random.Random(seed)
@@ -2635,11 +2747,16 @@ def play_eras(seed: int, strategy: str, max_era: int = 1,
         if "free_prophet_era" in run.pro_flags:
             run.faith += int(15 * (1 + run.faith_bonus_pct))
             run.gold += int(10 * (1 + run.gold_bonus_pct))
-        # Renaissance+ Breakthrough — free Sci/Civ (+ preferred tier if room)
+        # Renaissance+ Breakthrough — free Sci/Civ
         if era >= 4:
             br = era_breakthrough(run)
             if any(br.values()):
                 results["breakthroughs"].append({"era": era, **br})
+        # Industrial evening — +1 Assault, Toolkit (Line Mom is passive in evaluate_play)
+        if era >= 5:
+            ind = industrial_era_start(run)
+            if ind:
+                results.setdefault("industrial", []).append({"era": era, **ind})
         for kind in ("village", "town", "capital"):
             run.settlement_index += 1
             st = make_settlement(kind, rng, era)
