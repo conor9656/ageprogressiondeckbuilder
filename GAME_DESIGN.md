@@ -142,20 +142,24 @@ Provisional stats per tier (I / II / III / IV / V) — **balance v2** early-weig
 
 **Tier upgrades apply to the whole class**, including cards bought later (see Science).
 
-### Support units
+### Support units (battlefield charges)
+
+Builders and Missionaries are **always on the battlefield** — not drawn from the combat deck. See `BALANCE_SUPPORT_CHARGES.md`.
 
 | Unit | In a formation | Powered by | Upgrade line |
 |---|---|---|---|
 | **Builder** | Triggers one equipped **Blueprint** (immediate effect this fight) | Blueprints bought with Gold; tier upgraded by Science | Builder → Engineer → Military Engineer |
 | **Missionary** | Triggers one equipped **Doctrine** (reward paid **only if you win** this settlement) | Doctrines bought with Faith; tier upgraded by Faith | Missionary → Apostle → Inquisitor |
 
-- Support units contribute **no Might or Momentum** and take up a formation slot — a deliberate trade-off.
-- When played, the player picks one equipped Blueprint/Doctrine that **hasn't fired yet this settlement**. Each fires at most **once per settlement**. If none are available, the card does nothing.
+- Start with **1 charge each per settlement** (cap 4). Using a charge still takes a formation slot until free-slot abilities (Helping Hand, Corvée / Lay Preachers, Machu Picchu).
+- Charge upgrades unlock every **2 Science levels** (`sci ≥ 2 × current charges`): **Science offer (chance)** or **lump-sum Gold** (50 / 80 / 120 for charges 2 / 3 / 4).
+- Support units contribute **no Might or Momentum**.
+- When used, the player picks one equipped Blueprint/Doctrine that **hasn't fired yet this settlement**. Each Blueprint/Doctrine fires at most **once per settlement**.
 - Blueprints and Doctrines are **permanent**; they sit in slots and can be swapped between fights (like Balatro jokers).
-- Upgrading the Builder/Missionary tier **scales the strength** of every Blueprint/Doctrine (e.g. Battering Ram +10 → +25 → +50).
+- Upgrading the Builder/Missionary **tier** (Science) still **scales the strength** of every Blueprint/Doctrine; charge upgrades only raise uses per settlement.
 
 ### Starting deck (default)
-6 Melee, 5 Ranged, 3 Cavalry, 2 Siege, 2 Builders, 2 Missionaries (20 cards, all tier I).
+6 Melee, 5 Ranged, 3 Cavalry, 2 Siege (16 combat cards, all tier I) + battlefield Builder/Missionary at 1 charge each.
 
 ---
 
