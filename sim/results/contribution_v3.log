@@ -1,0 +1,102 @@
+S1 no_science: clearΔ={'1': -0.25, '2': -0.425, '3': -0.625} cap_ratioΔ=-0.37
+S1 no_civics: clearΔ={'1': 0.0, '2': 0.0, '3': -0.088} cap_ratioΔ=-0.02
+S1 no_troop_upgrades: clearΔ={'1': -0.088, '2': -0.187, '3': -0.375} cap_ratioΔ=-0.11
+S1 no_wonders: clearΔ={'1': 0.087, '2': 0.088, '3': 0.1} cap_ratioΔ=0.14
+S1 no_blueprints: clearΔ={'1': -0.076, '2': -0.1, '3': -0.175} cap_ratioΔ=-0.03
+S1 no_doctrines: clearΔ={'1': 0.074, '2': 0.063, '3': -0.013} cap_ratioΔ=-0.01
+S1 no_promotions: clearΔ={'1': 0.012, '2': -0.037, '3': -0.15} cap_ratioΔ=-0.08
+S1 no_editions: clearΔ={'1': 0.049, '2': 0.0, '3': -0.025} cap_ratioΔ=0.04
+S1 no_policies: clearΔ={'1': 0.037, '2': 0.025, '3': -0.05} cap_ratioΔ=0.03
+S2 no_science: clearΔ={'1': -0.15, '2': -0.438, '3': -0.637} cap_ratioΔ=-0.22
+S2 no_civics: clearΔ={'1': 0.012, '2': -0.013, '3': -0.049} cap_ratioΔ=-0.1
+S2 no_troop_upgrades: clearΔ={'1': -0.088, '2': -0.188, '3': -0.325} cap_ratioΔ=-0.16
+S2 no_wonders: clearΔ={'1': 0.0, '2': -0.013, '3': 0.025} cap_ratioΔ=0.06
+S2 no_blueprints: clearΔ={'1': -0.088, '2': -0.101, '3': -0.049} cap_ratioΔ=-0.01
+S2 no_doctrines: clearΔ={'1': -0.025, '2': -0.025, '3': 0.038} cap_ratioΔ=-0.01
+S2 no_promotions: clearΔ={'1': -0.013, '2': -0.013, '3': -0.225} cap_ratioΔ=-0.16
+S2 no_editions: clearΔ={'1': -0.038, '2': -0.05, '3': 0.0} cap_ratioΔ=-0.02
+S2 no_policies: clearΔ={'1': 0.0, '2': -0.013, '3': 0.0} cap_ratioΔ=-0.1
+S3 no_science: clearΔ={'1': -0.225, '2': -0.4, '3': -0.475} cap_ratioΔ=-0.4
+S3 no_civics: clearΔ={'1': -0.1, '2': -0.125, '3': -0.313} cap_ratioΔ=-0.21
+S3 no_troop_upgrades: clearΔ={'1': -0.05, '2': -0.188, '3': -0.313} cap_ratioΔ=-0.18
+S3 no_wonders: clearΔ={'1': -0.05, '2': -0.062, '3': -0.212} cap_ratioΔ=-0.11
+S3 no_blueprints: clearΔ={'1': -0.037, '2': -0.1, '3': -0.2} cap_ratioΔ=-0.14
+S3 no_doctrines: clearΔ={'1': -0.113, '2': -0.1, '3': -0.15} cap_ratioΔ=-0.07
+S3 no_promotions: clearΔ={'1': 0.012, '2': -0.038, '3': -0.162} cap_ratioΔ=-0.14
+S3 no_editions: clearΔ={'1': 0.0, '2': 0.013, '3': -0.125} cap_ratioΔ=-0.13
+S3 no_policies: clearΔ={'1': -0.037, '2': -0.138, '3': -0.225} cap_ratioΔ=-0.13
+S4 no_science: clearΔ={'1': -0.288, '2': -0.463, '3': -0.362} cap_ratioΔ=-0.3
+S4 no_civics: clearΔ={'1': -0.075, '2': -0.163, '3': -0.288} cap_ratioΔ=-0.19
+S4 no_troop_upgrades: clearΔ={'1': -0.038, '2': -0.163, '3': -0.237} cap_ratioΔ=-0.18
+S4 no_wonders: clearΔ={'1': -0.013, '2': -0.025, '3': -0.037} cap_ratioΔ=0.0
+S4 no_blueprints: clearΔ={'1': -0.125, '2': -0.275, '3': -0.3} cap_ratioΔ=-0.16
+S4 no_doctrines: clearΔ={'1': 0.05, '2': 0.013, '3': -0.075} cap_ratioΔ=-0.02
+S4 no_promotions: clearΔ={'1': 0.0, '2': -0.013, '3': 0.075} cap_ratioΔ=0.07
+S4 no_editions: clearΔ={'1': 0.038, '2': -0.1, '3': -0.1} cap_ratioΔ=-0.02
+S4 no_policies: clearΔ={'1': -0.075, '2': -0.237, '3': -0.125} cap_ratioΔ=-0.02
+S5 no_science: clearΔ={'1': -0.3, '2': -0.387, '3': -0.375} cap_ratioΔ=-0.13
+S5 no_civics: clearΔ={'1': -0.138, '2': -0.287, '3': -0.312} cap_ratioΔ=-0.22
+S5 no_troop_upgrades: clearΔ={'1': -0.101, '2': -0.2, '3': -0.25} cap_ratioΔ=-0.11
+S5 no_wonders: clearΔ={'1': -0.013, '2': 0.038, '3': -0.075} cap_ratioΔ=-0.08
+S5 no_blueprints: clearΔ={'1': -0.251, '2': -0.2, '3': -0.25} cap_ratioΔ=-0.15
+S5 no_doctrines: clearΔ={'1': -0.05, '2': 0.0, '3': -0.1} cap_ratioΔ=-0.12
+S5 no_promotions: clearΔ={'1': -0.076, '2': -0.162, '3': -0.225} cap_ratioΔ=-0.13
+S5 no_editions: clearΔ={'1': 0.037, '2': 0.05, '3': 0.025} cap_ratioΔ=-0.03
+S5 no_policies: clearΔ={'1': -0.05, '2': -0.112, '3': -0.213} cap_ratioΔ=-0.15
+S6 no_science: clearΔ={'1': -0.263, '2': -0.475, '3': -0.413} cap_ratioΔ=-0.37
+S6 no_civics: clearΔ={'1': -0.2, '2': -0.3, '3': -0.3} cap_ratioΔ=-0.14
+S6 no_troop_upgrades: clearΔ={'1': -0.175, '2': -0.3, '3': -0.325} cap_ratioΔ=-0.18
+S6 no_wonders: clearΔ={'1': 0.025, '2': 0.0, '3': -0.012} cap_ratioΔ=-0.07
+S6 no_blueprints: clearΔ={'1': -0.037, '2': -0.15, '3': -0.163} cap_ratioΔ=-0.02
+S6 no_doctrines: clearΔ={'1': -0.037, '2': -0.025, '3': 0.013} cap_ratioΔ=-0.03
+S6 no_promotions: clearΔ={'1': 0.012, '2': -0.037, '3': -0.213} cap_ratioΔ=-0.16
+S6 no_editions: clearΔ={'1': 0.0, '2': 0.012, '3': -0.025} cap_ratioΔ=-0.06
+S6 no_policies: clearΔ={'1': -0.012, '2': -0.2, '3': -0.225} cap_ratioΔ=-0.12
+Wrote /workspace/sim/results/CONTRIBUTION_REPORT.json and /workspace/sim/results/CONTRIBUTION_REPORT.md
+Mean Δ: {
+  "no_science": {
+    "1": -0.246,
+    "2": -0.432,
+    "3": -0.481
+  },
+  "no_civics": {
+    "1": -0.084,
+    "2": -0.148,
+    "3": -0.225
+  },
+  "no_troop_upgrades": {
+    "1": -0.09,
+    "2": -0.205,
+    "3": -0.304
+  },
+  "no_wonders": {
+    "1": 0.006,
+    "2": 0.004,
+    "3": -0.035
+  },
+  "no_blueprints": {
+    "1": -0.102,
+    "2": -0.155,
+    "3": -0.189
+  },
+  "no_doctrines": {
+    "1": -0.017,
+    "2": -0.013,
+    "3": -0.048
+  },
+  "no_promotions": {
+    "1": -0.009,
+    "2": -0.05,
+    "3": -0.15
+  },
+  "no_editions": {
+    "1": 0.014,
+    "2": -0.013,
+    "3": -0.041
+  },
+  "no_policies": {
+    "1": -0.023,
+    "2": -0.113,
+    "3": -0.139
+  }
+}

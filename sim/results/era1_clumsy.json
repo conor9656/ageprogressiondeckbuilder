@@ -1,0 +1,10 @@
+{
+  "n": 400,
+  "era_win": 0.0,
+  "fail": {
+    "village": 193,
+    "town": 158,
+    "capital": 49
+  },
+  "village_p50": 302
+}
