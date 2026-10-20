@@ -37,25 +37,23 @@ A run is lost the first time you fail to conquer a settlement.
 
 ### Defence targets (provisional)
 
-Tuned after Ancient-era Monte Carlo (`sim/results/ERA1_REPORT.md`) and balance‑v2 multi-era pass (`sim/results/BALANCE_V2_REPORT.md`).
+Retuned post battlefield support charges for **mean clear-through (S1–S5) ≈ 95% / 88% / 78% / 68% / 61%** across eras 1–5. See `BALANCE_HP_CURVE_E1_5.md`.
 
 | Era | 1 Ancient | 2 Classical | 3 Medieval | 4 Renaissance | 5 Industrial | 6 Modern | 7 Atomic | 8 Information |
 |---|---|---|---|---|---|---|---|---|
-| Base Defence | **500** | **800** | **1,400** | **4,100** | **11,000** | **28,000** | 75,000 | 150,000 |
+| Base Defence | **665** | **1,200** | **1,790** | **3,450** | **7,180** | **28,000** | 75,000 | 150,000 |
 
-E4–E6 eased vs original cliff (was 4,500 / 12,000 / 30,000); retuned so **S2 E4 ≈ 75%**. Growth via **E4+ escalation** (`BALANCE_E4_ESCALATION.md`): tier soft-caps + VI, era Sci/Cul income, mid-game bar discount, Renaissance Breakthrough (Sci+Civ), Age Power.
+E1–E3 raised (supports made early eras free); E4–E5 eased vs post-charge power so late means can hit the curve. E6–E8 unchanged pending a later pass. Growth systems still from **E4+ escalation** (`BALANCE_E4_ESCALATION.md`).
 
 Village = ×1, Town = ×1.5, Capital = ×2.5 of the era base.
 
 | Era 1 (Ancient) | Village | Town | Capital |
 |---|---|---|---|
-| Defence | 500 | 750 | 1,250 |
+| Defence | 665 | 997 | 1,662 |
 
 | Era 3 (Medieval) | Village | Town | Capital |
 |---|---|---|---|
-| Defence | 1,400 | 2,100 | 3,500 |
-
-Prior era‑1 base was 300; prior era‑3 base was 2,000 (Cap 5,000) which outpaced multipliers before balance v2.
+| Defence | 1,790 | 2,685 | 4,475 |
 
 ---
 
