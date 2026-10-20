@@ -1,0 +1,706 @@
+{
+  "n": 40,
+  "seed": 42,
+  "seed_note": "stable strat_off = sum(ord)*97",
+  "targets": {
+    "1": 0.95,
+    "2": 0.88,
+    "3": 0.78,
+    "4": 0.68,
+    "5": 0.61
+  },
+  "defence_bases": {
+    "1": 665,
+    "2": 1200,
+    "3": 1790,
+    "4": 3450,
+    "5": 7180,
+    "6": 28000,
+    "7": 75000,
+    "8": 150000
+  },
+  "prior_defence": {
+    "1": 500,
+    "2": 800,
+    "3": 1400,
+    "4": 4100,
+    "5": 11000
+  },
+  "mean_clear_through": {
+    "1": 0.95,
+    "2": 0.89,
+    "3": 0.775,
+    "4": 0.69,
+    "5": 0.61
+  },
+  "mae_vs_target": 0.025,
+  "by_strat": {
+    "S1": {
+      "1": 1.0,
+      "2": 0.925,
+      "3": 0.875,
+      "4": 0.825,
+      "5": 0.825
+    },
+    "S2": {
+      "1": 0.95,
+      "2": 0.95,
+      "3": 0.925,
+      "4": 0.9,
+      "5": 0.85
+    },
+    "S3": {
+      "1": 0.925,
+      "2": 0.85,
+      "3": 0.8,
+      "4": 0.775,
+      "5": 0.675
+    },
+    "S4": {
+      "1": 0.925,
+      "2": 0.775,
+      "3": 0.5,
+      "4": 0.325,
+      "5": 0.175
+    },
+    "S5": {
+      "1": 0.95,
+      "2": 0.95,
+      "3": 0.775,
+      "4": 0.625,
+      "5": 0.525
+    }
+  },
+  "summaries": {
+    "S1": {
+      "n": 40,
+      "max_era": 5,
+      "clear_through_era": {
+        "1": 1.0,
+        "2": 0.925,
+        "3": 0.875,
+        "4": 0.825,
+        "5": 0.825
+      },
+      "fail_at": {
+        "3:capital": 2,
+        "4:capital": 2,
+        "2:capital": 3
+      },
+      "by_era": {
+        "1": {
+          "base_defence": 665,
+          "village_def": 665,
+          "town_def": 997,
+          "capital_def": 1662,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 1.0,
+          "avg_capital_damage_won": 2082.2,
+          "p50_capital_damage_won": 2013,
+          "avg_capital_overkill": 420.2,
+          "avg_village_damage": 1047.0,
+          "attempts_capital": 40
+        },
+        "2": {
+          "base_defence": 1200,
+          "village_def": 1200,
+          "town_def": 1800,
+          "capital_def": 3000,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.925,
+          "avg_capital_damage_won": 3652.6,
+          "p50_capital_damage_won": 3423,
+          "avg_capital_overkill": 652.6,
+          "avg_village_damage": 1788.1,
+          "attempts_capital": 40
+        },
+        "3": {
+          "base_defence": 1790,
+          "village_def": 1790,
+          "town_def": 2685,
+          "capital_def": 4475,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.946,
+          "avg_capital_damage_won": 5776.7,
+          "p50_capital_damage_won": 5196,
+          "avg_capital_overkill": 1301.7,
+          "avg_village_damage": 2962.8,
+          "attempts_capital": 37
+        },
+        "4": {
+          "base_defence": 3450,
+          "village_def": 3450,
+          "town_def": 5175,
+          "capital_def": 8625,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.943,
+          "avg_capital_damage_won": 12354.8,
+          "p50_capital_damage_won": 11077,
+          "avg_capital_overkill": 3729.8,
+          "avg_village_damage": 5483.6,
+          "attempts_capital": 35
+        },
+        "5": {
+          "base_defence": 7180,
+          "village_def": 7180,
+          "town_def": 10770,
+          "capital_def": 17950,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 1.0,
+          "avg_capital_damage_won": 34016.8,
+          "p50_capital_damage_won": 28180,
+          "avg_capital_overkill": 16066.8,
+          "avg_village_damage": 14741.1,
+          "attempts_capital": 33
+        }
+      },
+      "power_curve": {
+        "1": {
+          "capital_hp": 1662,
+          "p50_damage": 2013,
+          "mean_damage": 2082.2,
+          "damage_to_hp_ratio_p50": 1.21
+        },
+        "2": {
+          "capital_hp": 3000,
+          "p50_damage": 3407,
+          "mean_damage": 3584.4,
+          "damage_to_hp_ratio_p50": 1.14
+        },
+        "3": {
+          "capital_hp": 4475,
+          "p50_damage": 5173,
+          "mean_damage": 5679.0,
+          "damage_to_hp_ratio_p50": 1.16
+        },
+        "4": {
+          "capital_hp": 8625,
+          "p50_damage": 11004,
+          "mean_damage": 11997.5,
+          "damage_to_hp_ratio_p50": 1.28
+        },
+        "5": {
+          "capital_hp": 17950,
+          "p50_damage": 28180,
+          "mean_damage": 34016.8,
+          "damage_to_hp_ratio_p50": 1.57
+        }
+      },
+      "era_win_rate": 1.0,
+      "village_clear_rate": 1.0,
+      "town_clear_rate": 1.0,
+      "capital_clear_rate": 1.0
+    },
+    "S2": {
+      "n": 40,
+      "max_era": 5,
+      "clear_through_era": {
+        "1": 0.95,
+        "2": 0.95,
+        "3": 0.925,
+        "4": 0.9,
+        "5": 0.85
+      },
+      "fail_at": {
+        "5:capital": 2,
+        "1:capital": 2,
+        "4:capital": 1,
+        "3:capital": 1
+      },
+      "by_era": {
+        "1": {
+          "base_defence": 665,
+          "village_def": 665,
+          "town_def": 997,
+          "capital_def": 1662,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.95,
+          "avg_capital_damage_won": 2152.0,
+          "p50_capital_damage_won": 2096,
+          "avg_capital_overkill": 490.0,
+          "avg_village_damage": 970.0,
+          "attempts_capital": 40
+        },
+        "2": {
+          "base_defence": 1200,
+          "village_def": 1200,
+          "town_def": 1800,
+          "capital_def": 3000,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 1.0,
+          "avg_capital_damage_won": 3674.1,
+          "p50_capital_damage_won": 3548,
+          "avg_capital_overkill": 674.1,
+          "avg_village_damage": 1792.3,
+          "attempts_capital": 38
+        },
+        "3": {
+          "base_defence": 1790,
+          "village_def": 1790,
+          "town_def": 2685,
+          "capital_def": 4475,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.974,
+          "avg_capital_damage_won": 6666.2,
+          "p50_capital_damage_won": 5887,
+          "avg_capital_overkill": 2191.2,
+          "avg_village_damage": 3437.0,
+          "attempts_capital": 38
+        },
+        "4": {
+          "base_defence": 3450,
+          "village_def": 3450,
+          "town_def": 5175,
+          "capital_def": 8625,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.973,
+          "avg_capital_damage_won": 16280.4,
+          "p50_capital_damage_won": 14767,
+          "avg_capital_overkill": 7655.4,
+          "avg_village_damage": 9673.8,
+          "attempts_capital": 37
+        },
+        "5": {
+          "base_defence": 7180,
+          "village_def": 7180,
+          "town_def": 10770,
+          "capital_def": 17950,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.944,
+          "avg_capital_damage_won": 36318.2,
+          "p50_capital_damage_won": 27300,
+          "avg_capital_overkill": 18368.2,
+          "avg_village_damage": 24722.7,
+          "attempts_capital": 36
+        }
+      },
+      "power_curve": {
+        "1": {
+          "capital_hp": 1662,
+          "p50_damage": 2087,
+          "mean_damage": 2119.7,
+          "damage_to_hp_ratio_p50": 1.26
+        },
+        "2": {
+          "capital_hp": 3000,
+          "p50_damage": 3548,
+          "mean_damage": 3674.1,
+          "damage_to_hp_ratio_p50": 1.18
+        },
+        "3": {
+          "capital_hp": 4475,
+          "p50_damage": 5887,
+          "mean_damage": 6600.4,
+          "damage_to_hp_ratio_p50": 1.32
+        },
+        "4": {
+          "capital_hp": 8625,
+          "p50_damage": 14545,
+          "mean_damage": 16031.1,
+          "damage_to_hp_ratio_p50": 1.69
+        },
+        "5": {
+          "capital_hp": 17950,
+          "p50_damage": 25453,
+          "mean_damage": 35236.0,
+          "damage_to_hp_ratio_p50": 1.42
+        }
+      },
+      "era_win_rate": 0.95,
+      "village_clear_rate": 1.0,
+      "town_clear_rate": 1.0,
+      "capital_clear_rate": 0.95
+    },
+    "S3": {
+      "n": 40,
+      "max_era": 5,
+      "clear_through_era": {
+        "1": 0.925,
+        "2": 0.85,
+        "3": 0.8,
+        "4": 0.775,
+        "5": 0.675
+      },
+      "fail_at": {
+        "5:capital": 4,
+        "1:capital": 3,
+        "2:capital": 3,
+        "4:capital": 1,
+        "3:capital": 2
+      },
+      "by_era": {
+        "1": {
+          "base_defence": 665,
+          "village_def": 665,
+          "town_def": 997,
+          "capital_def": 1662,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.925,
+          "avg_capital_damage_won": 2044.5,
+          "p50_capital_damage_won": 1996,
+          "avg_capital_overkill": 382.5,
+          "avg_village_damage": 1070.6,
+          "attempts_capital": 40
+        },
+        "2": {
+          "base_defence": 1200,
+          "village_def": 1200,
+          "town_def": 1800,
+          "capital_def": 3000,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.919,
+          "avg_capital_damage_won": 3708.2,
+          "p50_capital_damage_won": 3537,
+          "avg_capital_overkill": 708.2,
+          "avg_village_damage": 1762.8,
+          "attempts_capital": 37
+        },
+        "3": {
+          "base_defence": 1790,
+          "village_def": 1790,
+          "town_def": 2685,
+          "capital_def": 4475,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.941,
+          "avg_capital_damage_won": 6572.6,
+          "p50_capital_damage_won": 5204,
+          "avg_capital_overkill": 2097.6,
+          "avg_village_damage": 3190.4,
+          "attempts_capital": 34
+        },
+        "4": {
+          "base_defence": 3450,
+          "village_def": 3450,
+          "town_def": 5175,
+          "capital_def": 8625,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.969,
+          "avg_capital_damage_won": 16059.5,
+          "p50_capital_damage_won": 11850,
+          "avg_capital_overkill": 7434.5,
+          "avg_village_damage": 10193.2,
+          "attempts_capital": 32
+        },
+        "5": {
+          "base_defence": 7180,
+          "village_def": 7180,
+          "town_def": 10770,
+          "capital_def": 17950,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.871,
+          "avg_capital_damage_won": 36888.2,
+          "p50_capital_damage_won": 20719,
+          "avg_capital_overkill": 18938.2,
+          "avg_village_damage": 16248.0,
+          "attempts_capital": 31
+        }
+      },
+      "power_curve": {
+        "1": {
+          "capital_hp": 1662,
+          "p50_damage": 1973,
+          "mean_damage": 2007.0,
+          "damage_to_hp_ratio_p50": 1.19
+        },
+        "2": {
+          "capital_hp": 3000,
+          "p50_damage": 3519,
+          "mean_damage": 3611.5,
+          "damage_to_hp_ratio_p50": 1.17
+        },
+        "3": {
+          "capital_hp": 4475,
+          "p50_damage": 5200,
+          "mean_damage": 6434.4,
+          "damage_to_hp_ratio_p50": 1.16
+        },
+        "4": {
+          "capital_hp": 8625,
+          "p50_damage": 11850,
+          "mean_damage": 15773.8,
+          "damage_to_hp_ratio_p50": 1.37
+        },
+        "5": {
+          "capital_hp": 17950,
+          "p50_damage": 20116,
+          "mean_damage": 33998.5,
+          "damage_to_hp_ratio_p50": 1.12
+        }
+      },
+      "era_win_rate": 0.925,
+      "village_clear_rate": 1.0,
+      "town_clear_rate": 1.0,
+      "capital_clear_rate": 0.925
+    },
+    "S4": {
+      "n": 40,
+      "max_era": 5,
+      "clear_through_era": {
+        "1": 0.925,
+        "2": 0.775,
+        "3": 0.5,
+        "4": 0.325,
+        "5": 0.175
+      },
+      "fail_at": {
+        "5:capital": 5,
+        "2:town": 1,
+        "3:capital": 11,
+        "4:capital": 5,
+        "2:capital": 5,
+        "1:capital": 3,
+        "4:town": 2,
+        "5:town": 1
+      },
+      "by_era": {
+        "1": {
+          "base_defence": 665,
+          "village_def": 665,
+          "town_def": 997,
+          "capital_def": 1662,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.925,
+          "avg_capital_damage_won": 1913.9,
+          "p50_capital_damage_won": 1866,
+          "avg_capital_overkill": 251.9,
+          "avg_village_damage": 1087.4,
+          "attempts_capital": 40
+        },
+        "2": {
+          "base_defence": 1200,
+          "village_def": 1200,
+          "town_def": 1800,
+          "capital_def": 3000,
+          "village_clear": 1.0,
+          "town_clear": 0.973,
+          "capital_clear": 0.861,
+          "avg_capital_damage_won": 3418.2,
+          "p50_capital_damage_won": 3339,
+          "avg_capital_overkill": 418.2,
+          "avg_village_damage": 1779.2,
+          "attempts_capital": 36
+        },
+        "3": {
+          "base_defence": 1790,
+          "village_def": 1790,
+          "town_def": 2685,
+          "capital_def": 4475,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.645,
+          "avg_capital_damage_won": 5412.4,
+          "p50_capital_damage_won": 5323,
+          "avg_capital_overkill": 937.4,
+          "avg_village_damage": 2743.4,
+          "attempts_capital": 31
+        },
+        "4": {
+          "base_defence": 3450,
+          "village_def": 3450,
+          "town_def": 5175,
+          "capital_def": 8625,
+          "village_clear": 1.0,
+          "town_clear": 0.9,
+          "capital_clear": 0.722,
+          "avg_capital_damage_won": 10064.9,
+          "p50_capital_damage_won": 9762,
+          "avg_capital_overkill": 1439.9,
+          "avg_village_damage": 5897.3,
+          "attempts_capital": 18
+        },
+        "5": {
+          "base_defence": 7180,
+          "village_def": 7180,
+          "town_def": 10770,
+          "capital_def": 17950,
+          "village_clear": 1.0,
+          "town_clear": 0.923,
+          "capital_clear": 0.583,
+          "avg_capital_damage_won": 22420.6,
+          "p50_capital_damage_won": 20345,
+          "avg_capital_overkill": 4470.6,
+          "avg_village_damage": 10833.2,
+          "attempts_capital": 12
+        }
+      },
+      "power_curve": {
+        "1": {
+          "capital_hp": 1662,
+          "p50_damage": 1863,
+          "mean_damage": 1875.6,
+          "damage_to_hp_ratio_p50": 1.12
+        },
+        "2": {
+          "capital_hp": 3000,
+          "p50_damage": 3312,
+          "mean_damage": 3303.1,
+          "damage_to_hp_ratio_p50": 1.1
+        },
+        "3": {
+          "capital_hp": 4475,
+          "p50_damage": 4758,
+          "mean_damage": 4743.7,
+          "damage_to_hp_ratio_p50": 1.06
+        },
+        "4": {
+          "capital_hp": 8625,
+          "p50_damage": 9528,
+          "mean_damage": 9234.8,
+          "damage_to_hp_ratio_p50": 1.1
+        },
+        "5": {
+          "capital_hp": 17950,
+          "p50_damage": 20067,
+          "mean_damage": 18897.1,
+          "damage_to_hp_ratio_p50": 1.12
+        }
+      },
+      "era_win_rate": 0.925,
+      "village_clear_rate": 1.0,
+      "town_clear_rate": 1.0,
+      "capital_clear_rate": 0.925
+    },
+    "S5": {
+      "n": 40,
+      "max_era": 5,
+      "clear_through_era": {
+        "1": 0.95,
+        "2": 0.95,
+        "3": 0.775,
+        "4": 0.625,
+        "5": 0.525
+      },
+      "fail_at": {
+        "3:capital": 7,
+        "1:capital": 2,
+        "4:capital": 6,
+        "5:capital": 3,
+        "5:town": 1
+      },
+      "by_era": {
+        "1": {
+          "base_defence": 665,
+          "village_def": 665,
+          "town_def": 997,
+          "capital_def": 1662,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.95,
+          "avg_capital_damage_won": 1991.4,
+          "p50_capital_damage_won": 1888,
+          "avg_capital_overkill": 329.4,
+          "avg_village_damage": 962.7,
+          "attempts_capital": 40
+        },
+        "2": {
+          "base_defence": 1200,
+          "village_def": 1200,
+          "town_def": 1800,
+          "capital_def": 3000,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 1.0,
+          "avg_capital_damage_won": 3592.4,
+          "p50_capital_damage_won": 3456,
+          "avg_capital_overkill": 592.4,
+          "avg_village_damage": 1695.1,
+          "attempts_capital": 38
+        },
+        "3": {
+          "base_defence": 1790,
+          "village_def": 1790,
+          "town_def": 2685,
+          "capital_def": 4475,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.816,
+          "avg_capital_damage_won": 6033.0,
+          "p50_capital_damage_won": 5086,
+          "avg_capital_overkill": 1558.0,
+          "avg_village_damage": 3108.9,
+          "attempts_capital": 38
+        },
+        "4": {
+          "base_defence": 3450,
+          "village_def": 3450,
+          "town_def": 5175,
+          "capital_def": 8625,
+          "village_clear": 1.0,
+          "town_clear": 1.0,
+          "capital_clear": 0.806,
+          "avg_capital_damage_won": 11817.2,
+          "p50_capital_damage_won": 10563,
+          "avg_capital_overkill": 3192.2,
+          "avg_village_damage": 8770.3,
+          "attempts_capital": 31
+        },
+        "5": {
+          "base_defence": 7180,
+          "village_def": 7180,
+          "town_def": 10770,
+          "capital_def": 17950,
+          "village_clear": 1.0,
+          "town_clear": 0.96,
+          "capital_clear": 0.875,
+          "avg_capital_damage_won": 30186.2,
+          "p50_capital_damage_won": 24946,
+          "avg_capital_overkill": 12236.2,
+          "avg_village_damage": 15198.0,
+          "attempts_capital": 24
+        }
+      },
+      "power_curve": {
+        "1": {
+          "capital_hp": 1662,
+          "p50_damage": 1885,
+          "mean_damage": 1970.9,
+          "damage_to_hp_ratio_p50": 1.13
+        },
+        "2": {
+          "capital_hp": 3000,
+          "p50_damage": 3456,
+          "mean_damage": 3592.4,
+          "damage_to_hp_ratio_p50": 1.15
+        },
+        "3": {
+          "capital_hp": 4475,
+          "p50_damage": 5060,
+          "mean_damage": 5597.2,
+          "damage_to_hp_ratio_p50": 1.13
+        },
+        "4": {
+          "capital_hp": 8625,
+          "p50_damage": 9579,
+          "mean_damage": 10705.6,
+          "damage_to_hp_ratio_p50": 1.11
+        },
+        "5": {
+          "capital_hp": 17950,
+          "p50_damage": 23626,
+          "mean_damage": 28515.1,
+          "damage_to_hp_ratio_p50": 1.32
+        }
+      },
+      "era_win_rate": 0.95,
+      "village_clear_rate": 1.0,
+      "town_clear_rate": 1.0,
+      "capital_clear_rate": 0.95
+    }
+  }
+}

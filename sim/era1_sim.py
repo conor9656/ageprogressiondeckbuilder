@@ -48,7 +48,9 @@ FORM_LEVEL_BONUS = {
 # Soft-caps raised so Medieval can reach IV and later eras unlock VI
 ERA_SOFT_CAP = {1: 2, 2: 3, 3: 4, 4: 5, 5: 5, 6: 6, 7: 6, 8: 6}
 # E4 retarget: S2 clear ~75% (was 92% @ 3600). E5–E6 still eased vs original cliff.
-ERA_BASE_DEFENCE = {1: 500, 2: 800, 3: 1400, 4: 4100, 5: 11000, 6: 28000, 7: 75000, 8: 150000}
+# Eras 1–5 retuned post support-charges for mean clear ≈ 95/88/78/68/61 (S1–S5)
+# Prior: {1: 500, 2: 800, 3: 1400, 4: 4100, 5: 11000}
+ERA_BASE_DEFENCE = {1: 665, 2: 1200, 3: 1790, 4: 3450, 5: 7180, 6: 28000, 7: 75000, 8: 150000}
 
 # Longer tables + flatter mid-game growth (levels keep coming into E4+)
 SCIENCE_COSTS = [

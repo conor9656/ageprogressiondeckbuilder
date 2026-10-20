@@ -4,6 +4,11 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-20 — HP curve eras 1–5 (mean 95/88/78/68/61)
+- After support charges, retuned `ERA_BASE_DEFENCE` → **665 / 1200 / 1790 / 3450 / 7180**.
+- N=40 S1–S5: mean clear **95.0 / 89.0 / 77.5 / 69.0 / 61.0** (MAE 0.025). Design: `BALANCE_HP_CURVE_E1_5.md`.
+- E1–E3 HP up; E4–E5 eased vs post-charge power. E6–E8 unchanged.
+
 ## 2026-10-18 — Battlefield support charges (B/Y not deck RNG)
 - Design: `BALANCE_SUPPORT_CHARGES.md`. Wired in `era1_sim.py`: always-on B/Y with 1 charge/settlement; slot cost until free-slot; Sci chance (~40%) or Gold (50/80/120) upgrades every 2 Sci levels (cap 4).
 - Sim N=40 S1–S5 eras 1–5: **100% runs use Builder**; Y strong esp. S5 (11.5 mean uses). B/settlement ~0.8–1.25.
