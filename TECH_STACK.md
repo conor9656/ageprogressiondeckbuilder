@@ -2,7 +2,7 @@
 
 > Goal: single-player PC game (Steam), **2D with depth / faux-3D animation** (not a true 3D sim).
 > Constraint: the stack must be something **AI coding agents** (Cursor, Claude, OpenAI Codex-style agents) can read, edit, build, and test without proprietary GUIs as a hard dependency.
-> Numbers and content still live in `GAME_DESIGN.md`; this file is implementation only.
+> **Game rules source of truth:** `GAME_SNAPSHOT.md`. This file is implementation / tooling only.
 
 ---
 
@@ -146,12 +146,16 @@ Agents struggle when: assets are only editable inside a closed GUI, logic lives 
 
 ## 9. Suggested build order (tech, not content)
 
-1. **Rules module + unit tests** — damage formula, formation ranking, walls/garrisons.
-2. **Headless sim** — stress §14 risks in `GAME_DESIGN.md` (run length, Doctrine snowball, Science spiral, deck bloat).
-3. **Godot vertical slice UI** — one settlement fight, draw/Assault/Regroup, damage numbers.
-4. **Shop + one era of content data** — prove the loop, still greybox art.
-5. **Art pipeline spike** — one unit class through gen → cleanup → animate → in-engine.
-6. **Steam smoke export** — windowed build + placeholder achievements wiring.
+Updated 2026-10-22 — Python balance twin (`sim/era1_sim.py`) already covers step 2 research. Full milestone table: `GAME_SNAPSHOT.md` §11.
+
+0. **Game snapshot** — `GAME_SNAPSHOT.md` ✅  
+1. **Godot rules module + unit tests** — port formations, Might×Mom, walls/garrisons, support charges; golden-seed parity vs Python.  
+2. **Vertical slice UI** — one settlement fight (draw / Assault / Regroup / damage).  
+3. **Shop + Ancient-era run loop** — rewards, packs, Science/Civics; greybox.  
+4. **Content as data** — JSON/resources for units & modifier stubs.  
+5. **Unify rules** — prefer Godot headless as canonical; keep Python as oracle or retire.  
+6. **Art pipeline spike** — one unit class gen → cleanup → animate → in-engine.  
+7. **Multi-era systems + Steam smoke** — Breakthrough / Toolkit / Wonders; Windows export.
 
 ---
 

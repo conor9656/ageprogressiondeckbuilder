@@ -4,6 +4,10 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-22 — Game snapshot source of truth
+- Added `GAME_SNAPSHOT.md`: single frozen picture of Ages (rules, supports, defence, sim curve, tech, build order).
+- Pointed `GAME_DESIGN.md` / `TECH_STACK.md` at it. Next milestone: Godot rules module + Ancient Capital vertical slice.
+
 ## 2026-10-22 — Ease eras 6–8 defence (~−35%)
 - Rebased E6–E8 onto post–E5 curve: **18300 / 49000 / 98000** (same −35% cut as E5; kept old growth multiples).
 - N=40 S1–S5 eras 1–8: E1–E5 means held; late mean **E6 46% / E7 31% / E8 24%** (was ~0%). S2 E8 55%.
