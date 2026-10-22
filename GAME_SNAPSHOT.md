@@ -6,6 +6,7 @@
 
 | Companion | Role |
 |---|---|
+| `BUILD_PROGRESS.md` | **Living build tracker** — workstream status from W0 onward |
 | `TECH_STACK.md` | Engine / art / Steam / agent tooling |
 | `GAME_DESIGN.md` | Living design notes (may lag this snapshot) |
 | `SCIENCE_UPGRADES.md`, `POLICIES.md`, `BLUEPRINTS.md`, `DOCTRINES.md` | Offer pools & card lists |

@@ -149,7 +149,7 @@ Agents struggle when: assets are only editable inside a closed GUI, logic lives 
 Updated 2026-10-22 — Python balance twin (`sim/era1_sim.py`) already covers step 2 research. Full milestone table: `GAME_SNAPSHOT.md` §11.
 
 0. **Game snapshot** — `GAME_SNAPSHOT.md` ✅  
-1. **Godot rules module + unit tests** — port formations, Might×Mom, walls/garrisons, support charges; golden-seed parity vs Python.  
+1. **Godot rules module + unit tests** — port formations, Might×Mom, walls/garrisons, support charges; golden-seed parity vs Python. Tracker: `BUILD_PROGRESS.md` (W1).  
 2. **Vertical slice UI** — one settlement fight (draw / Assault / Regroup / damage).  
 3. **Shop + Ancient-era run loop** — rewards, packs, Science/Civics; greybox.  
 4. **Content as data** — JSON/resources for units & modifier stubs.  
