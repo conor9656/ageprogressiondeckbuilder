@@ -4,6 +4,11 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-22 — Ease eras 6–8 defence (~−35%)
+- Rebased E6–E8 onto post–E5 curve: **18300 / 49000 / 98000** (same −35% cut as E5; kept old growth multiples).
+- N=40 S1–S5 eras 1–8: E1–E5 means held; late mean **E6 46% / E7 31% / E8 24%** (was ~0%). S2 E8 55%.
+- Design: `BALANCE_E6_E8_EASE.md`. Report: `sim/results/ERAS_6_8_EASE.md`.
+
 ## 2026-10-20 — HP curve eras 1–5 (mean 95/88/78/68/61)
 - After support charges, retuned `ERA_BASE_DEFENCE` → **665 / 1200 / 1790 / 3450 / 7180**.
 - N=40 S1–S5: mean clear **95.0 / 89.0 / 77.5 / 69.0 / 61.0** (MAE 0.025). Design: `BALANCE_HP_CURVE_E1_5.md`.
