@@ -41,9 +41,9 @@ Retuned post battlefield support charges for **mean clear-through (S1–S5) ≈ 
 
 | Era | 1 Ancient | 2 Classical | 3 Medieval | 4 Renaissance | 5 Industrial | 6 Modern | 7 Atomic | 8 Information |
 |---|---|---|---|---|---|---|---|---|
-| Base Defence | **665** | **1,200** | **1,790** | **3,450** | **7,180** | **28,000** | 75,000 | 150,000 |
+| Base Defence | **665** | **1,200** | **1,790** | **3,450** | **7,180** | **18,300** | **49,000** | **98,000** |
 
-E1–E3 raised (supports made early eras free); E4–E5 eased vs post-charge power so late means can hit the curve. E6–E8 unchanged pending a later pass. Growth systems still from **E4+ escalation** (`BALANCE_E4_ESCALATION.md`).
+E1–E3 raised (supports made early eras free); E4–E8 eased vs post-charge power. E6–E8 cut ~−35% (matching E5), keeping prior E5→E8 growth multiples (~2.55× / 2.68× / 2.0×). Growth systems still from **E4+ escalation** (`BALANCE_E4_ESCALATION.md`).
 
 Village = ×1, Town = ×1.5, Capital = ×2.5 of the era base.
 
