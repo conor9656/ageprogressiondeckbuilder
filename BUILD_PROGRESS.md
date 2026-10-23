@@ -140,7 +140,7 @@ godot4 --headless --path game -s res://tests/run_tests.gd
 
 1. ~~Godot version~~ → **4.7.2**  
 2. ~~Folder name~~ → **`game/`**  
-3. **Local Godot** → **W2 is ready.** Install [4.7.2](https://godotengine.org/download/archive/4.7.2-stable/), open `game/`, press Play.
+3. **Local Godot** → **W3 is ready.** Install [4.7.2](https://godotengine.org/download/archive/4.7.2-stable/), open `game/`, Play → **Start Ancient run**.
 
 ### Still optional later
 
