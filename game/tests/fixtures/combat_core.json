@@ -1,0 +1,418 @@
+{
+  "fixtures": [
+    {
+      "name": "skirmish_M",
+      "kinds": [
+        "M"
+      ],
+      "era": 1,
+      "sci_level": 0,
+      "tiers": {
+        "M": 1,
+        "R": 1,
+        "C": 1,
+        "S": 1
+      },
+      "walls": false,
+      "garrison": "militia",
+      "expect": {
+        "form": "skirmish",
+        "rank": 1,
+        "damage": 12,
+        "might": 12.0,
+        "mom": 1.0
+      }
+    },
+    {
+      "name": "pair_MM",
+      "kinds": [
+        "M",
+        "M"
+      ],
+      "era": 1,
+      "sci_level": 0,
+      "tiers": {
+        "M": 1,
+        "R": 1,
+        "C": 1,
+        "S": 1
+      },
+      "walls": false,
+      "garrison": "militia",
+      "expect": {
+        "form": "pair",
+        "rank": 2,
+        "damage": 48,
+        "might": 24.0,
+        "mom": 2.0
+      }
+    },
+    {
+      "name": "triple_RRR",
+      "kinds": [
+        "R",
+        "R",
+        "R"
+      ],
+      "era": 1,
+      "sci_level": 0,
+      "tiers": {
+        "M": 1,
+        "R": 1,
+        "C": 1,
+        "S": 1
+      },
+      "walls": false,
+      "garrison": "militia",
+      "expect": {
+        "form": "triple",
+        "rank": 3,
+        "damage": 174,
+        "might": 29.0,
+        "mom": 6.0
+      }
+    },
+    {
+      "name": "battle_line_MMRR",
+      "kinds": [
+        "M",
+        "M",
+        "R",
+        "R"
+      ],
+      "era": 1,
+      "sci_level": 0,
+      "tiers": {
+        "M": 1,
+        "R": 1,
+        "C": 1,
+        "S": 1
+      },
+      "walls": false,
+      "garrison": "militia",
+      "expect": {
+        "form": "battle_line",
+        "rank": 4,
+        "damage": 250,
+        "might": 50.0,
+        "mom": 5.0
+      }
+    },
+    {
+      "name": "combined_arms_MRC",
+      "kinds": [
+        "M",
+        "R",
+        "C"
+      ],
+      "era": 1,
+      "sci_level": 0,
+      "tiers": {
+        "M": 1,
+        "R": 1,
+        "C": 1,
+        "S": 1
+      },
+      "walls": false,
+      "garrison": "militia",
+      "expect": {
+        "form": "combined_arms",
+        "rank": 5,
+        "damage": 224,
+        "might": 56.0,
+        "mom": 4.0
+      }
+    },
+    {
+      "name": "phalanx_MMMRR",
+      "kinds": [
+        "M",
+        "M",
+        "M",
+        "R",
+        "R"
+      ],
+      "era": 1,
+      "sci_level": 0,
+      "tiers": {
+        "M": 1,
+        "R": 1,
+        "C": 1,
+        "S": 1
+      },
+      "walls": false,
+      "garrison": "militia",
+      "expect": {
+        "form": "phalanx",
+        "rank": 6,
+        "damage": 432,
+        "might": 72.0,
+        "mom": 6.0
+      }
+    },
+    {
+      "name": "grand_army_MRCS",
+      "kinds": [
+        "M",
+        "R",
+        "C",
+        "S"
+      ],
+      "era": 1,
+      "sci_level": 0,
+      "tiers": {
+        "M": 1,
+        "R": 1,
+        "C": 1,
+        "S": 1
+      },
+      "walls": false,
+      "garrison": "militia",
+      "expect": {
+        "form": "grand_army",
+        "rank": 7,
+        "damage": 425,
+        "might": 85.0,
+        "mom": 5.0
+      }
+    },
+    {
+      "name": "vanguard_MMMM",
+      "kinds": [
+        "M",
+        "M",
+        "M",
+        "M"
+      ],
+      "era": 1,
+      "sci_level": 0,
+      "tiers": {
+        "M": 1,
+        "R": 1,
+        "C": 1,
+        "S": 1
+      },
+      "walls": false,
+      "garrison": "militia",
+      "expect": {
+        "form": "vanguard",
+        "rank": 8,
+        "damage": 528,
+        "might": 88.0,
+        "mom": 6.0
+      }
+    },
+    {
+      "name": "legion_MMMMM",
+      "kinds": [
+        "M",
+        "M",
+        "M",
+        "M",
+        "M"
+      ],
+      "era": 1,
+      "sci_level": 0,
+      "tiers": {
+        "M": 1,
+        "R": 1,
+        "C": 1,
+        "S": 1
+      },
+      "walls": false,
+      "garrison": "militia",
+      "expect": {
+        "form": "legion",
+        "rank": 10,
+        "damage": 920,
+        "might": 115.0,
+        "mom": 8.0
+      }
+    },
+    {
+      "name": "imperial_guard_soft2",
+      "kinds": [
+        "M",
+        "R",
+        "C",
+        "S",
+        "M"
+      ],
+      "era": 1,
+      "sci_level": 0,
+      "tiers": {
+        "M": 2,
+        "R": 2,
+        "C": 2,
+        "S": 2
+      },
+      "walls": false,
+      "garrison": "militia",
+      "expect": {
+        "form": "imperial_guard",
+        "rank": 9,
+        "damage": 1064,
+        "might": 133.0,
+        "mom": 8.0
+      }
+    },
+    {
+      "name": "walls_no_siege",
+      "kinds": [
+        "M",
+        "M",
+        "R",
+        "R"
+      ],
+      "era": 1,
+      "sci_level": 0,
+      "tiers": {
+        "M": 1,
+        "R": 1,
+        "C": 1,
+        "S": 1
+      },
+      "walls": true,
+      "garrison": "militia",
+      "expect": {
+        "form": "battle_line",
+        "rank": 4,
+        "damage": 125,
+        "might": 50.0,
+        "mom": 5.0
+      }
+    },
+    {
+      "name": "walls_with_siege",
+      "kinds": [
+        "M",
+        "M",
+        "R",
+        "S"
+      ],
+      "era": 1,
+      "sci_level": 0,
+      "tiers": {
+        "M": 1,
+        "R": 1,
+        "C": 1,
+        "S": 1
+      },
+      "walls": true,
+      "garrison": "militia",
+      "expect": {
+        "form": "combined_arms",
+        "rank": 5,
+        "damage": 224,
+        "might": 56.0,
+        "mom": 4.0
+      }
+    },
+    {
+      "name": "garrison_pikemen",
+      "kinds": [
+        "C",
+        "C",
+        "M",
+        "M"
+      ],
+      "era": 1,
+      "sci_level": 0,
+      "tiers": {
+        "M": 1,
+        "R": 1,
+        "C": 1,
+        "S": 1
+      },
+      "walls": false,
+      "garrison": "pikemen",
+      "expect": {
+        "form": "battle_line",
+        "rank": 4,
+        "damage": 132,
+        "might": 44.0,
+        "mom": 3.0
+      }
+    },
+    {
+      "name": "garrison_archers",
+      "kinds": [
+        "M",
+        "M",
+        "R",
+        "R"
+      ],
+      "era": 1,
+      "sci_level": 0,
+      "tiers": {
+        "M": 1,
+        "R": 1,
+        "C": 1,
+        "S": 1
+      },
+      "walls": false,
+      "garrison": "archers",
+      "expect": {
+        "form": "battle_line",
+        "rank": 4,
+        "damage": 215,
+        "might": 43.0,
+        "mom": 5.0
+      }
+    },
+    {
+      "name": "literacy_sci5",
+      "kinds": [
+        "M",
+        "M",
+        "M",
+        "M",
+        "M"
+      ],
+      "era": 1,
+      "sci_level": 5,
+      "tiers": {
+        "M": 1,
+        "R": 1,
+        "C": 1,
+        "S": 1
+      },
+      "walls": false,
+      "garrison": "militia",
+      "expect": {
+        "form": "legion",
+        "rank": 10,
+        "damage": 1150,
+        "might": 115.0,
+        "mom": 10.0
+      }
+    },
+    {
+      "name": "age_power_e4",
+      "kinds": [
+        "M",
+        "M",
+        "M",
+        "M",
+        "M"
+      ],
+      "era": 4,
+      "sci_level": 8,
+      "tiers": {
+        "M": 1,
+        "R": 1,
+        "C": 1,
+        "S": 1
+      },
+      "walls": false,
+      "garrison": "militia",
+      "expect": {
+        "form": "legion",
+        "rank": 10,
+        "damage": 1442,
+        "might": 128.8,
+        "mom": 11.2
+      }
+    }
+  ]
+}

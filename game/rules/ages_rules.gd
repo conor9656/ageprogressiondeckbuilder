@@ -1,10 +1,32 @@
 class_name AgesRules
 extends RefCounted
-## Pure rules entry (no scene tree). Port from sim/era1_sim.py during W1.
-## UI (W2+) should call into this module — never own combat math.
+## Facade for pure rules. UI (W2+) calls here — never owns combat math.
 
-const VERSION := "0.1.0-w1-scaffold"
+const CombatTables := preload("res://rules/combat_tables.gd")
+const Damage := preload("res://rules/damage.gd")
+const Formation := preload("res://rules/formation.gd")
+
+const VERSION := "0.2.0-w1-core"
 
 
 static func engine_tag() -> String:
 	return "ages-rules/%s" % VERSION
+
+
+static func evaluate_kinds(kinds: Array, opts: Dictionary = {}) -> Dictionary:
+	CombatTables.ensure_loaded()
+	var tiers: Dictionary = opts.get("tiers", {"M": 1, "R": 1, "C": 1, "S": 1})
+	return Damage.evaluate(kinds, tiers, opts)
+
+
+static func best_formation(kinds: Array, era: int = 1, tiers: Dictionary = {}) -> Dictionary:
+	CombatTables.ensure_loaded()
+	var combat: Array = []
+	var tier_list: Array = []
+	var tmap := {"M": 1, "R": 1, "C": 1, "S": 1}
+	tmap.merge(tiers, true)
+	for k in kinds:
+		if k in ["M", "R", "C", "S"]:
+			combat.append(k)
+			tier_list.append(int(tmap[k]))
+	return Formation.best(combat, tier_list, CombatTables.soft_cap(era))
