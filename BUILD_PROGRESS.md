@@ -51,9 +51,9 @@ Install helper for agents/CI: `scripts/install_godot.sh`.
 
 **W1 — Godot rules module + tests** (`in_progress` — core combat done).
 
-Core rules ported + **16 Python golden fixtures** matching bit-for-bit.  
-`bash scripts/run_game_tests.sh` → `AGES_TESTS_OK failed=0`.  
-Still open for full W1: fight loop (Assault/Regroup), one BP/Doc apply path, more fixtures.
+Core combat + **Assault/Regroup fight loop** headless.  
+`bash scripts/run_game_tests.sh` → all green (16 fixtures + 4 fight tests).  
+Still open for full W1: richer BP/Doc catalog apply (beyond scaffolding/siege_tower stubs).
 
 ---
 
@@ -103,8 +103,9 @@ game/                    ← Godot 4.7.2 project root
 - [x] Support-charge tests: spend, refill, upgrade gate, slot attach
 - [x] **Parity:** 16 golden fixtures from Python match Godot
 - [x] CI-ready one-command suite (`scripts/run_game_tests.sh`)
-- [ ] Settlement fight loop (Assault/Regroup counters) headless
-- [ ] One Blueprint + one Doctrine apply path
+- [x] Settlement fight loop (Assault/Regroup) headless + AI autoplay tests
+- [x] Minimal Blueprint path (scaffolding / siege_tower) + Doctrine armed-on-use stub
+- [ ] Fuller BP/Doc effect table (W2 can proceed with stubs)
 
 ### How the agent talks to Godot
 
@@ -124,6 +125,7 @@ godot4 --headless --path game -s res://tests/run_tests.gd
 
 | Date | Note |
 |---|---|
+| 2026-10-23 | Fight loop: deck/hand/discard, Assault, Regroup, AI autoplay, Builder→scaffolding wall ignore. |
 | 2026-10-23 | Core combat port: formations, Might×Mom, walls, garrisons, literacy, Age Power, support charges. 16/16 fixtures vs Python. |
 | 2026-10-23 | Locked Godot **4.7.2** + folder **`game/`**. Scaffold + smoke test green. |
 | 2026-10-22 | Workstream opened. Plan written. Waiting on Godot / folder confirm. |
