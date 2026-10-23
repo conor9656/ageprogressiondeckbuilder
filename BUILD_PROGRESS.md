@@ -36,7 +36,7 @@ Install helper for agents/CI: `scripts/install_godot.sh`.
 | ID | Workstream | Status | Owner | Depends on | Done when |
 |---|---|---|---|---|---|
 | **W0** | Game snapshot (`GAME_SNAPSHOT.md`) | `done` | — | — | Single source of truth exists |
-| **W1** | Godot rules module + tests | `in_progress` | Agent | W0; Godot 4.7.2 | Headless tests + parity vs Python golden seeds |
+| **W1** | Godot rules module + tests | `in_progress` (core combat green) | Agent | W0; Godot 4.7.2 | Headless tests + parity vs Python golden seeds |
 | **W2** | Vertical slice UI (one settlement) | `not_started` | Agent | W1 | Playable greybox fight |
 | **W3** | Ancient run loop + shop | `not_started` | Agent | W2 | Full Ancient era greybox |
 | **W4** | Content as data (JSON/resources) | `not_started` | Agent | W1 (can overlap W2–3) | Numbers swappable without code edits |
@@ -49,9 +49,11 @@ Install helper for agents/CI: `scripts/install_godot.sh`.
 
 ## Current focus
 
-**W1 — Godot rules module + tests** (`in_progress`).
+**W1 — Godot rules module + tests** (`in_progress` — core combat done).
 
-Scaffold done: `game/` boots headless; smoke test `AGES_TESTS_OK`. Next: port formations → damage → walls → support charges → parity fixtures.
+Core rules ported + **16 Python golden fixtures** matching bit-for-bit.  
+`bash scripts/run_game_tests.sh` → `AGES_TESTS_OK failed=0`.  
+Still open for full W1: fight loop (Assault/Regroup), one BP/Doc apply path, more fixtures.
 
 ---
 

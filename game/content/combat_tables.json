@@ -1,0 +1,47 @@
+{
+  "unit_might": {
+    "M": [0, 7, 15, 24, 36, 55, 85],
+    "R": [0, 3, 5, 8, 12, 18, 28],
+    "C": [0, 11, 20, 30, 44, 65, 100],
+    "S": [0, 4, 8, 12, 18, 26, 40]
+  },
+  "unit_mom": {
+    "M": [0, 0, 0, 0, 0, 0, 0],
+    "R": [0, 1, 2, 2, 3, 3, 4],
+    "C": [0, 0, 0, 0, 0, 0, 1],
+    "S": [0, 0, 0, 0, 0, 0, 0]
+  },
+  "form_base": {
+    "none": [0, 0],
+    "skirmish": [5, 1],
+    "pair": [10, 2],
+    "triple": [20, 3],
+    "battle_line": [30, 3],
+    "combined_arms": [35, 3],
+    "phalanx": [45, 4],
+    "grand_army": [60, 4],
+    "vanguard": [60, 6],
+    "imperial_guard": [70, 6],
+    "legion": [80, 8]
+  },
+  "form_level_bonus": {
+    "skirmish": [3, 0],
+    "pair": [3, 0],
+    "triple": [3, 0],
+    "battle_line": [5, 0],
+    "combined_arms": [5, 0],
+    "phalanx": [5, 1],
+    "grand_army": [5, 1],
+    "vanguard": [8, 1],
+    "imperial_guard": [8, 1],
+    "legion": [8, 1]
+  },
+  "era_soft_cap": { "1": 2, "2": 3, "3": 4, "4": 5, "5": 5, "6": 6, "7": 6, "8": 6 },
+  "era_base_defence": { "1": 665, "2": 1200, "3": 1790, "4": 3450, "5": 7180, "6": 18300, "7": 49000, "8": 98000 },
+  "tech_literacy_per_sci": 0.05,
+  "age_power_might_per_sci": 0.015,
+  "support_charge_cap": 4,
+  "support_charge_gold": { "2": 50, "3": 80, "4": 120 },
+  "support_charge_sci_chance": 0.4,
+  "classes": ["M", "R", "C", "S"]
+}
