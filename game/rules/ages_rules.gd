@@ -6,8 +6,9 @@ const CombatTables := preload("res://rules/combat_tables.gd")
 const Damage := preload("res://rules/damage.gd")
 const Formation := preload("res://rules/formation.gd")
 const SettlementFight := preload("res://rules/settlement_fight.gd")
+const AncientRun := preload("res://rules/ancient_run.gd")
 
-const VERSION := "0.3.0-w1-fight-loop"
+const VERSION := "0.4.0-w3-ancient-run"
 
 
 static func engine_tag() -> String:
@@ -37,3 +38,9 @@ static func new_fight(opts: Dictionary) -> RefCounted:
 	var fight = SettlementFight.new()
 	fight.setup(opts)
 	return fight
+
+
+static func new_ancient_run(seed: int = 1) -> RefCounted:
+	var run = AncientRun.new()
+	run.start(seed)
+	return run

@@ -53,6 +53,11 @@ static func soft_cap(era: int) -> int:
 	return int(_data["era_soft_cap"][str(era)])
 
 
+static func era_base_defence(era: int) -> int:
+	ensure_loaded()
+	return int(_data["era_base_defence"][str(era)])
+
+
 static func tech_literacy() -> float:
 	ensure_loaded()
 	return float(_data["tech_literacy_per_sci"])
