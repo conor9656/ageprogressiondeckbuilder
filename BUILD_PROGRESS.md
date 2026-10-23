@@ -96,13 +96,15 @@ game/                    ← Godot 4.7.2 project root
 
 ### Acceptance criteria (W1 done)
 
-- [x] Godot 4 project boots headless (`godot4 --path game --headless --quit`-style)
+- [x] Godot 4 project boots headless
 - [x] Smoke test runner exits 0 (`AGES_TESTS_OK`)
-- [ ] Formation tests: each rank shape resolves correctly
-- [ ] Damage tests: known hand → expected Might/Mom/damage (walls on/off)
-- [ ] Support-charge tests: 1 charge, slot cost, free-slot flag
-- [ ] **Parity:** ≥10 golden fixtures from Python match Godot
-- [ ] CI-ready one-command suite (document in `game/README.md` — already sketched)
+- [x] Formation tests: all 10 ranks covered in fixtures
+- [x] Damage tests: walls / garrisons / Tech Literacy / Age Power
+- [x] Support-charge tests: spend, refill, upgrade gate, slot attach
+- [x] **Parity:** 16 golden fixtures from Python match Godot
+- [x] CI-ready one-command suite (`scripts/run_game_tests.sh`)
+- [ ] Settlement fight loop (Assault/Regroup counters) headless
+- [ ] One Blueprint + one Doctrine apply path
 
 ### How the agent talks to Godot
 
@@ -122,7 +124,8 @@ godot4 --headless --path game -s res://tests/run_tests.gd
 
 | Date | Note |
 |---|---|
-| 2026-10-23 | Locked Godot **4.7.2** + folder **`game/`**. Installed godot4 on agent. Scaffold + smoke test green. W1 → `in_progress`. |
+| 2026-10-23 | Core combat port: formations, Might×Mom, walls, garrisons, literacy, Age Power, support charges. 16/16 fixtures vs Python. |
+| 2026-10-23 | Locked Godot **4.7.2** + folder **`game/`**. Scaffold + smoke test green. |
 | 2026-10-22 | Workstream opened. Plan written. Waiting on Godot / folder confirm. |
 
 ---
