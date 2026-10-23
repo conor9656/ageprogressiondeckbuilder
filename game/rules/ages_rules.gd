@@ -5,8 +5,9 @@ extends RefCounted
 const CombatTables := preload("res://rules/combat_tables.gd")
 const Damage := preload("res://rules/damage.gd")
 const Formation := preload("res://rules/formation.gd")
+const SettlementFight := preload("res://rules/settlement_fight.gd")
 
-const VERSION := "0.2.0-w1-core"
+const VERSION := "0.3.0-w1-fight-loop"
 
 
 static func engine_tag() -> String:
@@ -30,3 +31,9 @@ static func best_formation(kinds: Array, era: int = 1, tiers: Dictionary = {}) -
 			combat.append(k)
 			tier_list.append(int(tmap[k]))
 	return Formation.best(combat, tier_list, CombatTables.soft_cap(era))
+
+
+static func new_fight(opts: Dictionary) -> RefCounted:
+	var fight = SettlementFight.new()
+	fight.setup(opts)
+	return fight
