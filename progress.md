@@ -4,6 +4,11 @@ Concise log of cloud-agent runs. Newest first. Keep entries short — context fo
 
 ---
 
+## 2026-10-23 — W1 unblocked: Godot 4.7.2 + `game/` scaffold
+- Locked **Godot 4.7.2** + project folder **`game/`**. Headless smoke test green (`AGES_TESTS_OK`).
+- Scripts: `scripts/install_godot.sh`, `scripts/run_game_tests.sh`. Local editor = human @ W2 only.
+- W1 `in_progress` — next: port formations/damage from `sim/`.
+
 ## 2026-10-22 — Build progress tracker + W1 plan
 - Added `BUILD_PROGRESS.md`: workstream board from W0→W8; W1 (Godot rules + tests) approach, acceptance, agent↔Godot CLI plan.
 - W1 blocked only on Godot 4 in the agent environment. Next: user approves Godot install + `game/` folder name.

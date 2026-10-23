@@ -10,7 +10,7 @@
 
 | Layer | Choice | Why |
 |---|---|---|
-| **Game engine** | **Godot 4** (GDScript + typed dictionaries / classes) | Best agent fit: text scenes, strong 2D, free, CLI export, Steam-ready |
+| **Game engine** | **Godot 4.7.2** (GDScript + typed dictionaries / classes) | Locked 2026-10-23; best agent fit: text scenes, strong 2D, free, CLI export, Steam-ready |
 | **Language** | GDScript first; C# only if a library forces it | Agents are fluent; fast iteration; no compile tax for card logic |
 | **Card / sim core** | Pure data + logic modules (no scene tree required) | Headless balance sims and unit tests without booting UI |
 | **Art stills** | AI image gen → human cleanup in **Aseprite** or **Krita** | Gen for ideation / base plates; authoring tool owns the final asset |
