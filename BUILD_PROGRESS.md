@@ -37,7 +37,7 @@ Install helper for agents/CI: `scripts/install_godot.sh`.
 |---|---|---|---|---|---|
 | **W0** | Game snapshot (`GAME_SNAPSHOT.md`) | `done` | — | — | Single source of truth exists |
 | **W1** | Godot rules module + tests | `in_progress` (core combat green) | Agent | W0; Godot 4.7.2 | Headless tests + parity vs Python golden seeds |
-| **W2** | Vertical slice UI (one settlement) | `not_started` | Agent | W1 | Playable greybox fight |
+| **W2** | Vertical slice UI (one settlement) | `done` | Agent | W1 | Playable greybox fight |
 | **W3** | Ancient run loop + shop | `not_started` | Agent | W2 | Full Ancient era greybox |
 | **W4** | Content as data (JSON/resources) | `not_started` | Agent | W1 (can overlap W2–3) | Numbers swappable without code edits |
 | **W5** | Unify rules (Godot canonical) | `not_started` | Agent | W1 + stable slice | One rules path in CI |
@@ -49,11 +49,13 @@ Install helper for agents/CI: `scripts/install_godot.sh`.
 
 ## Current focus
 
-**W1 — Godot rules module + tests** (`in_progress` — core combat done).
+**W2 done** — greybox Ancient Village fight is playable in-editor.  
+**Next natural stop / start:** W3 (Ancient run loop + shop), or polish W2 feel first.
 
-Core combat + **Assault/Regroup fight loop** headless.  
-`bash scripts/run_game_tests.sh` → all green (16 fixtures + 4 fight tests).  
+`bash scripts/run_game_tests.sh` → all green (16 fixtures + 4 fight tests + UI script compile).  
 Still open for full W1: richer BP/Doc catalog apply (beyond scaffolding/siege_tower stubs).
+
+**You:** Install Godot **4.7.2** → open `game/` → Play (F5) → Start fight.
 
 ---
 
@@ -138,7 +140,7 @@ godot4 --headless --path game -s res://tests/run_tests.gd
 
 1. ~~Godot version~~ → **4.7.2**  
 2. ~~Folder name~~ → **`game/`**  
-3. **Local Godot** → **Yes, that’s for you** — but **only when we start W2** (greybox UI). For W1, agents/CI use headless `godot4`; you don’t need to install anything yet. When W2 lands, install [4.7.2](https://godotengine.org/download/archive/4.7.2-stable/) and open `game/`.
+3. **Local Godot** → **W2 is ready.** Install [4.7.2](https://godotengine.org/download/archive/4.7.2-stable/), open `game/`, press Play.
 
 ### Still optional later
 
@@ -160,9 +162,25 @@ Art bible, Spine, Steam App ID, balance evening — not needed now.
 ## Other workstream stubs
 
 ### W2 — Vertical slice UI
-- Status: `not_started`
-- Depends: W1 green
-- Your part: local Godot 4.7.2 to playtest greybox
+
+**Status:** `done`  
+**Done when:** Playable greybox fight against one Ancient Village.
+
+#### Acceptance
+
+- [x] Main menu → Start fight
+- [x] Hand select (1–5), Assault / Regroup / Clear / Hint
+- [x] Live damage preview (formation + Builder)
+- [x] Win / lose overlay + Fight again
+- [x] Keys: A / R / Esc / H
+- [x] UI scripts compile in headless suite
+- [x] No combat math in UI — calls `AgesRules` / `SettlementFight`
+
+#### Log
+
+| Date | Note |
+|---|---|
+| 2026-10-23 | Greybox `main_menu` + `fight_table`; project main scene wired; README play steps. |
 
 ### W3–W8
 - See board; detail when each becomes current.
@@ -173,5 +191,6 @@ Art bible, Spine, Steam App ID, balance evening — not needed now.
 
 | Date | Change |
 |---|---|
+| 2026-10-23 | W2 greybox fight UI done — playable Ancient Village slice |
 | 2026-10-23 | Locked 4.7.2 + `game/`; scaffold; W1 in progress; clarified local install = you @ W2 |
 | 2026-10-22 | Created tracker; W0 done; W1 planned |

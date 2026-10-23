@@ -16,6 +16,7 @@ func _initialize() -> void:
 	failed += _check("fight_lose_too_tanky", _test_fight_lose())
 	failed += _check("fight_manual_assault_regroup", _test_manual_loop())
 	failed += _check("fight_builder_ignores_walls", _test_builder_walls())
+	failed += _check("ui_scripts_compile", _test_ui_scripts_compile())
 
 	if failed == 0:
 		print("AGES_TESTS_OK failed=0")
@@ -133,6 +134,13 @@ func _test_builder_walls() -> bool:
 		if str(e.get("op", "")) == "blueprint" or bool(e.get("used_builder", false)):
 			saw = true
 	return saw
+
+
+func _test_ui_scripts_compile() -> bool:
+	## Ensures vertical-slice scripts parse (no editor needed).
+	var menu_script: GDScript = load("res://scenes/boot/main_menu.gd") as GDScript
+	var fight_script: GDScript = load("res://scenes/fight/fight_table.gd") as GDScript
+	return menu_script != null and fight_script != null
 
 
 func _run_fixture_file(path: String) -> int:

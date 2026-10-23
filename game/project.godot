@@ -1,14 +1,13 @@
 ; Engine configuration for Ages (working title).
-; Source of truth for rules intent: ../GAME_SNAPSHOT.md
-; Build tracker: ../BUILD_PROGRESS.md
+; Design: ../GAME_SNAPSHOT.md · Tracker: ../BUILD_PROGRESS.md
 
 config_version=5
 
 [application]
 
 config/name="Ages"
-config/description="Civ × Balatro roguelike deck-builder — rules module (W1)"
-run/main_scene="res://tests/run_tests.tscn"
+config/description="Civ × Balatro roguelike deck-builder — vertical slice"
+run/main_scene="res://scenes/boot/main_menu.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -16,6 +15,7 @@ config/icon="res://icon.svg"
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/stretch/mode="canvas_items"
 
 [rendering]
 
