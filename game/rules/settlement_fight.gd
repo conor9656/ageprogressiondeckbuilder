@@ -115,20 +115,39 @@ func evaluate_kinds_now(kinds: Array) -> Dictionary:
 
 ## --- Player / AI actions -----------------------------------------------------
 
-func do_regroup(discard_n: int = 3) -> bool:
+func do_regroup(discard_cards: Array = []) -> bool:
+	## Discard only the given cards (1–5), keep the rest, then redraw to hand_size.
 	if regroups_left <= 0 or is_over():
 		return false
-	var combat := combat_in_hand()
-	# Discard weakest-looking first: prefer dumping extras of majority class later — simple: last N
 	var dump: Array = []
-	var n := mini(discard_n, piles.hand.size())
-	for i in n:
-		dump.append(piles.hand[piles.hand.size() - 1 - i])
+	for c in discard_cards:
+		if piles.hand.has(c) and not dump.has(c):
+			dump.append(c)
+	if dump.is_empty() or dump.size() > 5:
+		return false
 	piles.discard_from_hand(dump)
 	piles.refill_hand(hand_size)
 	regroups_left -= 1
 	log.append({"op": "regroup", "discarded": dump.size(), "hand": piles.hand.size(), "regroups_left": regroups_left})
 	return true
+
+
+func choose_regroup_discard_ai(max_n: int = 3) -> Array:
+	## Drop cards that aren't in the best Assault pick (up to max_n).
+	var choice: Dictionary = choose_assault_ai()
+	var keep: Dictionary = {}
+	for c in choice.get("cards", []):
+		keep[c.get_instance_id()] = true
+	var dump: Array = []
+	for c in piles.hand:
+		if keep.has(c.get_instance_id()):
+			continue
+		dump.append(c)
+		if dump.size() >= max_n:
+			break
+	if dump.is_empty() and not piles.hand.is_empty():
+		dump.append(piles.hand[piles.hand.size() - 1])
+	return dump
 
 
 func do_assault(play_cards: Array, use_builder: bool = false, use_missionary: bool = false) -> Dictionary:
@@ -273,7 +292,7 @@ func run_auto() -> Dictionary:
 	## Play until win or out of Assaults (AI).
 	while not is_over():
 		if should_regroup_ai():
-			do_regroup()
+			do_regroup(choose_regroup_discard_ai())
 			continue
 		var choice := choose_assault_ai()
 		if choice["cards"].is_empty():

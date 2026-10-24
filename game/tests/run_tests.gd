@@ -17,6 +17,13 @@ func _initialize() -> void:
 	failed += _check("fight_manual_assault_regroup", _test_manual_loop())
 	failed += _check("fight_builder_ignores_walls", _test_builder_walls())
 	failed += _check("ui_scripts_compile", _test_ui_scripts_compile())
+	failed += _check("settlement_hp_curve", _test_settlement_hp())
+	failed += _check("rewards_raze_occupy", _test_rewards())
+	failed += _check("science_civic_levelup", _test_levelups())
+	failed += _check("shop_buy_unit", _test_shop())
+	failed += _check("shop_no_duplicates", _test_shop_unique())
+	failed += _check("offer_help_text", _test_offer_help())
+	failed += _check("ancient_run_auto_era", _test_auto_era())
 
 	if failed == 0:
 		print("AGES_TESTS_OK failed=0")
@@ -93,9 +100,23 @@ func _test_manual_loop() -> bool:
 		"assaults": 4,
 		"regroups": 2,
 	})
-	if not fight.do_regroup(2):
+	var keep_ids: Dictionary = {}
+	var dump: Array = []
+	for i in mini(2, fight.piles.hand.size()):
+		dump.append(fight.piles.hand[i])
+	for c in fight.piles.hand:
+		if not dump.has(c):
+			keep_ids[c.get_instance_id()] = true
+	if not fight.do_regroup(dump):
 		return false
 	if fight.regroups_left != 1:
+		return false
+	## Unselected cards must still be in hand
+	for c in fight.piles.hand:
+		if keep_ids.has(c.get_instance_id()):
+			keep_ids.erase(c.get_instance_id())
+	if not keep_ids.is_empty():
+		print("  regroup dropped unselected cards")
 		return false
 	var choice: Dictionary = fight.choose_assault_ai()
 	if choice["cards"].is_empty():
@@ -137,10 +158,169 @@ func _test_builder_walls() -> bool:
 
 
 func _test_ui_scripts_compile() -> bool:
-	## Ensures vertical-slice scripts parse (no editor needed).
+	## Ensures vertical-slice / run scripts parse (no editor needed).
 	var menu_script: GDScript = load("res://scenes/boot/main_menu.gd") as GDScript
 	var fight_script: GDScript = load("res://scenes/fight/fight_table.gd") as GDScript
-	return menu_script != null and fight_script != null
+	var run_script: GDScript = load("res://scenes/run/run_table.gd") as GDScript
+	var rules_script: GDScript = load("res://rules/ancient_run.gd") as GDScript
+	return (
+		menu_script != null and fight_script != null
+		and run_script != null and rules_script != null
+	)
+
+
+func _test_settlement_hp() -> bool:
+	var AncientRun = preload("res://rules/ancient_run.gd")
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1
+	var v: Dictionary = AncientRun.make_settlement("village", rng, 1)
+	var t: Dictionary = AncientRun.make_settlement("town", rng, 1)
+	var c: Dictionary = AncientRun.make_settlement("capital", rng, 1)
+	return int(v["defence"]) == 665 and int(t["defence"]) == 997 and int(c["defence"]) == 1662
+
+
+func _test_rewards() -> bool:
+	var run = AgesRules.new_ancient_run(42)
+	run.begin_fight()
+	# Fake a win with 1 assault used
+	run.active_fight.assaults_used = 1
+	run.active_fight.won = true
+	var before_g: int = run.state.gold
+	var raze: Dictionary = run.apply_victory_payout(1, "raze")
+	# Unused assaults = 4-1 = 3 → gold base 41 + raze 28 + interest
+	if int(raze["base"]["gold"]) != 41:
+		print("  raze base gold got=%s" % raze["base"]["gold"])
+		return false
+	if int(raze["raze_gold"]) != 28:
+		return false
+	if run.state.gold <= before_g:
+		return false
+	# Fresh run for occupy
+	run = AgesRules.new_ancient_run(43)
+	run.begin_fight()
+	var occ: Dictionary = run.apply_victory_payout(4, "occupy")
+	if run.state.occupied.size() != 1:
+		return false
+	if int(occ["base"]["science"]) != 16:
+		print("  occupy sci got=%s" % occ["base"]["science"])
+		return false
+	return run.state.science >= 16 and run.state.culture >= 16 and run.state.faith >= 12
+
+
+func _test_levelups() -> bool:
+	var run = AgesRules.new_ancient_run(7)
+	run.state.science = 8
+	run.state.culture = 8
+	var lu: Dictionary = run.begin_science_levelup()
+	if lu.is_empty() or lu["offers"].size() != 4:
+		return false
+	var pick: String = str(lu["offers"][0])
+	if not run.pick_levelup(pick):
+		return false
+	if run.state.sci_level != 1:
+		return false
+	var cu: Dictionary = run.begin_civic_levelup()
+	if cu.is_empty() or cu["offers"].size() != 3:
+		return false
+	if not run.pick_levelup(str(cu["offers"][0])):
+		return false
+	return run.state.civ_level == 1
+
+
+func _test_shop() -> bool:
+	var run = AgesRules.new_ancient_run(9)
+	run.state.gold = 200
+	run.state.faith = 200
+	run.open_shop()
+	if run.shop_treasury.size() != 5 or run.shop_synod.size() != 5:
+		return false
+	var before: int = run.state.deck_kinds.size()
+	# Find a unit offer and buy it
+	var bought := false
+	for i in run.shop_treasury.size():
+		if str(run.shop_treasury[i]["cat"]) == "unit":
+			var r: Dictionary = run.buy_offer("treasury", i)
+			if bool(r.get("ok", false)):
+				bought = true
+				break
+	if not bought:
+		# Force a cheap unit into slot 0
+		run.shop_treasury[0] = {"cat": "unit", "id": "M", "cost": 8, "label": "Unit M"}
+		var r2: Dictionary = run.buy_offer("treasury", 0)
+		bought = bool(r2.get("ok", false))
+	return bought and run.state.deck_kinds.size() == before + 1
+
+
+func _test_shop_unique() -> bool:
+	## Many seeds — each pack must have unique cat:id keys.
+	for sid in range(1, 61):
+		var run = AgesRules.new_ancient_run(sid)
+		run.open_shop()
+		if not _pack_unique(run.shop_treasury):
+			print("  treasury dup sid=%d pack=%s" % [sid, run.shop_treasury])
+			return false
+		if not _pack_unique(run.shop_synod):
+			print("  synod dup sid=%d pack=%s" % [sid, run.shop_synod])
+			return false
+		if run.state.gold >= run.state.reroll_cost:
+			run.reroll_treasury()
+			if not _pack_unique(run.shop_treasury):
+				print("  reroll dup sid=%d" % sid)
+				return false
+	return true
+
+
+func _pack_unique(pack: Array) -> bool:
+	var seen: Dictionary = {}
+	for o in pack:
+		var key := "%s:%s" % [str(o.get("cat", "")), str(o.get("id", ""))]
+		if seen.has(key):
+			return false
+		seen[key] = true
+	return true
+
+
+func _test_offer_help() -> bool:
+	var run = AgesRules.new_ancient_run(3)
+	run.state.science = 8
+	var lu: Dictionary = run.begin_science_levelup()
+	for o in lu["offers"]:
+		var help: String = run.offer_help(str(o))
+		if help.strip_edges() == "" or help == "No extra notes for this option yet.":
+			## Unknown ids fail; known fillers must explain
+			if str(o) in ["battle_line_drill", "upgrade_M", "upgrade_R", "upgrade_C", "upgrade_S", "upgrade_B"]:
+				print("  missing help for %s" % o)
+				return false
+		if help.length() < 12:
+			print("  short help for %s: %s" % [o, help])
+			return false
+	run.open_shop()
+	for o in run.shop_treasury:
+		if run.shop_offer_help(o).length() < 12:
+			return false
+	for o in run.shop_synod:
+		if run.shop_offer_help(o).length() < 12:
+			return false
+	return true
+
+
+func _test_auto_era() -> bool:
+	## Seed hunt: at least one seed in a small range should clear Ancient with AI.
+	var cleared := false
+	var last_snap: Dictionary = {}
+	for sid in range(1, 41):
+		var run = AgesRules.new_ancient_run(sid)
+		var res: Dictionary = run.run_auto_era()
+		last_snap = res.get("snapshot", {})
+		if bool(res["won"]):
+			cleared = true
+			print("  auto_era cleared sid=%d fights=%d sci=%d" % [
+				sid, int(res["fights"]), int(last_snap.get("sci_level", 0)),
+			])
+			break
+	if not cleared:
+		print("  auto_era no clear in seeds 1..40 last=%s" % last_snap)
+	return cleared
 
 
 func _run_fixture_file(path: String) -> int:

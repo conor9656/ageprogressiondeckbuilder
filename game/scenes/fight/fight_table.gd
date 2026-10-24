@@ -364,10 +364,19 @@ func _on_assault() -> void:
 func _on_regroup() -> void:
 	if fight.is_over():
 		return
-	if not fight.do_regroup(3):
-		_append_log("[i]No Regroups left.[/i]")
+	var cards := _selected_cards()
+	if cards.is_empty():
+		_append_log("[i]Select 1–5 cards to discard, then Regroup. Unselected cards stay.[/i]")
 		return
-	_append_log("Regroup — discarded and redrew. Regroups left %d" % fight.regroups_left)
+	if cards.size() > 5:
+		_append_log("[i]Regroup discards at most 5 cards.[/i]")
+		return
+	if not fight.do_regroup(cards):
+		_append_log("[i]Regroup failed (none left, or bad selection).[/i]")
+		return
+	_append_log("Regroup — discarded %d, kept the rest. Regroups left %d" % [
+		cards.size(), fight.regroups_left,
+	])
 	_selected.clear()
 	_refresh_all()
 

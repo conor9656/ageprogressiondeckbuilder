@@ -38,7 +38,7 @@ Install helper for agents/CI: `scripts/install_godot.sh`.
 | **W0** | Game snapshot (`GAME_SNAPSHOT.md`) | `done` | — | — | Single source of truth exists |
 | **W1** | Godot rules module + tests | `in_progress` (core combat green) | Agent | W0; Godot 4.7.2 | Headless tests + parity vs Python golden seeds |
 | **W2** | Vertical slice UI (one settlement) | `done` | Agent | W1 | Playable greybox fight |
-| **W3** | Ancient run loop + shop | `not_started` | Agent | W2 | Full Ancient era greybox |
+| **W3** | Ancient run loop + shop | `done` | Agent | W2 | Full Ancient era greybox |
 | **W4** | Content as data (JSON/resources) | `not_started` | Agent | W1 (can overlap W2–3) | Numbers swappable without code edits |
 | **W5** | Unify rules (Godot canonical) | `not_started` | Agent | W1 + stable slice | One rules path in CI |
 | **W6** | Art pipeline spike | `not_started` | Human+Agent | W2 feel locked | One class in-engine |
@@ -49,13 +49,13 @@ Install helper for agents/CI: `scripts/install_godot.sh`.
 
 ## Current focus
 
-**W2 done** — greybox Ancient Village fight is playable in-editor.  
-**Next natural stop / start:** W3 (Ancient run loop + shop), or polish W2 feel first.
+**W3 done** — full Ancient era greybox (Village → Town → Capital + rewards/shop).  
+**Next natural stop / start:** W4 (content as data) or light W3 feel tweaks from playtests.
 
-`bash scripts/run_game_tests.sh` → all green (16 fixtures + 4 fight tests + UI script compile).  
-Still open for full W1: richer BP/Doc catalog apply (beyond scaffolding/siege_tower stubs).
+`bash scripts/run_game_tests.sh` → all green (combat fixtures + fight + Ancient run meta).  
+Still open for full W1: richer BP/Doc effect table (stubs OK for greybox).
 
-**You:** Install Godot **4.7.2** → open `game/` → Play (F5) → Start fight.
+**You:** Godot **4.7.2** → open `game/` → Play → **Start Ancient run**.
 
 ---
 
@@ -140,7 +140,7 @@ godot4 --headless --path game -s res://tests/run_tests.gd
 
 1. ~~Godot version~~ → **4.7.2**  
 2. ~~Folder name~~ → **`game/`**  
-3. **Local Godot** → **W2 is ready.** Install [4.7.2](https://godotengine.org/download/archive/4.7.2-stable/), open `game/`, press Play.
+3. **Local Godot** → **W3 is ready.** Install [4.7.2](https://godotengine.org/download/archive/4.7.2-stable/), open `game/`, Play → **Start Ancient run**.
 
 ### Still optional later
 
@@ -182,7 +182,30 @@ Art bible, Spine, Steam App ID, balance evening — not needed now.
 |---|---|
 | 2026-10-23 | Greybox `main_menu` + `fight_table`; project main scene wired; README play steps. |
 
-### W3–W8
+### W3 — Ancient run loop + shop
+
+**Status:** `done`  
+**Done when:** Full Ancient era playable greybox (3 settlements + meta between fights).
+
+#### Acceptance
+
+- [x] Village → Town → Capital (665 / 997 / 1662 Defence)
+- [x] Victory rewards (Gold/Sci/Cul/Faith + unused Assault + interest)
+- [x] Raze (+28 Gold) / Occupy (sticky city yield)
+- [x] Science 1-of-4 + Civics 1-of-3 with E1 costs/effects
+- [x] Treasury + Synod packs (buy / one Treasury reroll)
+- [x] Greybox UI phases: hub → fight → post → level-up → shop → next/end
+- [x] Headless: rewards, level-ups, shop, AI auto-era clear
+- [x] Starting deck 6M/5R/3C/2S carried across settlements
+
+#### Log
+
+| Date | Note |
+|---|---|
+| 2026-10-24 | (i) help on Sci/Civ/shop offers; shop packs unique (no duplicate items). |
+| 2026-10-23 | `ancient_run` + `run_table`; menu starts Ancient run; auto-era clears seed 1. |
+
+### W4–W8
 - See board; detail when each becomes current.
 
 ---
@@ -191,6 +214,7 @@ Art bible, Spine, Steam App ID, balance evening — not needed now.
 
 | Date | Change |
 |---|---|
+| 2026-10-23 | W3 Ancient run + shop greybox done |
 | 2026-10-23 | W2 greybox fight UI done — playable Ancient Village slice |
 | 2026-10-23 | Locked 4.7.2 + `game/`; scaffold; W1 in progress; clarified local install = you @ W2 |
 | 2026-10-22 | Created tracker; W0 done; W1 planned |

@@ -4,16 +4,18 @@ Godot **4.7.2** · GDScript
 
 Design: [`../GAME_SNAPSHOT.md`](../GAME_SNAPSHOT.md) · Tracker: [`../BUILD_PROGRESS.md`](../BUILD_PROGRESS.md)
 
-## Play the vertical slice (you)
+## Play the Ancient greybox (you)
 
-1. Install [Godot 4.7.2](https://godotengine.org/download/archive/4.7.2-stable/) (same version as CI).
-2. Open this `game/` folder in Godot (Project → Import, or drag `project.godot`).
+1. Install [Godot 4.7.2](https://godotengine.org/download/archive/4.7.2-stable/).
+2. Open this `game/` folder in Godot.
 3. Press **Play (F5)**.
-4. Click **Start fight** → Ancient Village greybox.
+4. **Start Ancient run** → hub → fight Village → Town → Capital.
 
-**Keys:** `A` Assault · `R` Regroup · `Esc` clear selection · `H` hint (AI pick)
+Between fights: **Occupy / Raze** → Science 1-of-4 / Civics 1-of-3 (when you can afford) → **Treasury / Synod** shop → march on.
 
-Select 1–5 hand cards, optionally tick **Use Builder charge**, then Assault. Drop Defence to 0 before Assaults run out.
+**Keys in fight:** `A` Assault · `R` Regroup (discards **selected** cards only) · `Esc` clear · `H` hint
+
+Solo fight (no run meta) is still available from the menu for quick combat checks.
 
 ## Run tests (headless / agents)
 
@@ -27,8 +29,9 @@ Expect `AGES_TESTS_OK`.
 
 | Path | Role |
 |---|---|
-| `rules/` | Pure combat / fight loop (no UI) |
+| `rules/` | Pure combat + Ancient run meta (no UI) |
 | `scenes/boot/` | Main menu |
-| `scenes/fight/` | Greybox fight table |
+| `scenes/run/` | Ancient era hub / fight / post / shop |
+| `scenes/fight/` | Solo settlement fight (debug) |
 | `content/` | JSON tables |
 | `tests/` | Headless suite + fixtures |
