@@ -21,7 +21,40 @@
     "prophet_gold_payout": 5,
     "rarity_bag": { "C": 3, "U": 2, "R": 1 }
   },
-  "science_costs": [8, 12, 16, 22, 28, 36, 46, 58, 72, 88, 106, 126, 148, 172, 198],
+  "science_costs": [
+    8, 12, 16, 22, 28, 36, 46, 58, 72, 88, 106, 126, 148, 172, 198,
+    220, 245, 270, 300, 330, 365, 400, 440, 480, 520
+  ],
+  "eras": {
+    "1": "Ancient",
+    "2": "Classical",
+    "3": "Medieval",
+    "4": "Renaissance",
+    "5": "Industrial",
+    "6": "Modern",
+    "7": "Atomic",
+    "8": "Information"
+  },
+  "era_income_mult": {
+    "1": 1.00, "2": 1.15, "3": 1.30, "4": 1.55,
+    "5": 1.95, "6": 2.50, "7": 3.20, "8": 4.00
+  },
+  "era_gold_faith_mult": {
+    "1": 1.00, "2": 1.10, "3": 1.20, "4": 1.35,
+    "5": 1.55, "6": 1.85, "7": 2.20, "8": 2.60
+  },
+  "midgame_bar_discount": 0.15,
+  "breakthrough_era_min": 4,
+  "industrial_era_min": 5,
+  "industrial_assault_bonus": 1,
+  "industrial_toolkit": [
+    "drill_sergeant",
+    "foundry_contract",
+    "revival_tent",
+    "seminar",
+    "powder_magazine"
+  ],
+  "max_era": 8,
   "unit_tier_costs": { "1": 8, "2": 12, "3": 18, "4": 28, "5": 40, "6": 55 },
   "settlement": {
     "kind_mult": { "village": 1.0, "town": 1.5, "capital": 2.5 },

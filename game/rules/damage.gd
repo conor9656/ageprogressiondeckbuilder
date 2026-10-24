@@ -13,6 +13,7 @@ static func evaluate(kinds: Array, tiers_by_kind: Dictionary, opts: Dictionary =
 	var walls: bool = bool(opts.get("walls", false)) and not bool(opts.get("walls_removed", false))
 	var garrison: String = str(opts.get("garrison", "militia"))
 	var ignore_walls: bool = bool(opts.get("ignore_walls", false))
+	var faith_combat_mom: int = int(opts.get("faith_combat_mom", 0))
 
 	var combat_kinds: Array = []
 	var tiers: Array = []
@@ -65,6 +66,15 @@ static func evaluate(kinds: Array, tiers_by_kind: Dictionary, opts: Dictionary =
 
 		might += um
 		mom += uo
+
+	## Industrial Line Mom (E5+): flat + per form level on line shapes
+	if era >= CombatTables.line_era_min() and CombatTables.line_era_forms().has(form_id):
+		var form_lv: int = mini(lv, CombatTables.line_era_mom_form_cap())
+		mom += float(CombatTables.line_era_flat_mom())
+		mom += float(CombatTables.line_era_mom_per_form_lv() * form_lv)
+
+	if faith_combat_mom > 0:
+		mom += float(faith_combat_mom)
 
 	mom *= 1.0 + CombatTables.tech_literacy() * sci
 

@@ -25,7 +25,10 @@ func _initialize() -> void:
 	failed += _check("offer_help_text", _test_offer_help())
 	failed += _check("content_tables_load", _test_content_tables())
 	failed += _check("content_reward_from_json", _test_reward_from_json())
+	failed += _check("multi_era_soft_cap_income", _test_multi_era_tables())
+	failed += _check("multi_era_line_mom", _test_line_mom())
 	failed += _check("ancient_run_auto_era", _test_auto_era())
+	failed += _check("domination_reaches_e2", _test_domination_reaches_e2())
 
 	if failed == 0:
 		print("AGES_TESTS_OK failed=0")
@@ -343,6 +346,49 @@ func _test_reward_from_json() -> bool:
 	return int(full["raze_gold"]) == raze_expect
 
 
+func _test_multi_era_tables() -> bool:
+	var RunTables = preload("res://rules/run_tables.gd")
+	RunTables.reload()
+	CombatTables.reload()
+	var run = AgesRules.new_ancient_run(1)
+	if run.state.soft_cap() != 2:
+		return false
+	run.state.era = 5
+	if run.state.soft_cap() != 5:
+		print("  soft_cap e5 got=%d" % run.state.soft_cap())
+		return false
+	if abs(run.state.income_mult("sci") - 1.95) > 0.001:
+		print("  income sci e5 got=%s" % run.state.income_mult("sci"))
+		return false
+	if abs(run.state.bar_cost_mult() - 0.85) > 0.001:
+		return false
+	## Industrial assault once
+	run.state.era = 5
+	run._queue_era_start_hooks()
+	if run.state.base_assaults != 5 or not run.state.industrial_assault_granted:
+		print("  industrial assaults=%d" % run.state.base_assaults)
+		return false
+	return RunTables.era_name(8) == "Information"
+
+
+func _test_line_mom() -> bool:
+	## E5 Battle Line should out-damage E1 same hand (Line Mom).
+	var e1: Dictionary = AgesRules.evaluate_kinds(["M", "M", "R", "R"], {
+		"era": 1, "sci_level": 0, "tiers": {"M": 2, "R": 2, "C": 1, "S": 1},
+		"form_levels": {"battle_line": 1},
+	})
+	var e5: Dictionary = AgesRules.evaluate_kinds(["M", "M", "R", "R"], {
+		"era": 5, "sci_level": 0, "tiers": {"M": 2, "R": 2, "C": 1, "S": 1},
+		"form_levels": {"battle_line": 1},
+	})
+	if str(e1["form"]) != "battle_line" or str(e5["form"]) != "battle_line":
+		return false
+	if int(e5["damage"]) <= int(e1["damage"]):
+		print("  line mom e5=%s e1=%s" % [e5["damage"], e1["damage"]])
+		return false
+	return true
+
+
 func _test_auto_era() -> bool:
 	## Seed hunt: at least one seed in a small range should clear Ancient with AI.
 	var cleared := false
@@ -353,13 +399,32 @@ func _test_auto_era() -> bool:
 		last_snap = res.get("snapshot", {})
 		if bool(res["won"]):
 			cleared = true
-			print("  auto_era cleared sid=%d fights=%d sci=%d" % [
-				sid, int(res["fights"]), int(last_snap.get("sci_level", 0)),
+			print("  auto_era cleared sid=%d fights=%d era_now=%d sci=%d" % [
+				sid, int(res["fights"]), int(last_snap.get("era", 0)),
+				int(last_snap.get("sci_level", 0)),
 			])
 			break
 	if not cleared:
 		print("  auto_era no clear in seeds 1..40 last=%s" % last_snap)
 	return cleared
+
+
+func _test_domination_reaches_e2() -> bool:
+	## At least one seed should clear Ancient Capital and enter Classical.
+	for sid in range(1, 61):
+		var run = AgesRules.new_ancient_run(sid)
+		var res: Dictionary = run.run_auto_domination(3)
+		var snap: Dictionary = res.get("snapshot", {})
+		if int(snap.get("eras_cleared", 0)) >= 1 and int(snap.get("era", 1)) >= 2:
+			print("  domination sid=%d eras_cleared=%d era=%d fights=%d" % [
+				sid, int(snap["eras_cleared"]), int(snap["era"]), int(res["fights"]),
+			])
+			return true
+		if bool(res["won"]):
+			print("  domination full win sid=%d" % sid)
+			return true
+	print("  no seed reached E2 in 1..60")
+	return false
 
 
 func _run_fixture_file(path: String) -> int:

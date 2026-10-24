@@ -25,14 +25,14 @@ func _ready() -> void:
 	box.add_child(title)
 
 	var sub := Label.new()
-	sub.text = "Ancient era — Village → Town → Capital"
+	sub.text = "Domination greybox — 8 eras to Information"
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub.add_theme_color_override("font_color", Color("a8c5b5"))
 	box.add_child(sub)
 
 	var btn := Button.new()
-	btn.text = "Start Ancient run"
-	btn.custom_minimum_size = Vector2(240, 48)
+	btn.text = "Start Domination run"
+	btn.custom_minimum_size = Vector2(260, 48)
 	btn.pressed.connect(func():
 		get_tree().change_scene_to_file("res://scenes/run/run_table.tscn")
 	)

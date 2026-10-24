@@ -1,11 +1,12 @@
 extends Control
-## Greybox Ancient era — hub → fight → raze/occupy → Sci/Civ → shop → next.
+## Greybox Domination run — 8 eras × Village/Town/Capital.
 ## Open game/ in Godot 4.7.2 and press Play.
 
 const AgesRules := preload("res://rules/ages_rules.gd")
 const CombatTables := preload("res://rules/combat_tables.gd")
+const RunTables := preload("res://rules/run_tables.gd")
 
-enum Phase { HUB, FIGHT, POST, LEVELUP, SHOP, END }
+enum Phase { HUB, FIGHT, POST, LEVELUP, TOOLKIT, SHOP, END }
 
 var run: RefCounted
 var phase: int = Phase.HUB
@@ -51,7 +52,7 @@ func _new_run() -> void:
 	run = AgesRules.new_ancient_run(int(Time.get_unix_time_from_system()) % 100000)
 	phase = Phase.HUB
 	_log.clear()
-	_append("[b]Ancient era[/b] — conquer Village → Town → Capital.")
+	_append("[b]Domination run[/b] — 8 eras × Village → Town → Capital (24 fights).")
 	_show_hub()
 
 
@@ -114,19 +115,28 @@ func _clear_panel() -> void:
 func _refresh_resources() -> void:
 	var s = run.state
 	_lbl_resources.text = (
-		"Gold %d   Sci %d   Cul %d   Faith %d   |   SciLv %d  CivLv %d   Deck %d   Occ %d"
-		% [s.gold, s.science, s.culture, s.faith, s.sci_level, s.civ_level, s.deck_kinds.size(), s.occupied.size()]
+		"%s (E%d/%d)   Gold %d   Sci %d   Cul %d   Faith %d   |   SciLv %d  CivLv %d   Deck %d   Capitals %d"
+		% [
+			s.era_label(), s.era, RunTables.max_era(),
+			s.gold, s.science, s.culture, s.faith,
+			s.sci_level, s.civ_level, s.deck_kinds.size(), s.eras_cleared,
+		]
 	)
 
 
 ## --- HUB ---------------------------------------------------------------------
 
 func _show_hub() -> void:
+	if run.has_pending_era_hooks():
+		_continue_era_hooks()
+		return
 	phase = Phase.HUB
 	_clear_panel()
 	_refresh_resources()
 	var sett: Dictionary = run.current_settlement
-	_lbl_banner.text = "AGES — Ancient hub  (%d/3)" % (run.state.settlement_index + 1)
+	_lbl_banner.text = "AGES — %s hub  (%d/3 this era)" % [
+		run.state.era_label(), run.state.settlement_index + 1,
+	]
 
 	var info := Label.new()
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -140,7 +150,8 @@ func _show_hub() -> void:
 	_panel.add_child(info)
 
 	var tip := Label.new()
-	tip.text = "Win the fight, then choose Raze or Occupy, pick Science/Civics, shop, march on."
+	tip.text = "Clear Capitals to advance eras. Soft-caps, income, Breakthrough (E4+), Industrial Toolkit (E5) scale with the sim."
+	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	tip.add_theme_color_override("font_color", Color("888888"))
 	_panel.add_child(tip)
 
@@ -514,12 +525,20 @@ func _show_levelup(lu: Dictionary) -> void:
 	_clear_panel()
 	_refresh_resources()
 	var kind: String = str(lu["kind"])
-	_lbl_banner.text = ("%s level-up (cost %d) — pick 1" % [
-		"Science" if kind == "science" else "Civics", int(lu["cost"]),
-	])
+	var free: bool = bool(lu.get("free", false))
+	if free:
+		_lbl_banner.text = "Breakthrough — free %s pick" % ("Science" if kind == "science" else "Civics")
+	else:
+		_lbl_banner.text = ("%s level-up (cost %d) — pick 1" % [
+			"Science" if kind == "science" else "Civics", int(lu["cost"]),
+		])
 
 	var tip := Label.new()
-	tip.text = "Banks after paying: Sci %d · Cul %d" % [run.state.science, run.state.culture]
+	tip.text = (
+		"Era start Breakthrough — no bank cost."
+		if free else
+		"Banks after paying: Sci %d · Cul %d" % [run.state.science, run.state.culture]
+	)
 	tip.add_theme_color_override("font_color", Color("a8c5b5"))
 	_panel.add_child(tip)
 
@@ -551,7 +570,11 @@ func _on_pick_levelup(id: String) -> void:
 		return
 	_append("Picked [b]%s[/b]." % run.offer_label(id))
 	_refresh_resources()
-	_continue_levelups()
+	## Breakthrough free picks flow through era hooks; paid picks through shop path.
+	if run.has_pending_era_hooks():
+		_continue_era_hooks()
+	else:
+		_continue_levelups()
 
 
 ## --- SHOP --------------------------------------------------------------------
@@ -648,12 +671,77 @@ func _add_shop_row(pack: String, index: int, offer: Dictionary) -> void:
 
 func _leave_shop() -> void:
 	var adv: String = run.advance_after_shop()
-	if adv == "era_won":
-		_append("[color=#8dffb0][b]Ancient Capital conquered — era complete.[/b][/color]")
-		_show_end(true)
-	else:
-		_append("Marching to the next settlement…")
-		_show_hub()
+	match adv:
+		"domination_won":
+			_append("[color=#8dffb0][b]Domination Victory — Information Capital fallen.[/b][/color]")
+			_show_end(true)
+		"era_advance":
+			_append("[color=#8dffb0]Capital cleared — entering [b]%s[/b].[/color]" % run.state.era_label())
+			_continue_era_hooks()
+		_:
+			_append("Marching to the next settlement…")
+			_show_hub()
+
+
+## --- ERA HOOKS (Breakthrough / Toolkit) --------------------------------------
+
+func _continue_era_hooks() -> void:
+	_refresh_resources()
+	if bool(run.pending_era_hooks.get("breakthrough_sci", false)):
+		var lu: Dictionary = run.begin_breakthrough_science()
+		if not lu.is_empty():
+			_show_levelup(lu)
+			return
+	if bool(run.pending_era_hooks.get("breakthrough_civ", false)):
+		var cu: Dictionary = run.begin_breakthrough_civic()
+		if not cu.is_empty():
+			_show_levelup(cu)
+			return
+	if bool(run.pending_era_hooks.get("toolkit", false)):
+		_show_toolkit()
+		return
+	_show_hub()
+
+
+func _show_toolkit() -> void:
+	phase = Phase.TOOLKIT
+	_clear_panel()
+	_refresh_resources()
+	_lbl_banner.text = "Industrial Toolkit — pick 1"
+
+	var tip := Label.new()
+	tip.text = "Era 5 evening: you already gained +1 Assault. Choose a lasting toolkit bonus."
+	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	tip.add_theme_color_override("font_color", Color("a8c5b5"))
+	_panel.add_child(tip)
+
+	var help_box := Label.new()
+	help_box.name = "ToolkitHelp"
+	help_box.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	help_box.add_theme_color_override("font_color", Color("9ec9ff"))
+	help_box.text = "Tap (i) for details."
+	_panel.add_child(help_box)
+
+	for id in run.toolkit_offers():
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		_panel.add_child(row)
+		var btn := Button.new()
+		btn.text = str(id).replace("_", " ").capitalize()
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.custom_minimum_size = Vector2(0, 40)
+		btn.tooltip_text = run.toolkit_help(str(id))
+		btn.pressed.connect(_on_pick_toolkit.bind(str(id)))
+		row.add_child(btn)
+		row.add_child(_make_info_button(run.toolkit_help(str(id)), help_box))
+
+
+func _on_pick_toolkit(id: String) -> void:
+	if not run.apply_industrial_toolkit(id):
+		_append("[color=#ff8888]Toolkit pick failed.[/color]")
+		return
+	_append("Industrial Toolkit — [b]%s[/b]." % id)
+	_continue_era_hooks()
 
 
 ## --- END ---------------------------------------------------------------------
@@ -662,31 +750,33 @@ func _show_end(won: bool) -> void:
 	phase = Phase.END
 	_clear_panel()
 	_refresh_resources()
-	_lbl_banner.text = "Victory — Ancient era" if won else "Defeat"
+	var snap = run.state.snapshot()
+	_lbl_banner.text = "Domination Victory" if won else "Defeat — %s" % str(snap.get("era_name", "?"))
 	var msg := Label.new()
 	msg.text = (
-		"You conquered Village, Town, and Capital. Greybox Ancient loop complete."
+		"You conquered Capitals through Information. Greybox Domination complete — compare feel vs sim clear rates."
 		if won else
-		"Assaults ran out. Start a new run and try again."
+		"Assaults ran out in %s. Capitals cleared: %d / 8. Try again and note where it got hard." % [
+			str(snap.get("era_name", "?")), int(snap.get("eras_cleared", 0)),
+		]
 	)
 	msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	msg.add_theme_font_size_override("font_size", 20)
 	msg.add_theme_color_override("font_color", Color("e8d5a3") if won else Color("ff8d8d"))
 	_panel.add_child(msg)
 
-	var snap = run.state.snapshot()
 	var det := Label.new()
-	det.text = "Final — Gold %d · SciLv %d · CivLv %d · Deck %d · BP %s · Docs %s" % [
-		int(snap["gold"]), int(snap["sci_level"]), int(snap["civ_level"]),
-		int(snap["deck_size"]), str(snap["blueprints"]), str(snap["doctrines"]),
+	det.text = "Final — Era %s · Gold %d · SciLv %d · CivLv %d · Deck %d · Assaults %d · Toolkit %s" % [
+		str(snap.get("era_name", "?")), int(snap["gold"]), int(snap["sci_level"]), int(snap["civ_level"]),
+		int(snap["deck_size"]), int(snap["base_assaults"]), str(snap.get("industrial_toolkit", "")),
 	]
 	det.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	det.add_theme_color_override("font_color", Color("a8c5b5"))
 	_panel.add_child(det)
 
 	var btn := Button.new()
-	btn.text = "New Ancient run"
-	btn.custom_minimum_size = Vector2(220, 44)
+	btn.text = "New Domination run"
+	btn.custom_minimum_size = Vector2(240, 44)
 	btn.pressed.connect(_new_run)
 	_panel.add_child(btn)
 

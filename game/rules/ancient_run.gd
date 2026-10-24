@@ -15,13 +15,15 @@ var last_reward: Dictionary = {}
 var shop_treasury: Array = []
 var shop_synod: Array = []
 var shop_rerolled: bool = false
-## Pending level-up: {"kind": "science"|"civic", "cost": int, "offers": Array}
+## Pending level-up: {"kind": "science"|"civic", "cost": int, "offers": Array, "free": bool}
 var pending_levelup: Dictionary = {}
+## After era advance: {"breakthrough_sci": bool, "breakthrough_civ": bool, "toolkit": bool}
+var pending_era_hooks: Dictionary = {}
 
 
 func start(seed: int = 1) -> void:
-	CombatTables.ensure_loaded()
-	RunTables.ensure_loaded()
+	CombatTables.reload()
+	RunTables.reload()
 	state = RunState.new()
 	state.setup(seed)
 	current_settlement = {}
@@ -31,6 +33,7 @@ func start(seed: int = 1) -> void:
 	shop_synod.clear()
 	shop_rerolled = false
 	pending_levelup.clear()
+	pending_era_hooks.clear()
 	_make_next_settlement()
 
 
@@ -87,6 +90,7 @@ func begin_fight() -> RefCounted:
 		"deck": state.deck_kinds.duplicate(),
 		"blueprints": state.blueprints.duplicate(),
 		"doctrines": state.doctrines.duplicate(),
+		"faith_combat_mom": state.faith_combat_mom,
 	})
 	# Sync charge max from run
 	active_fight.charges.builder_max = state.builder_charges_max
@@ -173,11 +177,11 @@ func _apply_city_yields() -> Dictionary:
 ## --- Level-ups ---------------------------------------------------------------
 
 func science_cost() -> int:
-	return maxi(1, RunTables.science_cost(state.sci_level))
+	return maxi(1, int(RunTables.science_cost(state.sci_level) * state.bar_cost_mult()))
 
 
 func civic_cost() -> int:
-	return maxi(1, RunTables.science_cost(state.civ_level))
+	return maxi(1, int(RunTables.science_cost(state.civ_level) * state.bar_cost_mult()))
 
 
 func can_afford_science() -> bool:
@@ -188,25 +192,33 @@ func can_afford_civic() -> bool:
 	return state.culture >= civic_cost() and state.civ_level < RunTables.science_cost_count()
 
 
-func begin_science_levelup() -> Dictionary:
-	if not can_afford_science():
+func begin_science_levelup(free: bool = false) -> Dictionary:
+	if not free and not can_afford_science():
 		pending_levelup.clear()
 		return {}
-	var cost: int = science_cost()
-	state.science -= cost
+	if free and state.sci_level >= RunTables.science_cost_count():
+		pending_levelup.clear()
+		return {}
+	var cost: int = 0 if free else science_cost()
+	if not free:
+		state.science -= cost
 	var offers: Array = roll_science_offers()
-	pending_levelup = {"kind": "science", "cost": cost, "offers": offers}
+	pending_levelup = {"kind": "science", "cost": cost, "offers": offers, "free": free}
 	return pending_levelup
 
 
-func begin_civic_levelup() -> Dictionary:
-	if not can_afford_civic():
+func begin_civic_levelup(free: bool = false) -> Dictionary:
+	if not free and not can_afford_civic():
 		pending_levelup.clear()
 		return {}
-	var cost: int = civic_cost()
-	state.culture -= cost
+	if free and state.civ_level >= RunTables.science_cost_count():
+		pending_levelup.clear()
+		return {}
+	var cost: int = 0 if free else civic_cost()
+	if not free:
+		state.culture -= cost
 	var offers: Array = roll_civic_offers()
-	pending_levelup = {"kind": "civic", "cost": cost, "offers": offers}
+	pending_levelup = {"kind": "civic", "cost": cost, "offers": offers, "free": free}
 	return pending_levelup
 
 
@@ -659,30 +671,186 @@ func buy_offer(pack: String, index: int) -> Dictionary:
 	return {"ok": true, "offer": offer}
 
 
-## --- Advance -----------------------------------------------------------------
+## --- Advance / era hooks -----------------------------------------------------
 
 func advance_after_shop() -> String:
-	## Returns "next" | "era_won"
-	if str(current_settlement.get("kind", "")) == "capital":
+	## Returns "next" | "era_advance" | "domination_won"
+	if str(current_settlement.get("kind", "")) != "capital":
+		state.settlement_index += 1
+		_make_next_settlement()
+		return "next"
+	state.eras_cleared += 1
+	state.log.append({"op": "era_cleared", "era": state.era, "name": state.era_label()})
+	if state.era >= RunTables.max_era():
 		state.run_won = true
-		state.log.append({"op": "era_won"})
-		return "era_won"
-	state.settlement_index += 1
+		state.log.append({"op": "domination_won"})
+		return "domination_won"
+	state.era += 1
+	state.settlement_index = 0
 	_make_next_settlement()
-	return "next"
+	_queue_era_start_hooks()
+	return "era_advance"
+
+
+func _queue_era_start_hooks() -> void:
+	pending_era_hooks = {
+		"breakthrough_sci": state.era >= RunTables.breakthrough_era_min(),
+		"breakthrough_civ": state.era >= RunTables.breakthrough_era_min(),
+		"toolkit": false,
+	}
+	if state.era >= RunTables.industrial_era_min():
+		if not state.industrial_assault_granted:
+			state.base_assaults += RunTables.industrial_assault_bonus()
+			state.industrial_assault_granted = true
+			state.log.append({"op": "industrial_assault", "base_assaults": state.base_assaults})
+		if state.era == RunTables.industrial_era_min() and state.industrial_toolkit == "":
+			pending_era_hooks["toolkit"] = true
+	state.log.append({"op": "era_start", "era": state.era, "hooks": pending_era_hooks.duplicate()})
+
+
+func has_pending_era_hooks() -> bool:
+	if pending_era_hooks.is_empty():
+		return false
+	return bool(pending_era_hooks.get("breakthrough_sci", false)) \
+		or bool(pending_era_hooks.get("breakthrough_civ", false)) \
+		or bool(pending_era_hooks.get("toolkit", false))
+
+
+func begin_breakthrough_science() -> Dictionary:
+	if not bool(pending_era_hooks.get("breakthrough_sci", false)):
+		return {}
+	pending_era_hooks["breakthrough_sci"] = false
+	return begin_science_levelup(true)
+
+
+func begin_breakthrough_civic() -> Dictionary:
+	if not bool(pending_era_hooks.get("breakthrough_civ", false)):
+		return {}
+	pending_era_hooks["breakthrough_civ"] = false
+	return begin_civic_levelup(true)
+
+
+func toolkit_offers() -> Array:
+	return RunTables.industrial_toolkit_offers().duplicate()
+
+
+func toolkit_help(id: String) -> String:
+	match id:
+		"drill_sergeant":
+			return "+2 levels on your best formation drill (Battle Line preferred)."
+		"foundry_contract":
+			return "Blueprint effects hit harder (×1.5 greybox flag)."
+		"revival_tent":
+			return "+2 Momentum on every Assault for the rest of the run."
+		"seminar":
+			return "Immediate free Science level-up (picks a non-troop offer when possible)."
+		"powder_magazine":
+			return "Extra +1 Assault per settlement (on top of Industrial’s global +1)."
+		_:
+			return "Industrial Toolkit pick."
+
+
+func apply_industrial_toolkit(pick: String) -> bool:
+	if not bool(pending_era_hooks.get("toolkit", false)):
+		return false
+	if not toolkit_offers().has(pick):
+		return false
+	pending_era_hooks["toolkit"] = false
+	state.industrial_toolkit = pick
+	match pick:
+		"drill_sergeant":
+			var form := "battle_line"
+			var best_lv := -1
+			for k in state.form_levels.keys():
+				if int(state.form_levels[k]) > best_lv:
+					best_lv = int(state.form_levels[k])
+					form = str(k)
+			state.form_levels[form] = int(state.form_levels.get(form, 0)) + 2
+		"foundry_contract":
+			state.foundry_bp_mult = maxf(state.foundry_bp_mult, 1.5)
+		"revival_tent":
+			state.faith_combat_mom = maxi(state.faith_combat_mom, 2)
+		"seminar":
+			var offers: Array = roll_science_offers()
+			var pick_sci := ""
+			for o in offers:
+				if str(o).begins_with("edu_") or str(o) == "writing":
+					pick_sci = str(o)
+					break
+			if pick_sci == "":
+				for o2 in offers:
+					if not str(o2).begins_with("upgrade_"):
+						pick_sci = str(o2)
+						break
+			if pick_sci == "" and not offers.is_empty():
+				pick_sci = str(offers[0])
+			if pick_sci != "":
+				apply_science(pick_sci)
+				state.sci_level += 1
+		"powder_magazine":
+			state.base_assaults += 1
+	state.log.append({"op": "industrial_toolkit", "pick": pick})
+	return true
 
 
 func mark_lost() -> void:
 	state.run_lost = true
-	state.log.append({"op": "era_lost", "at": current_settlement.get("kind", "?")})
+	state.log.append({
+		"op": "run_lost",
+		"era": state.era,
+		"at": current_settlement.get("kind", "?"),
+	})
 
 
 ## --- Autoplay for tests ------------------------------------------------------
 
+func _auto_meta_after_win(assaults_used: int) -> void:
+	var choice := "occupy"
+	if state.gold < 15:
+		choice = "raze"
+	apply_victory_payout(assaults_used, choice)
+	while can_afford_science():
+		var lu: Dictionary = begin_science_levelup()
+		if lu.is_empty():
+			break
+		pick_levelup(str(lu["offers"][0]))
+	while can_afford_civic():
+		var cu: Dictionary = begin_civic_levelup()
+		if cu.is_empty():
+			break
+		pick_levelup(str(cu["offers"][0]))
+	open_shop()
+	for i in shop_treasury.size():
+		buy_offer("treasury", i)
+	for i in shop_synod.size():
+		buy_offer("synod", i)
+
+
+func _auto_resolve_era_hooks() -> void:
+	while has_pending_era_hooks():
+		if bool(pending_era_hooks.get("breakthrough_sci", false)):
+			var bs: Dictionary = begin_breakthrough_science()
+			if not bs.is_empty():
+				pick_levelup(str(bs["offers"][0]))
+			continue
+		if bool(pending_era_hooks.get("breakthrough_civ", false)):
+			var bc: Dictionary = begin_breakthrough_civic()
+			if not bc.is_empty():
+				pick_levelup(str(bc["offers"][0]))
+			continue
+		if bool(pending_era_hooks.get("toolkit", false)):
+			apply_industrial_toolkit("drill_sergeant")
+			continue
+		break
+
+
 func run_auto_era(max_settlements: int = 3) -> Dictionary:
-	## AI: fight → occupy (or raze if broke) → pick first Sci/Civ → buy affordable shop → next.
+	## AI clears one era (3 settlements) or loses.
 	var fights: Array = []
+	var start_era: int = state.era
 	while not state.run_won and not state.run_lost and fights.size() < max_settlements:
+		if state.era != start_era:
+			break
 		begin_fight()
 		var res: Dictionary = active_fight.run_auto()
 		if not bool(res["won"]):
@@ -690,33 +858,47 @@ func run_auto_era(max_settlements: int = 3) -> Dictionary:
 			fights.append(res)
 			break
 		fights.append(res)
-		var choice := "occupy"
-		if state.gold < 15:
-			choice = "raze"
-		apply_victory_payout(int(res["assaults_used"]), choice)
-		# Level-ups: always pick offers[0]
-		while can_afford_science():
-			var lu: Dictionary = begin_science_levelup()
-			if lu.is_empty():
-				break
-			pick_levelup(str(lu["offers"][0]))
-		while can_afford_civic():
-			var cu: Dictionary = begin_civic_levelup()
-			if cu.is_empty():
-				break
-			pick_levelup(str(cu["offers"][0]))
-		open_shop()
-		for i in shop_treasury.size():
-			buy_offer("treasury", i)
-		for i in shop_synod.size():
-			buy_offer("synod", i)
+		_auto_meta_after_win(int(res["assaults_used"]))
 		var adv: String = advance_after_shop()
-		if adv == "era_won":
+		if adv == "era_advance":
+			_auto_resolve_era_hooks()
+			break
+		if adv == "domination_won":
+			break
+	return {
+		"won": (state.eras_cleared > 0 and state.era > start_era) or state.run_won,
+		"lost": state.run_lost,
+		"fights": fights.size(),
+		"snapshot": state.snapshot(),
+	}
+
+
+func run_auto_domination(max_era: int = 8) -> Dictionary:
+	## Attempt full Domination (or up to max_era Capitals).
+	var fights := 0
+	var failed_era := 0
+	while not state.run_won and not state.run_lost and state.era <= max_era:
+		begin_fight()
+		var res: Dictionary = active_fight.run_auto()
+		fights += 1
+		if not bool(res["won"]):
+			failed_era = state.era
+			mark_lost()
+			break
+		_auto_meta_after_win(int(res["assaults_used"]))
+		var adv: String = advance_after_shop()
+		if adv == "era_advance":
+			_auto_resolve_era_hooks()
+		elif adv == "domination_won":
+			break
+		if state.era > max_era and not state.run_won:
 			break
 	return {
 		"won": state.run_won,
 		"lost": state.run_lost,
-		"fights": fights.size(),
+		"fights": fights,
+		"eras_cleared": state.eras_cleared,
+		"failed_era": failed_era,
 		"snapshot": state.snapshot(),
 	}
 
