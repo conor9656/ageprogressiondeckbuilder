@@ -153,7 +153,7 @@ Updated 2026-10-22 — Python balance twin (`sim/era1_sim.py`) already covers st
 2. **Vertical slice UI** — one settlement fight (draw / Assault / Regroup / damage).  
 3. **Shop + Ancient-era run loop** — rewards, packs, Science/Civics; greybox.  
 4. **Content as data** — JSON/resources for units & modifier stubs.  
-5. **Unify rules** — prefer Godot headless as canonical; keep Python as oracle or retire.  
+5. **Unify rules** — ✅ Godot headless is canonical (`scripts/ci_rules.sh` + Actions); Python `sim/` is research-only.  
 6. **Art pipeline spike** — one unit class gen → cleanup → animate → in-engine.  
 7. **Multi-era systems + Steam smoke** — Breakthrough / Toolkit / Wonders; Windows export.
 
@@ -163,6 +163,6 @@ Updated 2026-10-22 — Python balance twin (`sim/era1_sim.py`) already covers st
 
 - Spine license now vs spritesheet MVP (cost vs polish).
 - GDScript-only vs mixed C# (prefer GDScript-only until forced).
-- Whether the balance sim shares Godot code or a Python twin (prefer **one** rules implementation — Godot headless — to avoid drift).
+- ~~Whether the balance sim shares Godot code or a Python twin~~ → **Resolved (W5):** Godot headless is canonical; Python twin is research-only.
 - Pixel-art vs painted-2D art bible (affects Aseprite vs Krita weight).
 - Controller support for Steam Deck (recommended before launch, not before first playable).

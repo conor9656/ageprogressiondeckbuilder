@@ -36,11 +36,11 @@ Install helper for agents/CI: `scripts/install_godot.sh`.
 | ID | Workstream | Status | Owner | Depends on | Done when |
 |---|---|---|---|---|---|
 | **W0** | Game snapshot (`GAME_SNAPSHOT.md`) | `done` | — | — | Single source of truth exists |
-| **W1** | Godot rules module + tests | `in_progress` (core combat green) | Agent | W0; Godot 4.7.2 | Headless tests + parity vs Python golden seeds |
+| **W1** | Godot rules module + tests | `done` | Agent | W0; Godot 4.7.2 | Headless tests + parity vs Python golden seeds |
 | **W2** | Vertical slice UI (one settlement) | `done` | Agent | W1 | Playable greybox fight |
 | **W3** | Ancient run loop + shop | `done` | Agent | W2 | Full Ancient era greybox |
 | **W4** | Content as data (JSON/resources) | `done` | Agent | W1 (can overlap W2–3) | Numbers swappable without code edits |
-| **W5** | Unify rules (Godot canonical) | `not_started` | Agent | W1 + stable slice | One rules path in CI |
+| **W5** | Unify rules (Godot canonical) | `done` | Agent | W1 + stable slice | One rules path in CI |
 | **W6** | Art pipeline spike | `not_started` | Human+Agent | W2 feel locked | One class in-engine |
 | **W7** | Multi-era systems | `not_started` | Agent | W3 | Domination greybox |
 | **W8** | Steam smoke export | `not_started` | Agent | W7-ish | Windows build + stub Steam |
@@ -49,14 +49,16 @@ Install helper for agents/CI: `scripts/install_godot.sh`.
 
 ## Current focus
 
-**W4 done** — combat + Ancient run catalogs live in JSON under `game/content/`.  
-**Next natural stop / start:** W5 (unify rules / CI oracle) or playtest balance via JSON edits.
+**W5 done** — Godot headless is the **only** automated rules gate (`scripts/ci_rules.sh` + GitHub Actions).  
+Python `sim/` stays as a research twin; it is not CI.
 
-`bash scripts/run_game_tests.sh` → all green.  
-Still open for full W1: richer BP/Doc *effect* wiring (ids/costs already data-driven).
+**Next natural stop / start:** W6 (art pipeline spike) or W7 (multi-era), or balance via JSON.
 
-**You:** Godot **4.7.2** → open `game/` → Play → **Start Ancient run**.  
-Tweak `content/ancient_run.json` / `combat_tables.json` to rebalance without code.
+```bash
+bash scripts/ci_rules.sh   # canonical
+```
+
+**You:** Godot **4.7.2** → open `game/` → Play → **Start Ancient run**.
 
 ---
 
@@ -225,7 +227,26 @@ Art bible, Spine, Steam App ID, balance evening — not needed now.
 |---|---|
 | 2026-10-24 | Extracted Ancient run + combat knobs to JSON; tests green. |
 
-### W5–W8
+### W5 — Unify rules (Godot canonical)
+
+**Status:** `done`  
+**Done when:** One rules path in CI.
+
+#### Acceptance
+
+- [x] GitHub Actions workflow runs Godot headless on PR/push
+- [x] `scripts/ci_rules.sh` is the single CI entry (asserts `AGES_TESTS_OK`)
+- [x] `sim/README.md` documents Python as research-only (not CI)
+- [x] `game/RULES.md` points at Godot as source of truth
+- [x] Snapshot / tech stack wording updated for canonical Godot
+
+#### Log
+
+| Date | Note |
+|---|---|
+| 2026-10-24 | Rules CI workflow + ci_rules.sh; Python demoted to oracle. |
+
+### W6–W8
 - See board; detail when each becomes current.
 
 ---
@@ -234,6 +255,7 @@ Art bible, Spine, Steam App ID, balance evening — not needed now.
 
 | Date | Change |
 |---|---|
+| 2026-10-24 | W5 Godot canonical rules CI — one path in Actions |
 | 2026-10-24 | W4 content-as-data — JSON catalogs for combat + Ancient run |
 | 2026-10-23 | W3 Ancient run + shop greybox done |
 | 2026-10-23 | W2 greybox fight UI done — playable Ancient Village slice |

@@ -17,13 +17,17 @@ Between fights: **Occupy / Raze** → Science 1-of-4 / Civics 1-of-3 (when you c
 
 Solo fight (no run meta) is still available from the menu for quick combat checks.
 
-## Run tests (headless / agents)
+## Run tests (headless / agents / CI)
 
 ```bash
+bash scripts/ci_rules.sh          # canonical CI entry
+# or:
 bash scripts/run_game_tests.sh
 ```
 
-Expect `AGES_TESTS_OK`.
+Expect `AGES_TESTS_OK` (and `AGES_RULES_CANONICAL` from `ci_rules.sh`).
+
+See [`RULES.md`](RULES.md) — Godot is the rules source of truth; `../sim/` is research-only.
 
 ## Layout
 
