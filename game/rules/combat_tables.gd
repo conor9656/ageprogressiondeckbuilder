@@ -68,6 +68,31 @@ static func age_power() -> float:
 	return float(_data["age_power_might_per_sci"])
 
 
+static func age_power_era_min() -> int:
+	ensure_loaded()
+	return int(_data.get("age_power_era_min", 4))
+
+
+static func walls_damage_mult() -> float:
+	ensure_loaded()
+	return float(_data.get("walls_damage_mult", 0.5))
+
+
+static func garrison_mods() -> Dictionary:
+	ensure_loaded()
+	return _data.get("garrison_mods", {})
+
+
+static func support_charge_gold(new_count: int) -> int:
+	ensure_loaded()
+	return int(_data["support_charge_gold"].get(str(new_count), 0))
+
+
+static func support_charge_sci_chance() -> float:
+	ensure_loaded()
+	return float(_data["support_charge_sci_chance"])
+
+
 static func classes() -> Array:
 	ensure_loaded()
 	return _data["classes"]

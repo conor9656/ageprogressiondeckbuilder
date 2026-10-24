@@ -40,6 +40,13 @@
   "era_base_defence": { "1": 665, "2": 1200, "3": 1790, "4": 3450, "5": 7180, "6": 18300, "7": 49000, "8": 98000 },
   "tech_literacy_per_sci": 0.05,
   "age_power_might_per_sci": 0.015,
+  "age_power_era_min": 4,
+  "walls_damage_mult": 0.5,
+  "garrison_mods": {
+    "pikemen": { "zero_might": ["C"] },
+    "archers": { "half_might": ["M"] },
+    "horsemen": { "zero_mom": ["R"] }
+  },
   "support_charge_cap": 4,
   "support_charge_gold": { "2": 50, "3": 80, "4": 120 },
   "support_charge_sci_chance": 0.4,

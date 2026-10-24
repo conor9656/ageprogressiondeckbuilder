@@ -39,7 +39,7 @@ Install helper for agents/CI: `scripts/install_godot.sh`.
 | **W1** | Godot rules module + tests | `in_progress` (core combat green) | Agent | W0; Godot 4.7.2 | Headless tests + parity vs Python golden seeds |
 | **W2** | Vertical slice UI (one settlement) | `done` | Agent | W1 | Playable greybox fight |
 | **W3** | Ancient run loop + shop | `done` | Agent | W2 | Full Ancient era greybox |
-| **W4** | Content as data (JSON/resources) | `not_started` | Agent | W1 (can overlap W2–3) | Numbers swappable without code edits |
+| **W4** | Content as data (JSON/resources) | `done` | Agent | W1 (can overlap W2–3) | Numbers swappable without code edits |
 | **W5** | Unify rules (Godot canonical) | `not_started` | Agent | W1 + stable slice | One rules path in CI |
 | **W6** | Art pipeline spike | `not_started` | Human+Agent | W2 feel locked | One class in-engine |
 | **W7** | Multi-era systems | `not_started` | Agent | W3 | Domination greybox |

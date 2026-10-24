@@ -1,0 +1,121 @@
+{
+  "rewards": {
+    "gold": 38,
+    "science": 16,
+    "culture": 16,
+    "faith": 12,
+    "raze_gold": 28,
+    "city_yield": 7
+  },
+  "packs": {
+    "size": 5,
+    "science_offer_count": 4,
+    "civic_offer_count": 3,
+    "treasury_unit_band": 0.36,
+    "treasury_blueprint_band": 0.64,
+    "treasury_promo_band": 0.92,
+    "synod_doctrine_chance": 0.55,
+    "science_one_troop_chance": 0.55,
+    "support_charge_offer_chance": 0.40,
+    "prophet_cost": 15,
+    "prophet_gold_payout": 5,
+    "rarity_bag": { "C": 3, "U": 2, "R": 1 }
+  },
+  "science_costs": [8, 12, 16, 22, 28, 36, 46, 58, 72, 88, 106, 126, 148, 172, 198],
+  "unit_tier_costs": { "1": 8, "2": 12, "3": 18, "4": 28, "5": 40, "6": 55 },
+  "settlement": {
+    "kind_mult": { "village": 1.0, "town": 1.5, "capital": 2.5 },
+    "town_walls_chance": 0.5,
+    "capital_walls_chance": 0.8,
+    "city_types": ["scholar", "artisan", "temple", "trade"],
+    "town_garrisons": ["pikemen", "archers", "horsemen", "militia"],
+    "capital_garrisons": ["pikemen", "archers", "horsemen"]
+  },
+  "starting_deck": { "M": 6, "R": 5, "C": 3, "S": 2 },
+  "defaults": {
+    "hand_size": 8,
+    "base_assaults": 4,
+    "base_regroups": 3,
+    "blueprint_slots": 2,
+    "doctrine_slots": 1,
+    "policy_slots": 2,
+    "interest_cap": 5,
+    "reroll_cost": 3,
+    "builder_charges_max": 1,
+    "missionary_charges_max": 1
+  },
+  "drills": [
+    "battle_line_drill",
+    "skirmish_drill",
+    "combined_arms_primer",
+    "writing",
+    "surveying"
+  ],
+  "progression": [
+    { "id": "edu_scribal_schools", "kind": "sci_pct", "value": 0.10 },
+    { "id": "bank_markets", "kind": "gold_pct", "value": 0.08 },
+    { "id": "dev_shrines", "kind": "faith_pct", "value": 0.08 },
+    { "id": "art_festivals", "kind": "cul_pct", "value": 0.08 },
+    { "id": "eng_apprenticeship", "kind": "eng", "value": "draw_on_builder" },
+    { "id": "pro_alms", "kind": "pro", "value": "faith_on_missionary" }
+  ],
+  "civics": [
+    { "id": "code_of_laws", "rarity": "C", "family": "slot", "once": true },
+    { "id": "craftsmanship", "rarity": "C", "family": "draft", "once": false },
+    { "id": "early_empire", "rarity": "C", "family": "slot", "once": true },
+    { "id": "theology", "rarity": "C", "family": "slot", "once": true },
+    { "id": "military_training", "rarity": "C", "family": "qol", "once": true },
+    { "id": "literacy", "rarity": "U", "family": "draft", "once": false },
+    { "id": "treasury_windfall", "rarity": "U", "family": "econ", "once": true },
+    { "id": "stall_permits", "rarity": "C", "family": "shop", "once": true },
+    { "id": "fairground_toll", "rarity": "C", "family": "shop", "once": true },
+    { "id": "corvee_exemption", "rarity": "C", "family": "works", "once": true },
+    { "id": "lay_preachers", "rarity": "C", "family": "ministry", "once": true }
+  ],
+  "rarity_weights": { "C": 10, "U": 4, "R": 1 },
+  "blueprints": {
+    "battering_ram": { "rarity": "C", "cost": 10 },
+    "scaffolding": { "rarity": "C", "cost": 10 },
+    "supply_lines": { "rarity": "C", "cost": 10 },
+    "watchtower": { "rarity": "C", "cost": 10 },
+    "forge": { "rarity": "U", "cost": 22 },
+    "siege_tower": { "rarity": "U", "cost": 22 },
+    "roads": { "rarity": "U", "cost": 22 },
+    "magazine": { "rarity": "U", "cost": 22 },
+    "aqueduct": { "rarity": "R", "cost": 45 },
+    "arsenal": { "rarity": "R", "cost": 45 }
+  },
+  "doctrines": {
+    "tithe": { "rarity": "C", "cost": 8 },
+    "scriptorium": { "rarity": "C", "cost": 8 },
+    "pilgrimage": { "rarity": "C", "cost": 8 },
+    "alms": { "rarity": "C", "cost": 8 },
+    "zeal": { "rarity": "U", "cost": 18 },
+    "relic_hunt": { "rarity": "U", "cost": 18 },
+    "crusade": { "rarity": "U", "cost": 18 },
+    "scholastic_order": { "rarity": "U", "cost": 18 },
+    "missionary_zeal": { "rarity": "R", "cost": 35 },
+    "mercenaries": { "rarity": "R", "cost": 35 }
+  },
+  "promotions": {
+    "master_drill": { "rarity": "C", "cost": 12 },
+    "skirmish_doctrine": { "rarity": "C", "cost": 12 },
+    "shock_drill": { "rarity": "U", "cost": 20 },
+    "banner_carrier": { "rarity": "U", "cost": 22 },
+    "thinking_soldier": { "rarity": "U", "cost": 20 },
+    "heroic": { "rarity": "R", "cost": 40 }
+  },
+  "policy_commons": [
+    "agoge",
+    "drill_manual",
+    "horse_breeding",
+    "sappers",
+    "militia_act",
+    "line_officers",
+    "research_corps"
+  ],
+  "civic_effects": {
+    "treasury_windfall_gold": 22,
+    "fairground_toll_flat": 2
+  }
+}

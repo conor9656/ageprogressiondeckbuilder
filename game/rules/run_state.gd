@@ -1,6 +1,8 @@
 extends RefCounted
 ## Persistent Ancient-era run state. Pure data + small helpers — no UI.
 
+const RunTables := preload("res://rules/run_tables.gd")
+
 
 var rng: RandomNumberGenerator
 
@@ -72,14 +74,15 @@ func setup(seed: int = 1) -> void:
 	blueprints.clear()
 	doctrines.clear()
 	policies.clear()
-	blueprint_slots = 2
-	doctrine_slots = 1
-	policy_slots = 2
-	hand_size = 8
-	base_assaults = 4
-	base_regroups = 3
-	builder_charges_max = 1
-	missionary_charges_max = 1
+	RunTables.ensure_loaded()
+	blueprint_slots = RunTables.default_int("blueprint_slots")
+	doctrine_slots = RunTables.default_int("doctrine_slots")
+	policy_slots = RunTables.default_int("policy_slots")
+	hand_size = RunTables.default_int("hand_size")
+	base_assaults = RunTables.default_int("base_assaults")
+	base_regroups = RunTables.default_int("base_regroups")
+	builder_charges_max = RunTables.default_int("builder_charges_max")
+	missionary_charges_max = RunTables.default_int("missionary_charges_max")
 	occupied.clear()
 	writing = false
 	last_troop_upgrade = ""
@@ -89,10 +92,10 @@ func setup(seed: int = 1) -> void:
 	gold_bonus_pct = 0.0
 	faith_bonus_pct = 0.0
 	cul_bonus_pct = 0.0
-	interest_cap = 5
+	interest_cap = RunTables.default_int("interest_cap")
 	pack_bonus = 0
 	unit_cost_flat = 0
-	reroll_cost = 3
+	reroll_cost = RunTables.default_int("reroll_cost")
 	eng_flags.clear()
 	pro_flags.clear()
 	log.clear()
@@ -100,14 +103,10 @@ func setup(seed: int = 1) -> void:
 	run_lost = false
 	deck_kinds.clear()
 	next_cid = 1
-	for _i in 6:
-		deck_kinds.append("M")
-	for _i in 5:
-		deck_kinds.append("R")
-	for _i in 3:
-		deck_kinds.append("C")
-	for _i in 2:
-		deck_kinds.append("S")
+	var starter: Dictionary = RunTables.starting_deck_counts()
+	for kind in ["M", "R", "C", "S"]:
+		for _i in int(starter.get(kind, 0)):
+			deck_kinds.append(kind)
 
 
 func current_kind() -> String:
