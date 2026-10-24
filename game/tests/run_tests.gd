@@ -21,6 +21,8 @@ func _initialize() -> void:
 	failed += _check("rewards_raze_occupy", _test_rewards())
 	failed += _check("science_civic_levelup", _test_levelups())
 	failed += _check("shop_buy_unit", _test_shop())
+	failed += _check("shop_no_duplicates", _test_shop_unique())
+	failed += _check("offer_help_text", _test_offer_help())
 	failed += _check("ancient_run_auto_era", _test_auto_era())
 
 	if failed == 0:
@@ -235,18 +237,71 @@ func _test_shop() -> bool:
 	return bought and run.state.deck_kinds.size() == before + 1
 
 
+func _test_shop_unique() -> bool:
+	## Many seeds — each pack must have unique cat:id keys.
+	for sid in range(1, 61):
+		var run = AgesRules.new_ancient_run(sid)
+		run.open_shop()
+		if not _pack_unique(run.shop_treasury):
+			print("  treasury dup sid=%d pack=%s" % [sid, run.shop_treasury])
+			return false
+		if not _pack_unique(run.shop_synod):
+			print("  synod dup sid=%d pack=%s" % [sid, run.shop_synod])
+			return false
+		if run.state.gold >= run.state.reroll_cost:
+			run.reroll_treasury()
+			if not _pack_unique(run.shop_treasury):
+				print("  reroll dup sid=%d" % sid)
+				return false
+	return true
+
+
+func _pack_unique(pack: Array) -> bool:
+	var seen: Dictionary = {}
+	for o in pack:
+		var key := "%s:%s" % [str(o.get("cat", "")), str(o.get("id", ""))]
+		if seen.has(key):
+			return false
+		seen[key] = true
+	return true
+
+
+func _test_offer_help() -> bool:
+	var run = AgesRules.new_ancient_run(3)
+	run.state.science = 8
+	var lu: Dictionary = run.begin_science_levelup()
+	for o in lu["offers"]:
+		var help: String = run.offer_help(str(o))
+		if help.strip_edges() == "" or help == "No extra notes for this option yet.":
+			## Unknown ids fail; known fillers must explain
+			if str(o) in ["battle_line_drill", "upgrade_M", "upgrade_R", "upgrade_C", "upgrade_S", "upgrade_B"]:
+				print("  missing help for %s" % o)
+				return false
+		if help.length() < 12:
+			print("  short help for %s: %s" % [o, help])
+			return false
+	run.open_shop()
+	for o in run.shop_treasury:
+		if run.shop_offer_help(o).length() < 12:
+			return false
+	for o in run.shop_synod:
+		if run.shop_offer_help(o).length() < 12:
+			return false
+	return true
+
+
 func _test_auto_era() -> bool:
 	## Seed hunt: at least one seed in a small range should clear Ancient with AI.
 	var cleared := false
 	var last_snap: Dictionary = {}
-	for seed in range(1, 41):
-		var run = AgesRules.new_ancient_run(seed)
+	for sid in range(1, 41):
+		var run = AgesRules.new_ancient_run(sid)
 		var res: Dictionary = run.run_auto_era()
 		last_snap = res.get("snapshot", {})
 		if bool(res["won"]):
 			cleared = true
-			print("  auto_era cleared seed=%d fights=%d sci=%d" % [
-				seed, int(res["fights"]), int(last_snap.get("sci_level", 0)),
+			print("  auto_era cleared sid=%d fights=%d sci=%d" % [
+				sid, int(res["fights"]), int(last_snap.get("sci_level", 0)),
 			])
 			break
 	if not cleared:

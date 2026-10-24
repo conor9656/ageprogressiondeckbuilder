@@ -333,10 +333,18 @@ func roll_science_offers() -> Array:
 		var n: String = str(pool.pop_back())
 		if not non.has(n) and not troops.has(n):
 			non.append(n)
-	while troops.size() + non.size() < SCIENCE_OFFER_COUNT:
-		non.append("battle_line_drill")
+	## Unique fillers only — never pad with duplicates
+	var fillers: Array = [
+		"battle_line_drill", "skirmish_drill", "combined_arms_primer",
+		"writing", "surveying", "edu_scribal_schools", "bank_markets",
+	]
+	for f in fillers:
+		if troops.size() + non.size() >= SCIENCE_OFFER_COUNT:
+			break
+		if not non.has(f) and not troops.has(f):
+			non.append(f)
 	var out: Array = troops + non
-	return out.slice(0, SCIENCE_OFFER_COUNT)
+	return out.slice(0, mini(SCIENCE_OFFER_COUNT, out.size()))
 
 
 func _weighted_troop_offers(n: int) -> Array:
@@ -529,11 +537,8 @@ func _draft_policy() -> void:
 func open_shop() -> Dictionary:
 	shop_rerolled = false
 	var n: int = PACK_SIZE + state.pack_bonus
-	shop_treasury.clear()
-	shop_synod.clear()
-	for _i in n:
-		shop_treasury.append(roll_treasury_offer())
-		shop_synod.append(roll_synod_offer())
+	shop_treasury = _roll_unique_pack(n, true)
+	shop_synod = _roll_unique_pack(n, false)
 	return {"treasury": shop_treasury.duplicate(true), "synod": shop_synod.duplicate(true)}
 
 
@@ -543,65 +548,126 @@ func reroll_treasury() -> bool:
 	state.gold -= state.reroll_cost
 	shop_rerolled = true
 	var n: int = PACK_SIZE + state.pack_bonus
-	shop_treasury.clear()
-	for _i in n:
-		shop_treasury.append(roll_treasury_offer())
+	shop_treasury = _roll_unique_pack(n, true)
 	return true
 
 
-func roll_treasury_offer() -> Dictionary:
-	var r: float = state.rng.randf()
-	if r < 0.36:
-		var kind: String = ["M", "R", "C", "S"][state.rng.randi() % 4]
-		var cost: int = {1: 8, 2: 12, 3: 18, 4: 28}.get(int(state.tiers.get(kind, 1)), 8)
-		cost = maxi(1, cost - state.unit_cost_flat)
-		return {"cat": "unit", "id": kind, "cost": cost, "label": "Unit %s" % kind}
-	if r < 0.64:
-		var name: String = _weighted_bp()
-		var cost2: int = int(BLUEPRINTS[name][1])
-		return {"cat": "blueprint", "id": name, "cost": cost2, "label": "BP %s" % name}
-	if r < 0.92:
-		var pname: String = _weighted_promo()
-		var cost3: int = int(PROMOTIONS[pname][1])
-		return {"cat": "promotion", "id": pname, "cost": cost3, "label": "Promo %s" % pname}
-	var kind2: String = ["M", "R", "C", "S"][state.rng.randi() % 4]
-	return {"cat": "unit", "id": kind2, "cost": maxi(1, 8 - state.unit_cost_flat), "label": "Unit %s" % kind2}
+func _offer_key(offer: Dictionary) -> String:
+	return "%s:%s" % [str(offer.get("cat", "")), str(offer.get("id", ""))]
 
 
-func roll_synod_offer() -> Dictionary:
-	if state.rng.randf() < 0.55:
-		var name: String = _weighted_doc()
-		return {"cat": "doctrine", "id": name, "cost": int(DOCTRINES[name][1]), "label": "Doc %s" % name}
+func _roll_unique_pack(n: int, treasury: bool) -> Array:
+	## No duplicate cat+id within a pack (e.g. two scaffolding, two sow_dissent).
+	var out: Array = []
+	var seen: Dictionary = {}
+	var attempts := 0
+	var max_attempts: int = n * 24
+	while out.size() < n and attempts < max_attempts:
+		attempts += 1
+		var offer: Dictionary = roll_treasury_offer(seen) if treasury else roll_synod_offer(seen)
+		var key: String = _offer_key(offer)
+		if seen.has(key):
+			continue
+		seen[key] = true
+		out.append(offer)
+	## Absolute fallback: pad with unused unit kinds / generic units
+	while out.size() < n:
+		var filled := false
+		for kind in ["M", "R", "C", "S"]:
+			var key2 := "unit:%s" % kind
+			if seen.has(key2):
+				continue
+			var cost: int = {1: 8, 2: 12, 3: 18, 4: 28}.get(int(state.tiers.get(kind, 1)), 8)
+			cost = maxi(1, cost - state.unit_cost_flat)
+			var o := {"cat": "unit", "id": kind, "cost": cost, "label": "Unit %s" % kind}
+			seen[key2] = true
+			out.append(o)
+			filled = true
+			break
+		if not filled:
+			break
+	return out
+
+
+func roll_treasury_offer(exclude: Dictionary = {}) -> Dictionary:
+	## exclude: set of "cat:id" keys already in the pack.
+	for _try in 16:
+		var r: float = state.rng.randf()
+		var offer: Dictionary
+		if r < 0.36:
+			var kind: String = ["M", "R", "C", "S"][state.rng.randi() % 4]
+			var cost: int = {1: 8, 2: 12, 3: 18, 4: 28}.get(int(state.tiers.get(kind, 1)), 8)
+			cost = maxi(1, cost - state.unit_cost_flat)
+			offer = {"cat": "unit", "id": kind, "cost": cost, "label": "Unit %s" % kind}
+		elif r < 0.64:
+			var name: String = _weighted_from(BLUEPRINTS, exclude, "blueprint")
+			if name == "":
+				continue
+			offer = {"cat": "blueprint", "id": name, "cost": int(BLUEPRINTS[name][1]), "label": "BP %s" % name}
+		elif r < 0.92:
+			var pname: String = _weighted_from(PROMOTIONS, exclude, "promotion")
+			if pname == "":
+				continue
+			offer = {"cat": "promotion", "id": pname, "cost": int(PROMOTIONS[pname][1]), "label": "Promo %s" % pname}
+		else:
+			var kind2: String = ["M", "R", "C", "S"][state.rng.randi() % 4]
+			offer = {"cat": "unit", "id": kind2, "cost": maxi(1, 8 - state.unit_cost_flat), "label": "Unit %s" % kind2}
+		if not exclude.has(_offer_key(offer)):
+			return offer
+	## Last resort unit not yet seen
+	for kind3 in ["M", "R", "C", "S"]:
+		var key := "unit:%s" % kind3
+		if exclude.has(key):
+			continue
+		return {"cat": "unit", "id": kind3, "cost": maxi(1, 8 - state.unit_cost_flat), "label": "Unit %s" % kind3}
+	return {"cat": "unit", "id": "M", "cost": 8, "label": "Unit M"}
+
+
+func roll_synod_offer(exclude: Dictionary = {}) -> Dictionary:
+	for _try in 16:
+		var offer: Dictionary
+		if state.rng.randf() < 0.55:
+			var name: String = _weighted_from(DOCTRINES, exclude, "doctrine")
+			if name == "":
+				offer = {"cat": "prophet", "id": "sow_dissent", "cost": 15, "label": "Prophet sow_dissent"}
+			else:
+				offer = {"cat": "doctrine", "id": name, "cost": int(DOCTRINES[name][1]), "label": "Doc %s" % name}
+		else:
+			offer = {"cat": "prophet", "id": "sow_dissent", "cost": 15, "label": "Prophet sow_dissent"}
+		if not exclude.has(_offer_key(offer)):
+			return offer
+	## Prefer any unused doctrine, then a unit-like faith stub
+	var doc: String = _weighted_from(DOCTRINES, exclude, "doctrine")
+	if doc != "":
+		return {"cat": "doctrine", "id": doc, "cost": int(DOCTRINES[doc][1]), "label": "Doc %s" % doc}
+	if not exclude.has("prophet:sow_dissent"):
+		return {"cat": "prophet", "id": "sow_dissent", "cost": 15, "label": "Prophet sow_dissent"}
+	## Extra prophet variants so Synod can still fill uniquely if needed
+	for alt in ["tithe_collector", "street_preacher", "relic_broker"]:
+		var key := "prophet:%s" % alt
+		if exclude.has(key):
+			continue
+		return {"cat": "prophet", "id": alt, "cost": 15, "label": "Prophet %s" % alt}
 	return {"cat": "prophet", "id": "sow_dissent", "cost": 15, "label": "Prophet sow_dissent"}
 
 
-func _weighted_bp() -> String:
+func _weighted_from(table: Dictionary, exclude: Dictionary, cat: String) -> String:
 	var bag: Array = []
-	for k in BLUEPRINTS.keys():
-		var rar: String = str(BLUEPRINTS[k][0])
+	for k in table.keys():
+		var key := "%s:%s" % [cat, str(k)]
+		if exclude.has(key):
+			continue
+		## Already owned unique gear shouldn't reappear
+		if cat == "blueprint" and state.blueprints.has(str(k)):
+			continue
+		if cat == "doctrine" and state.doctrines.has(str(k)):
+			continue
+		var rar: String = str(table[k][0])
 		var n: int = 3 if rar == "C" else (2 if rar == "U" else 1)
 		for _i in n:
 			bag.append(k)
-	return str(bag[state.rng.randi() % bag.size()])
-
-
-func _weighted_doc() -> String:
-	var bag: Array = []
-	for k in DOCTRINES.keys():
-		var rar: String = str(DOCTRINES[k][0])
-		var n: int = 3 if rar == "C" else (2 if rar == "U" else 1)
-		for _i in n:
-			bag.append(k)
-	return str(bag[state.rng.randi() % bag.size()])
-
-
-func _weighted_promo() -> String:
-	var bag: Array = []
-	for k in PROMOTIONS.keys():
-		var rar: String = str(PROMOTIONS[k][0])
-		var n: int = 3 if rar == "C" else (2 if rar == "U" else 1)
-		for _i in n:
-			bag.append(k)
+	if bag.is_empty():
+		return ""
 	return str(bag[state.rng.randi() % bag.size()])
 
 
@@ -643,6 +709,7 @@ func buy_offer(pack: String, index: int) -> Dictionary:
 			# Greybox: no per-card stats yet — treat as free gold interest bump
 			state.gold += 2
 		"prophet":
+			## Greybox prophets: immediate Gold payout
 			state.gold += 5
 	offer["bought"] = true
 	list[index] = offer
@@ -721,57 +788,214 @@ func _shuffle(arr: Array) -> void:
 
 
 func offer_label(id: String) -> String:
-	## Human-readable for UI.
+	## Short title for UI buttons.
 	if id.begins_with("upgrade_"):
-		return "Upgrade %s (tier +1)" % id.get_slice("_", 1)
+		var cls: String = id.get_slice("_", 1)
+		var names := {"M": "Melee", "R": "Ranged", "C": "Cavalry", "S": "Siege", "B": "Builder"}
+		return "Upgrade %s" % names.get(cls, cls)
 	match id:
 		"battle_line_drill":
 			return "Battle Line drill"
 		"skirmish_drill":
-			return "Skirmish/Pair drill"
+			return "Skirmish / Pair drill"
 		"combined_arms_primer":
 			return "Combined Arms primer"
 		"writing":
-			return "Writing (literacy flag)"
+			return "Writing"
 		"surveying":
-			return "Surveying (+1 Regroup)"
+			return "Surveying"
 		"support_charge_B":
 			return "+1 Builder charge"
 		"support_charge_Y":
 			return "+1 Missionary charge"
 		"edu_scribal_schools":
-			return "Scribal Schools (+10% Sci)"
+			return "Scribal Schools"
 		"bank_markets":
-			return "Markets (+8% Gold)"
+			return "Markets"
 		"dev_shrines":
-			return "Shrines (+8% Faith)"
+			return "Shrines"
 		"art_festivals":
-			return "Festivals (+8% Culture)"
+			return "Festivals"
 		"eng_apprenticeship":
-			return "Apprenticeship (Builder perk)"
+			return "Apprenticeship"
 		"pro_alms":
-			return "Alms (Missionary perk)"
+			return "Alms"
 		"code_of_laws":
-			return "Code of Laws (+1 Policy slot)"
+			return "Code of Laws"
 		"craftsmanship":
-			return "Craftsmanship (draft Policy)"
+			return "Craftsmanship"
 		"literacy":
-			return "Literacy (draft Policy)"
+			return "Literacy"
 		"early_empire":
-			return "Early Empire (+1 BP slot)"
+			return "Early Empire"
 		"theology":
-			return "Theology (+1 Doctrine slot)"
+			return "Theology"
 		"military_training":
-			return "Military Training (+1 Regroup)"
+			return "Military Training"
 		"treasury_windfall":
-			return "Treasury Windfall (+22 Gold)"
+			return "Treasury Windfall"
 		"stall_permits":
-			return "Stall Permits (+1 pack size)"
+			return "Stall Permits"
 		"fairground_toll":
-			return "Fairground Toll (−2 unit cost)"
+			return "Fairground Toll"
 		"corvee_exemption":
-			return "Corvée Exemption (free Builder slot)"
+			return "Corvée Exemption"
 		"lay_preachers":
-			return "Lay Preachers (free Missionary slot)"
+			return "Lay Preachers"
 		_:
 			return id
+
+
+func offer_help(id: String) -> String:
+	## Plain-English explanation for the (i) button.
+	if id.begins_with("upgrade_"):
+		var cls: String = id.get_slice("_", 1)
+		var names := {"M": "Melee", "R": "Ranged", "C": "Cavalry", "S": "Siege", "B": "Builder"}
+		var cur: int = int(state.tiers.get(cls, 1))
+		if cls == "B":
+			return "Raises Builder tier from %d → %d. Stronger Builder charge effects." % [cur, cur + 1]
+		return "Raises all %s units one tier (%d → %d). More Might (and Momentum where relevant) in every fight." % [
+			names.get(cls, cls), cur, cur + 1,
+		]
+	match id:
+		"battle_line_drill":
+			return "Levels up the Battle Line formation. Battle Line scores deal more damage."
+		"skirmish_drill":
+			return "Levels up Skirmish and Pair. Small formations hit harder."
+		"combined_arms_primer":
+			return "Levels up Combined Arms (Melee+Ranged+Cavalry mix)."
+		"writing":
+			return "Unlocks Writing. Marks literacy progress used by later tech systems."
+		"surveying":
+			return "Permanently +1 Regroup per settlement (more redraws in fights)."
+		"support_charge_B":
+			return "Builder charges per settlement +1 (spend in fight to fire a Blueprint)."
+		"support_charge_Y":
+			return "Missionary charges per settlement +1 (spend in fight to arm a Doctrine)."
+		"edu_scribal_schools":
+			return "+10% Science from all future victory rewards (and Scholar occupy yields)."
+		"bank_markets":
+			return "+8% Gold from victory rewards, interest, raze, and Trade occupy yields."
+		"dev_shrines":
+			return "+8% Faith from victory rewards and Temple occupy yields."
+		"art_festivals":
+			return "+8% Culture from victory rewards and Artisan occupy yields."
+		"eng_apprenticeship":
+			return "Engineering perk: Builder-focused bonus (greybox flag for later BP synergy)."
+		"pro_alms":
+			return "Prophecy perk: Missionary-focused bonus (greybox flag for later Doctrine synergy)."
+		"code_of_laws":
+			return "+1 Policy slot. Lets you hold one more Policy from drafts."
+		"craftsmanship", "literacy":
+			return "Immediately draft one random common Policy into an empty Policy slot."
+		"early_empire":
+			return "+1 Blueprint slot so you can equip another Blueprint from the shop."
+		"theology":
+			return "+1 Doctrine slot so you can equip another Doctrine from the Synod."
+		"military_training":
+			return "Permanently +1 Regroup per settlement."
+		"treasury_windfall":
+			return "Gain 22 Gold now (scaled by any Gold percent bonuses)."
+		"stall_permits":
+			return "+1 offer in both Treasury and Synod packs each shop visit."
+		"fairground_toll":
+			return "Units in the Treasury cost 2 Gold less."
+		"corvee_exemption":
+			return "Builder can attach without using a formation slot (free support slot)."
+		"lay_preachers":
+			return "Missionary can attach without using a formation slot (free support slot)."
+		_:
+			return "No extra notes for this option yet."
+
+
+func shop_offer_help(offer: Dictionary) -> String:
+	var cat: String = str(offer.get("cat", ""))
+	var id: String = str(offer.get("id", ""))
+	match cat:
+		"unit":
+			var names := {"M": "Melee", "R": "Ranged", "C": "Cavalry", "S": "Siege"}
+			return "Add one %s card to your deck at your current class tier (T%d)." % [
+				names.get(id, id), int(state.tiers.get(id, 1)),
+			]
+		"blueprint":
+			return _blueprint_help(id)
+		"doctrine":
+			return _doctrine_help(id)
+		"promotion":
+			return _promotion_help(id)
+		"prophet":
+			if id == "sow_dissent":
+				return "Spend Faith for an immediate +5 Gold. Simple Synod cash-out."
+			return "Spend Faith for a small immediate Gold payout (greybox prophet)."
+		_:
+			return "Shop offer."
+
+
+func _blueprint_help(id: String) -> String:
+	match id:
+		"scaffolding":
+			return "Equip Blueprint. Spend a Builder charge in fight to ignore walls on that Assault."
+		"siege_tower":
+			return "Equip Blueprint. Spend a Builder charge to remove walls for the rest of the fight."
+		"battering_ram":
+			return "Equip Blueprint. Builder spend boosts siege pressure (wall help)."
+		"supply_lines":
+			return "Equip Blueprint. Builder spend draws extra cards (effect stubbed in greybox)."
+		"watchtower":
+			return "Equip Blueprint. Builder spend buffs the next Assault’s Might (stubbed)."
+		"forge":
+			return "Equip Blueprint. Big next-unit Might buff when Builder is spent (stubbed)."
+		"roads":
+			return "Equip Blueprint. Grants an extra Regroup when fired (stubbed)."
+		"magazine":
+			return "Equip Blueprint. Adds Momentum to the next Assault (stubbed)."
+		"aqueduct":
+			return "Equip Blueprint. Grants an extra Assault when fired (stubbed)."
+		"arsenal":
+			return "Equip Blueprint. Next unit Might bonus when Builder is spent (stubbed)."
+		_:
+			return "Equip this Blueprint into an empty slot. Fire it by spending a Builder charge in fight."
+
+
+func _doctrine_help(id: String) -> String:
+	match id:
+		"tithe":
+			return "Equip Doctrine. Arm with a Missionary charge; on win, payout extra Gold."
+		"scriptorium":
+			return "Equip Doctrine. On win after arming, payout bonus Science %%."
+		"pilgrimage":
+			return "Equip Doctrine. On win after arming, payout extra Faith."
+		"alms":
+			return "Equip Doctrine. On win after arming, payout extra Culture."
+		"zeal":
+			return "Equip Doctrine. Temporary Might buff for a couple of settlements when armed."
+		"relic_hunt":
+			return "Equip Doctrine. Chance at prophet-style bonus when armed (stubbed)."
+		"crusade":
+			return "Equip Doctrine. Extra Might into Capitals when armed."
+		"scholastic_order":
+			return "Equip Doctrine. Science + Culture payout on win when armed."
+		"missionary_zeal":
+			return "Equip Doctrine. Scales Gold/Faith payouts when armed (rare)."
+		"mercenaries":
+			return "Equip Doctrine. Hireling Might boost when armed (rare)."
+		_:
+			return "Equip this Doctrine into an empty slot. Arm it by spending a Missionary charge."
+
+
+func _promotion_help(id: String) -> String:
+	match id:
+		"master_drill":
+			return "Promote a unit: +5 Might on that card (greybox: small Gold consolation until per-card stats land)."
+		"skirmish_doctrine":
+			return "Promote a unit: +2 Momentum on that card."
+		"shock_drill":
+			return "Promote a unit: +3 Might and +1 Momentum."
+		"banner_carrier":
+			return "Promote a unit: large banner Might aura for the formation."
+		"thinking_soldier":
+			return "Promote a unit: scores grant bonus Science %%."
+		"heroic":
+			return "Promote a unit: ×1.75 Might multiplier (rare)."
+		_:
+			return "Apply a permanent promotion to one combat card in your deck."

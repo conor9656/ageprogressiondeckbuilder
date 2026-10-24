@@ -516,14 +516,26 @@ func _show_levelup(lu: Dictionary) -> void:
 	tip.add_theme_color_override("font_color", Color("a8c5b5"))
 	_panel.add_child(tip)
 
+	var help_box := Label.new()
+	help_box.name = "LevelHelp"
+	help_box.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	help_box.add_theme_color_override("font_color", Color("9ec9ff"))
+	help_box.text = "Tap (i) next to an option for a plain-English explanation."
+	_panel.add_child(help_box)
+
 	for offer in lu["offers"]:
 		var id: String = str(offer)
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		_panel.add_child(row)
 		var btn := Button.new()
 		btn.text = run.offer_label(id)
 		btn.custom_minimum_size = Vector2(0, 40)
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.tooltip_text = run.offer_help(id)
 		btn.pressed.connect(_on_pick_levelup.bind(id))
-		_panel.add_child(btn)
+		row.add_child(btn)
+		row.add_child(_make_info_button(run.offer_help(id), help_box))
 
 
 func _on_pick_levelup(id: String) -> void:
@@ -550,6 +562,13 @@ func _rebuild_shop_panel() -> void:
 	_clear_panel()
 	_refresh_resources()
 	_lbl_banner.text = "Shop — Treasury (Gold) & Synod (Faith)"
+
+	var help_box := Label.new()
+	help_box.name = "ShopHelp"
+	help_box.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	help_box.add_theme_color_override("font_color", Color("9ec9ff"))
+	help_box.text = "Tap (i) for what an offer does. Packs never repeat the same item."
+	_panel.add_child(help_box)
 
 	var tre_l := Label.new()
 	tre_l.text = "Treasury"
@@ -602,7 +621,10 @@ func _add_shop_row(pack: String, index: int, offer: Dictionary) -> void:
 	]
 	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	lbl.add_theme_color_override("font_color", Color("888888") if bought else Color("f2f2f2"))
+	lbl.tooltip_text = run.shop_offer_help(offer)
 	row.add_child(lbl)
+	var help_box: Label = _panel.get_node_or_null("ShopHelp") as Label
+	row.add_child(_make_info_button(run.shop_offer_help(offer), help_box))
 	var btn := Button.new()
 	btn.text = "Buy"
 	btn.disabled = bought
@@ -660,6 +682,19 @@ func _show_end(won: bool) -> void:
 	btn.custom_minimum_size = Vector2(220, 44)
 	btn.pressed.connect(_new_run)
 	_panel.add_child(btn)
+
+
+func _make_info_button(help: String, help_box: Label) -> Button:
+	var info := Button.new()
+	info.text = "i"
+	info.custom_minimum_size = Vector2(36, 40)
+	info.tooltip_text = help
+	info.pressed.connect(func():
+		if help_box:
+			help_box.text = help
+		_append("[color=#9ec9ff]%s[/color]" % help)
+	)
+	return info
 
 
 func _append(bb: String) -> void:
