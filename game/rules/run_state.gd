@@ -27,6 +27,7 @@ var form_levels: Dictionary = {}
 var blueprints: Array = []
 var doctrines: Array = []
 var policies: Array = []
+var owned_promotions: Array = []  ## greybox: purchased promo ids (not yet per-card)
 var blueprint_slots: int = 2
 var doctrine_slots: int = 1
 var policy_slots: int = 2
@@ -37,6 +38,11 @@ var base_regroups: int = 3
 
 var builder_charges_max: int = 1
 var missionary_charges_max: int = 1
+var builder_scale: float = 1.0  ## Blueprint numeric mult from Builder tier
+
+var wonder: String = ""  ## owned Wonder id (one / run) or ""
+var shop_wonder_offer: String = ""  ## dedicated Wonder row this visit
+var shop_wonder_rerolls_left: int = 1
 
 var occupied: Array = []  ## scholar / artisan / temple / trade
 var writing: bool = false
@@ -83,6 +89,7 @@ func setup(seed: int = 1) -> void:
 	blueprints.clear()
 	doctrines.clear()
 	policies.clear()
+	owned_promotions.clear()
 	RunTables.reload()
 	CombatTables.ensure_loaded()
 	blueprint_slots = RunTables.default_int("blueprint_slots")
@@ -93,6 +100,10 @@ func setup(seed: int = 1) -> void:
 	base_regroups = RunTables.default_int("base_regroups")
 	builder_charges_max = RunTables.default_int("builder_charges_max")
 	missionary_charges_max = RunTables.default_int("missionary_charges_max")
+	builder_scale = RunTables.builder_scale_for_tier(1)
+	wonder = ""
+	shop_wonder_offer = ""
+	shop_wonder_rerolls_left = 1
 	occupied.clear()
 	writing = false
 	last_troop_upgrade = ""
@@ -164,6 +175,7 @@ func snapshot() -> Dictionary:
 		"blueprints": blueprints.duplicate(),
 		"doctrines": doctrines.duplicate(),
 		"policies": policies.duplicate(),
+		"owned_promotions": owned_promotions.duplicate(),
 		"occupied": occupied.duplicate(),
 		"settlement_index": settlement_index,
 		"hand_size": hand_size,
@@ -171,9 +183,18 @@ func snapshot() -> Dictionary:
 		"base_regroups": base_regroups,
 		"builder_charges_max": builder_charges_max,
 		"missionary_charges_max": missionary_charges_max,
+		"builder_scale": builder_scale,
+		"builder_tier": int(tiers.get("B", 1)),
+		"wonder": wonder,
 		"form_levels": form_levels.duplicate(),
 		"pack_bonus": pack_bonus,
 		"writing": writing,
 		"industrial_toolkit": industrial_toolkit,
 		"faith_combat_mom": faith_combat_mom,
+		"sci_bonus_pct": sci_bonus_pct,
+		"gold_bonus_pct": gold_bonus_pct,
+		"faith_bonus_pct": faith_bonus_pct,
+		"cul_bonus_pct": cul_bonus_pct,
+		"eng_flags": eng_flags.duplicate(),
+		"pro_flags": pro_flags.duplicate(),
 	}

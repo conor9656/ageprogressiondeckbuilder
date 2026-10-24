@@ -35,6 +35,10 @@ var doctrines: Array = []
 var faith_combat_mom: int = 0  ## Industrial Revival Tent, etc.
 var ignore_walls_next: bool = false
 var walls_removed: bool = false
+var builder_free_slot: bool = false  ## Corvée / Machu / Helping Hand
+var missionary_free_slot: bool = false  ## Lay Preachers / Hagia-style
+var builder_scale: float = 1.0
+var active_blueprint_index: int = 0  ## which equipped BP fires when Builder is used
 
 var total_damage: int = 0
 var log: Array = []  ## [{op, form, dmg, left, ...}]
@@ -64,6 +68,10 @@ func setup(opts: Dictionary) -> void:
 	blueprints = opts.get("blueprints", [])
 	doctrines = opts.get("doctrines", [])
 	faith_combat_mom = int(opts.get("faith_combat_mom", 0))
+	builder_free_slot = bool(opts.get("builder_free_slot", false))
+	missionary_free_slot = bool(opts.get("missionary_free_slot", false))
+	builder_scale = float(opts.get("builder_scale", 1.0))
+	active_blueprint_index = int(opts.get("active_blueprint_index", 0))
 	ignore_walls_next = false
 	walls_removed = false
 	total_damage = 0
@@ -153,6 +161,21 @@ func choose_regroup_discard_ai(max_n: int = 3) -> Array:
 	return dump
 
 
+func free_builder_slot() -> bool:
+	return builder_free_slot or blueprints.has("helping_hand")
+
+
+func free_missionary_slot() -> bool:
+	return missionary_free_slot
+
+
+func selected_blueprint() -> String:
+	if blueprints.is_empty():
+		return ""
+	var i: int = clampi(active_blueprint_index, 0, blueprints.size() - 1)
+	return str(blueprints[i])
+
+
 func do_assault(play_cards: Array, use_builder: bool = false, use_missionary: bool = false) -> Dictionary:
 	if assaults_left <= 0 or is_over():
 		return {"ok": false}
@@ -160,8 +183,9 @@ func do_assault(play_cards: Array, use_builder: bool = false, use_missionary: bo
 	for c in play_cards:
 		if c.is_combat():
 			combat_n += 1
-	var free_b: bool = blueprints.has("helping_hand")
-	if not SupportCharges.attach_ok(combat_n, use_builder, use_missionary, free_b, false):
+	var free_b: bool = free_builder_slot()
+	var free_y: bool = free_missionary_slot()
+	if not SupportCharges.attach_ok(combat_n, use_builder, use_missionary, free_b, free_y):
 		use_builder = false
 		use_missionary = false
 		if not SupportCharges.attach_ok(combat_n, false, false, false, false):
@@ -173,9 +197,10 @@ func do_assault(play_cards: Array, use_builder: bool = false, use_missionary: bo
 			kinds.append(c.kind)
 
 	# Spend support charges + fire simple BP/Doc
+	var fired_bp := ""
 	if use_builder and charges.can_use_builder():
 		charges.spend_builder()
-		_fire_blueprint()
+		fired_bp = _fire_blueprint()
 	if use_missionary and charges.can_use_missionary():
 		charges.spend_missionary()
 		# Doctrine pays on win — recorded only
@@ -204,6 +229,8 @@ func do_assault(play_cards: Array, use_builder: bool = false, use_missionary: bo
 		"assaults_left": assaults_left,
 		"used_builder": use_builder,
 		"used_missionary": use_missionary,
+		"blueprint": fired_bp,
+		"builder_scale": builder_scale,
 	}
 	log.append(entry)
 	if defence_left <= 0:
@@ -211,19 +238,20 @@ func do_assault(play_cards: Array, use_builder: bool = false, use_missionary: bo
 	return {"ok": true, "eval": ev, "entry": entry}
 
 
-func _fire_blueprint() -> void:
-	## Minimal W1: scaffolding / battering_ram style wall help.
+func _fire_blueprint() -> String:
+	## Minimal: scaffolding / siege_tower wall help; other BPs log noop until effects land.
 	if blueprints.is_empty():
-		return
-	var bp: String = str(blueprints[0])
-	if bp in ["scaffolding", "ignore_walls_next"]:
+		return ""
+	var bp: String = selected_blueprint()
+	if bp in ["scaffolding", "ignore_walls_next", "battering_ram"]:
 		ignore_walls_next = true
-		log.append({"op": "blueprint", "name": bp, "effect": "ignore_walls_next"})
+		log.append({"op": "blueprint", "name": bp, "effect": "ignore_walls_next", "scale": builder_scale})
 	elif bp in ["siege_tower", "remove_walls"]:
 		walls_removed = true
-		log.append({"op": "blueprint", "name": bp, "effect": "remove_walls"})
+		log.append({"op": "blueprint", "name": bp, "effect": "remove_walls", "scale": builder_scale})
 	else:
-		log.append({"op": "blueprint", "name": bp, "effect": "noop"})
+		log.append({"op": "blueprint", "name": bp, "effect": "noop", "scale": builder_scale})
+	return bp
 
 
 func choose_assault_ai() -> Dictionary:
@@ -249,7 +277,7 @@ func choose_assault_ai() -> Dictionary:
 			for i in comb:
 				cards.append(combat[i])
 				kinds.append(combat[i].kind)
-			var free_b: bool = blueprints.has("helping_hand")
+			var free_b: bool = free_builder_slot()
 			for use_b_i in 2:
 				var use_b: bool = use_b_i == 1
 				if use_b and (not charges.can_use_builder() or blueprints.is_empty()):
@@ -258,12 +286,12 @@ func choose_assault_ai() -> Dictionary:
 					continue
 				var bp0: String = ""
 				if use_b and not blueprints.is_empty():
-					bp0 = str(blueprints[0])
+					bp0 = selected_blueprint()
 				var opts_ignore: bool = ignore_walls_next
-				if bp0 == "scaffolding" or bp0 == "ignore_walls_next":
+				if bp0 in ["scaffolding", "ignore_walls_next", "battering_ram"]:
 					opts_ignore = true
 				var walls_gone: bool = walls_removed
-				if bp0 == "siege_tower" or bp0 == "remove_walls":
+				if bp0 in ["siege_tower", "remove_walls"]:
 					walls_gone = true
 				var ev: Dictionary = AgesRules.evaluate_kinds(kinds, {
 					"era": era, "sci_level": sci_level, "tiers": tiers,

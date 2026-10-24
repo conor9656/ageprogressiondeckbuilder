@@ -14,6 +14,7 @@ var active_fight: RefCounted
 var last_reward: Dictionary = {}
 var shop_treasury: Array = []
 var shop_synod: Array = []
+var shop_wonder: Dictionary = {}  ## dedicated Wonder row or {}
 var shop_rerolled: bool = false
 ## Pending level-up: {"kind": "science"|"civic", "cost": int, "offers": Array, "free": bool}
 var pending_levelup: Dictionary = {}
@@ -31,6 +32,7 @@ func start(seed: int = 1) -> void:
 	last_reward.clear()
 	shop_treasury.clear()
 	shop_synod.clear()
+	shop_wonder.clear()
 	shop_rerolled = false
 	pending_levelup.clear()
 	pending_era_hooks.clear()
@@ -74,6 +76,8 @@ static func make_settlement(kind: String, rng: RandomNumberGenerator, era: int =
 
 
 func begin_fight() -> RefCounted:
+	var free_b: bool = bool(state.eng_flags.get("builder_free_slot", false))
+	var free_y: bool = bool(state.pro_flags.get("missionary_free_slot", false))
 	active_fight = AgesRules.new_fight({
 		"seed": state.rng.randi(),
 		"defence": int(current_settlement["defence"]),
@@ -91,6 +95,10 @@ func begin_fight() -> RefCounted:
 		"blueprints": state.blueprints.duplicate(),
 		"doctrines": state.doctrines.duplicate(),
 		"faith_combat_mom": state.faith_combat_mom,
+		"builder_free_slot": free_b,
+		"missionary_free_slot": free_y,
+		"builder_scale": state.builder_scale,
+		"active_blueprint_index": 0,
 	})
 	# Sync charge max from run
 	active_fight.charges.builder_max = state.builder_charges_max
@@ -331,6 +339,8 @@ func apply_science(pick: String) -> void:
 		var cap: int = 4 if key == "B" else 6
 		state.tiers[key] = mini(cap, int(state.tiers.get(key, 1)) + 1)
 		state.last_troop_upgrade = key
+		if key == "B":
+			state.builder_scale = RunTables.builder_scale_for_tier(int(state.tiers["B"]))
 		return
 	if pick == "support_charge_B":
 		state.builder_charges_max = mini(CombatTables.support_charge_cap(), state.builder_charges_max + 1)
@@ -468,7 +478,36 @@ func open_shop() -> Dictionary:
 	var n: int = RunTables.pack_size() + state.pack_bonus
 	shop_treasury = _roll_unique_pack(n, true)
 	shop_synod = _roll_unique_pack(n, false)
-	return {"treasury": shop_treasury.duplicate(true), "synod": shop_synod.duplicate(true)}
+	_roll_wonder_offer()
+	return {
+		"treasury": shop_treasury.duplicate(true),
+		"synod": shop_synod.duplicate(true),
+		"wonder": shop_wonder.duplicate(true),
+	}
+
+
+func _roll_wonder_offer() -> void:
+	## Dedicated Wonder row while unequipped (1 Wonder / run). Sticky offer across visits until bought or skipped via leave.
+	shop_wonder.clear()
+	if state.wonder != "":
+		return
+	var catalog: Dictionary = RunTables.wonders()
+	if catalog.is_empty():
+		return
+	if state.shop_wonder_offer == "" or not catalog.has(state.shop_wonder_offer):
+		var keys: Array = catalog.keys()
+		state.shop_wonder_offer = str(keys[state.rng.randi() % keys.size()])
+		state.shop_wonder_rerolls_left = 1
+	var wid: String = state.shop_wonder_offer
+	var row: Dictionary = catalog[wid]
+	shop_wonder = {
+		"cat": "wonder",
+		"id": wid,
+		"cost": int(row.get("cost", 70)),
+		"effect": str(row.get("effect", "")),
+		"label": "Wonder %s" % wid.replace("_", " ").capitalize(),
+		"bought": false,
+	}
 
 
 func reroll_treasury() -> bool:
@@ -478,6 +517,28 @@ func reroll_treasury() -> bool:
 	shop_rerolled = true
 	var n: int = RunTables.pack_size() + state.pack_bonus
 	shop_treasury = _roll_unique_pack(n, true)
+	return true
+
+
+func reroll_wonder() -> bool:
+	if state.wonder != "" or shop_wonder.is_empty():
+		return false
+	if state.shop_wonder_rerolls_left <= 0:
+		return false
+	var cost: int = RunTables.wonder_reroll_cost()
+	if state.gold < cost:
+		return false
+	var catalog: Dictionary = RunTables.wonders()
+	if catalog.size() < 2:
+		return false
+	state.gold -= cost
+	state.shop_wonder_rerolls_left -= 1
+	var keys: Array = []
+	for k in catalog.keys():
+		if str(k) != state.shop_wonder_offer:
+			keys.append(str(k))
+	state.shop_wonder_offer = str(keys[state.rng.randi() % keys.size()])
+	_roll_wonder_offer()
 	return true
 
 
@@ -524,9 +585,24 @@ func _unit_offer(kind: String) -> Dictionary:
 	return {"cat": "unit", "id": kind, "cost": cost, "label": "Unit %s" % kind}
 
 
-func _prophet_offer(id: String = "sow_dissent") -> Dictionary:
+func _prophet_offer(id: String = "") -> Dictionary:
+	var catalog: Dictionary = RunTables.prophets()
+	if id == "":
+		if catalog.is_empty():
+			id = "sow_dissent"
+		else:
+			var keys: Array = catalog.keys()
+			id = str(keys[state.rng.randi() % keys.size()])
 	var cost: int = RunTables.pack_int("prophet_cost")
-	return {"cat": "prophet", "id": id, "cost": cost, "label": "Prophet %s" % id}
+	var gold_payout: int = RunTables.pack_int("prophet_gold_payout")
+	if catalog.has(id):
+		cost = int(catalog[id].get("cost", cost))
+		gold_payout = int(catalog[id].get("gold", gold_payout))
+	return {
+		"cat": "prophet", "id": id, "cost": cost,
+		"gold_payout": gold_payout,
+		"label": "Prophet %s" % id.replace("_", " "),
+	}
 
 
 func roll_treasury_offer(exclude: Dictionary = {}) -> Dictionary:
@@ -578,7 +654,7 @@ func roll_synod_offer(exclude: Dictionary = {}) -> Dictionary:
 		if state.rng.randf() < doc_chance:
 			var name: String = _weighted_from(RunTables.doctrines(), exclude, "doctrine")
 			if name == "":
-				offer = _prophet_offer()
+				offer = _roll_prophet_offer(exclude)
 			else:
 				offer = {
 					"cat": "doctrine", "id": name,
@@ -586,7 +662,9 @@ func roll_synod_offer(exclude: Dictionary = {}) -> Dictionary:
 					"label": "Doc %s" % name,
 				}
 		else:
-			offer = _prophet_offer()
+			offer = _roll_prophet_offer(exclude)
+		if offer.is_empty():
+			continue
 		if not exclude.has(_offer_key(offer)):
 			return offer
 	var doc: String = _weighted_from(RunTables.doctrines(), exclude, "doctrine")
@@ -596,14 +674,26 @@ func roll_synod_offer(exclude: Dictionary = {}) -> Dictionary:
 			"cost": RunTables.catalog_cost(RunTables.doctrines(), doc),
 			"label": "Doc %s" % doc,
 		}
-	if not exclude.has("prophet:sow_dissent"):
-		return _prophet_offer()
-	for alt in ["tithe_collector", "street_preacher", "relic_broker"]:
-		var key := "prophet:%s" % alt
+	var prophet: Dictionary = _roll_prophet_offer(exclude)
+	if not prophet.is_empty():
+		return prophet
+	return _prophet_offer("sow_dissent")
+
+
+func _roll_prophet_offer(exclude: Dictionary) -> Dictionary:
+	var catalog: Dictionary = RunTables.prophets()
+	var bag: Array = []
+	for k in catalog.keys():
+		var key := "prophet:%s" % str(k)
 		if exclude.has(key):
 			continue
-		return _prophet_offer(alt)
-	return _prophet_offer()
+		var rar: String = str(catalog[k].get("rarity", "C"))
+		var n: int = RunTables.rarity_bag_count(rar)
+		for _i in n:
+			bag.append(str(k))
+	if bag.is_empty():
+		return {}
+	return _prophet_offer(str(bag[state.rng.randi() % bag.size()]))
 
 
 func _weighted_from(table: Dictionary, exclude: Dictionary, cat: String) -> String:
@@ -660,15 +750,196 @@ func buy_offer(pack: String, index: int) -> Dictionary:
 				return {"ok": false, "reason": "no_doc_slot"}
 			state.doctrines.append(str(offer["id"]))
 		"promotion":
-			# Greybox: no per-card stats yet — treat as free gold interest bump
+			## Greybox: track owned promos for deck panel; small Gold consolation until per-card stats land
+			state.owned_promotions.append(str(offer["id"]))
 			state.gold += 2
 		"prophet":
-			## Greybox prophets: immediate Gold payout
-			state.gold += RunTables.pack_int("prophet_gold_payout")
+			_apply_prophet(str(offer["id"]), offer)
+		"wonder":
+			## Should go through buy_wonder(); keep path for spill offers later
+			if state.wonder != "":
+				state.gold += cost
+				return {"ok": false, "reason": "already_have_wonder"}
+			_apply_wonder(str(offer["id"]))
 	offer["bought"] = true
 	list[index] = offer
 	state.log.append({"op": "buy", "pack": pack, "offer": offer.duplicate()})
 	return {"ok": true, "offer": offer}
+
+
+func buy_wonder() -> Dictionary:
+	if shop_wonder.is_empty() or bool(shop_wonder.get("bought", false)):
+		return {"ok": false, "reason": "no_offer"}
+	if state.wonder != "":
+		return {"ok": false, "reason": "already_have_wonder"}
+	var cost: int = int(shop_wonder.get("cost", 0))
+	if state.gold < cost:
+		return {"ok": false, "reason": "no_gold"}
+	state.gold -= cost
+	_apply_wonder(str(shop_wonder["id"]))
+	shop_wonder["bought"] = true
+	state.shop_wonder_offer = ""
+	state.log.append({"op": "buy_wonder", "offer": shop_wonder.duplicate()})
+	return {"ok": true, "offer": shop_wonder.duplicate()}
+
+
+func _apply_wonder(wid: String) -> void:
+	state.wonder = wid
+	var catalog: Dictionary = RunTables.wonders()
+	var effect: String = str(catalog.get(wid, {}).get("effect", ""))
+	match effect:
+		"plus_assault":
+			state.base_assaults += 1
+		"builder_scale":
+			state.builder_scale = maxf(state.builder_scale, state.builder_scale * 1.25)
+			state.blueprint_slots = mini(5, state.blueprint_slots + 1)
+		"hand_size":
+			state.hand_size += 1
+		"faith_burst":
+			state.faith += 25
+		"free_sci_level":
+			state.science += maxi(8, science_cost())
+		"support_free_slots":
+			state.eng_flags["builder_free_slot"] = true
+			state.pro_flags["missionary_free_slot"] = true
+		"float_supports":
+			state.eng_flags["builder_free_slot"] = true
+		"sci_cost_cut":
+			state.eng_flags["sci_cost_cut"] = true
+		"sci_gain_pct":
+			state.sci_bonus_pct += 0.12
+		"occupy_x2":
+			state.eng_flags["occupy_x2"] = true
+		"replace_troop":
+			state.deck_kinds.append("M")
+			state.deck_kinds.append("R")
+		"parade_grounds", "theater_of_war", "safe_conduct", "christ_clutch":
+			state.eng_flags[effect] = true
+		_:
+			state.eng_flags["wonder_%s" % wid] = true
+	state.log.append({"op": "wonder", "id": wid, "effect": effect})
+
+
+func _apply_prophet(pid: String, offer: Dictionary) -> void:
+	## Greybox: gold payout prophets + a few stub combat/economy flags.
+	var payout: int = int(offer.get("gold_payout", RunTables.pack_int("prophet_gold_payout")))
+	match pid:
+		"sow_dissent", "tithe_collector", "street_preacher", "relic_broker":
+			state.gold += payout
+		"blessing":
+			state.faith_combat_mom += 1
+			state.gold += maxi(0, payout)
+		"conversion":
+			state.faith += 10
+			state.doctrine_slots = mini(4, state.doctrine_slots + 0)  ## keep slot; mark flag
+			state.pro_flags["conversion"] = true
+		"holy_revolt":
+			state.eng_flags["holy_revolt"] = true
+			state.gold += 10
+		"revelation":
+			state.science += 12
+			state.culture += 8
+		_:
+			state.gold += payout
+
+
+func unequip_blueprint(index: int) -> bool:
+	if index < 0 or index >= state.blueprints.size():
+		return false
+	var removed: String = str(state.blueprints[index])
+	state.blueprints.remove_at(index)
+	state.log.append({"op": "unequip_blueprint", "id": removed})
+	return true
+
+
+func unequip_doctrine(index: int) -> bool:
+	if index < 0 or index >= state.doctrines.size():
+		return false
+	var removed: String = str(state.doctrines[index])
+	state.doctrines.remove_at(index)
+	state.log.append({"op": "unequip_doctrine", "id": removed})
+	return true
+
+
+func income_breakdown() -> Dictionary:
+	## Testing readout: base win rates, occupy sticky yields, % bonuses, era mults.
+	var y: int = RunTables.reward("city_yield")
+	var occupy_counts := {"scholar": 0, "artisan": 0, "temple": 0, "trade": 0}
+	for t in state.occupied:
+		var k := str(t)
+		if occupy_counts.has(k):
+			occupy_counts[k] = int(occupy_counts[k]) + 1
+	var occupy_per_fight := {
+		"science": 0, "culture": 0, "faith": 0, "gold": 0,
+	}
+	for t in state.occupied:
+		match str(t):
+			"scholar":
+				occupy_per_fight["science"] += int(y * (1.0 + state.sci_bonus_pct) * state.income_mult("sci"))
+			"artisan":
+				occupy_per_fight["culture"] += int(y * (1.0 + state.cul_bonus_pct) * state.income_mult("cul"))
+			"temple":
+				occupy_per_fight["faith"] += int(y * (1.0 + state.faith_bonus_pct) * state.income_mult("faith"))
+			"trade":
+				occupy_per_fight["gold"] += int(y * (1.0 + state.gold_bonus_pct) * state.income_mult("gold"))
+	var base_raw := {
+		"gold": RunTables.reward("gold"),
+		"science": RunTables.reward("science"),
+		"culture": RunTables.reward("culture"),
+		"faith": RunTables.reward("faith"),
+		"raze_gold": RunTables.reward("raze_gold"),
+		"city_yield": y,
+	}
+	return {
+		"base_raw": base_raw,
+		"era_mult": {
+			"gold": state.income_mult("gold"),
+			"science": state.income_mult("sci"),
+			"culture": state.income_mult("cul"),
+			"faith": state.income_mult("faith"),
+		},
+		"bonus_pct": {
+			"gold": state.gold_bonus_pct,
+			"science": state.sci_bonus_pct,
+			"culture": state.cul_bonus_pct,
+			"faith": state.faith_bonus_pct,
+		},
+		"occupy_counts": occupy_counts,
+		"occupy_total": state.occupied.size(),
+		"occupy_per_fight": occupy_per_fight,
+		"interest_cap": state.interest_cap,
+		"builder_tier": int(state.tiers.get("B", 1)),
+		"builder_scale": state.builder_scale,
+		"wonder": state.wonder,
+		"last_reward": last_reward.duplicate(true),
+	}
+
+
+func deck_summary() -> Dictionary:
+	var counts := {"M": 0, "R": 0, "C": 0, "S": 0}
+	for k in state.deck_kinds:
+		var s := str(k)
+		if counts.has(s):
+			counts[s] = int(counts[s]) + 1
+	return {
+		"counts": counts,
+		"total": state.deck_kinds.size(),
+		"tiers": state.tiers.duplicate(),
+		"form_levels": state.form_levels.duplicate(),
+		"blueprints": state.blueprints.duplicate(),
+		"blueprint_slots": state.blueprint_slots,
+		"doctrines": state.doctrines.duplicate(),
+		"doctrine_slots": state.doctrine_slots,
+		"policies": state.policies.duplicate(),
+		"policy_slots": state.policy_slots,
+		"promotions": state.owned_promotions.duplicate(),
+		"builder_charges": state.builder_charges_max,
+		"missionary_charges": state.missionary_charges_max,
+		"builder_scale": state.builder_scale,
+		"wonder": state.wonder,
+		"eng_flags": state.eng_flags.duplicate(),
+		"pro_flags": state.pro_flags.duplicate(),
+	}
 
 
 ## --- Advance / era hooks -----------------------------------------------------
@@ -977,7 +1248,11 @@ func offer_help(id: String) -> String:
 		var names := {"M": "Melee", "R": "Ranged", "C": "Cavalry", "S": "Siege", "B": "Builder"}
 		var cur: int = int(state.tiers.get(cls, 1))
 		if cls == "B":
-			return "Raises Builder tier from %d → %d. Stronger Builder charge effects." % [cur, cur + 1]
+			var next_scale: float = RunTables.builder_scale_for_tier(cur + 1)
+			return (
+				"Raises Builder tier from %d → %d. Blueprint numbers scale ×%.1f → ×%.1f "
+				+ "(not +1 charge — that is a separate Science pick)."
+			) % [cur, cur + 1, state.builder_scale, next_scale]
 		return "Raises all %s units one tier (%d → %d). More Might (and Momentum where relevant) in every fight." % [
 			names.get(cls, cls), cur, cur + 1,
 		]
@@ -1048,11 +1323,72 @@ func shop_offer_help(offer: Dictionary) -> String:
 		"promotion":
 			return _promotion_help(id)
 		"prophet":
-			if id == "sow_dissent":
-				return "Spend Faith for an immediate +5 Gold. Simple Synod cash-out."
-			return "Spend Faith for a small immediate Gold payout (greybox prophet)."
+			return _prophet_help(id, offer)
+		"wonder":
+			return _wonder_help(id)
 		_:
 			return "Shop offer."
+
+
+func _prophet_help(id: String, offer: Dictionary = {}) -> String:
+	var payout: int = int(offer.get("gold_payout", RunTables.pack_int("prophet_gold_payout")))
+	match id:
+		"sow_dissent":
+			return "One-use Prophet. Immediate +%d Gold. Simple Synod cash-out." % payout
+		"tithe_collector":
+			return "One-use Prophet. Immediate +%d Gold (stronger tithe)." % payout
+		"street_preacher":
+			return "One-use Prophet. Cheap Faith spend for +%d Gold." % payout
+		"relic_broker":
+			return "One-use Prophet. Immediate +%d Gold from relics." % payout
+		"blessing":
+			return "One-use Prophet. +1 Faith combat Momentum for the rest of the run."
+		"conversion":
+			return "One-use Prophet. +10 Faith and marks Conversion (Doctrine synergy stub)."
+		"holy_revolt":
+			return "One-use Prophet. +10 Gold and flags Holy Revolt (combat stub)."
+		"revelation":
+			return "One-use Prophet. Immediate +12 Science and +8 Culture."
+		_:
+			return "One-use Prophet. Spend Faith for an immediate effect (greybox)."
+
+
+func _wonder_help(id: String) -> String:
+	var catalog: Dictionary = RunTables.wonders()
+	var effect: String = str(catalog.get(id, {}).get("effect", ""))
+	match effect:
+		"plus_assault":
+			return "Wonder (1 / run). Permanently +1 Assault per settlement."
+		"builder_scale":
+			return "Wonder (1 / run). +1 Blueprint slot and ×1.25 Builder scale."
+		"hand_size":
+			return "Wonder (1 / run). Permanently +1 hand size."
+		"faith_burst":
+			return "Wonder (1 / run). Immediate +25 Faith."
+		"free_sci_level":
+			return "Wonder (1 / run). Large Science bank toward your next Sci level."
+		"support_free_slots":
+			return "Wonder (1 / run). Builder and Missionary attach without using formation slots."
+		"float_supports":
+			return "Wonder (1 / run). Builder attaches without using a formation slot."
+		"sci_cost_cut":
+			return "Wonder (1 / run). Marks Science cost relief (stub flag)."
+		"sci_gain_pct":
+			return "Wonder (1 / run). +12% Science from victory rewards."
+		"occupy_x2":
+			return "Wonder (1 / run). Flags double occupy yields (stub for payout math)."
+		"replace_troop":
+			return "Wonder (1 / run). Adds one Melee and one Ranged to your deck."
+		"parade_grounds":
+			return "Wonder (1 / run). Parade Grounds combat rule (stub flag)."
+		"theater_of_war":
+			return "Wonder (1 / run). Theater of War combat rule (stub flag)."
+		"safe_conduct":
+			return "Wonder (1 / run). Safe Conduct rule (stub flag)."
+		"christ_clutch":
+			return "Wonder (1 / run). Clutch Faith rule (stub flag)."
+		_:
+			return "Unique Wonder — one per run. Dedicated shop row; rival skip not simulated yet."
 
 
 func _blueprint_help(id: String) -> String:

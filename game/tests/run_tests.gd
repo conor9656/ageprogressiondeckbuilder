@@ -29,6 +29,10 @@ func _initialize() -> void:
 	failed += _check("multi_era_line_mom", _test_line_mom())
 	failed += _check("ancient_run_auto_era", _test_auto_era())
 	failed += _check("domination_reaches_e2", _test_domination_reaches_e2())
+	failed += _check("corvee_free_builder_slot", _test_corvee_free_slot())
+	failed += _check("builder_scale_upgrade", _test_builder_scale())
+	failed += _check("shop_unequip_and_wonder", _test_shop_unequip_wonder())
+	failed += _check("income_breakdown", _test_income_breakdown())
 
 	if failed == 0:
 		print("AGES_TESTS_OK failed=0")
@@ -425,6 +429,119 @@ func _test_domination_reaches_e2() -> bool:
 			return true
 	print("  no seed reached E2 in 1..60")
 	return false
+
+
+func _test_corvee_free_slot() -> bool:
+	## Corvée Exemption must let Builder attach on a full 5-card formation.
+	var run = AgesRules.new_ancient_run(5)
+	run.apply_civic("corvee_exemption")
+	if not bool(run.state.eng_flags.get("builder_free_slot", false)):
+		print("  corvee flag missing")
+		return false
+	run.state.blueprints = ["scaffolding"]
+	run.begin_fight()
+	var fight = run.active_fight
+	if not fight.free_builder_slot():
+		print("  fight missing free_builder_slot")
+		return false
+	## Build a 5-combat hand if needed
+	var combat: Array = fight.combat_in_hand()
+	if combat.size() < 5:
+		## Force by replacing hand kinds via direct assault size check
+		if not SupportCharges.attach_ok(5, true, false, true, false):
+			return false
+		if SupportCharges.attach_ok(5, true, false, false, false):
+			print("  free_b should be required for 5+builder")
+			return false
+		return true
+	var cards: Array = combat.slice(0, 5)
+	var r: Dictionary = fight.do_assault(cards, true, false)
+	if not bool(r.get("ok", false)):
+		print("  assault with corvee+5 failed")
+		return false
+	if not bool(r["entry"].get("used_builder", false)):
+		print("  builder not used with corvee")
+		return false
+	return true
+
+
+func _test_builder_scale() -> bool:
+	var RunTables = preload("res://rules/run_tables.gd")
+	var run = AgesRules.new_ancient_run(2)
+	if abs(run.state.builder_scale - 1.0) > 0.001:
+		return false
+	run.apply_science("upgrade_B")
+	if int(run.state.tiers["B"]) != 2:
+		return false
+	if abs(run.state.builder_scale - RunTables.builder_scale_for_tier(2)) > 0.001:
+		print("  scale got=%s" % run.state.builder_scale)
+		return false
+	run.apply_science("upgrade_B")
+	if abs(run.state.builder_scale - 2.0) > 0.001:
+		return false
+	return true
+
+
+func _test_shop_unequip_wonder() -> bool:
+	var run = AgesRules.new_ancient_run(11)
+	run.state.gold = 500
+	run.state.faith = 200
+	run.state.blueprints = ["scaffolding", "siege_tower"]
+	run.state.blueprint_slots = 2
+	run.state.doctrines = ["tithe"]
+	run.state.doctrine_slots = 1
+	if not run.unequip_blueprint(0):
+		return false
+	if run.state.blueprints.size() != 1 or str(run.state.blueprints[0]) != "siege_tower":
+		return false
+	if not run.unequip_doctrine(0):
+		return false
+	if not run.state.doctrines.is_empty():
+		return false
+	run.open_shop()
+	if run.shop_wonder.is_empty():
+		print("  missing wonder offer")
+		return false
+	if str(run.shop_wonder.get("cat", "")) != "wonder":
+		return false
+	var help: String = run.shop_offer_help(run.shop_wonder)
+	if help.length() < 12:
+		return false
+	## Buy wonder
+	run.shop_wonder["cost"] = 10
+	var before_gold: int = run.state.gold
+	var br: Dictionary = run.buy_wonder()
+	if not bool(br.get("ok", false)):
+		print("  buy_wonder failed %s" % br)
+		return false
+	if run.state.wonder == "":
+		return false
+	if run.state.gold >= before_gold:
+		return false
+	## Second wonder blocked
+	run._roll_wonder_offer()
+	if not run.shop_wonder.is_empty():
+		print("  wonder still offered after own")
+		return false
+	return true
+
+
+func _test_income_breakdown() -> bool:
+	var run = AgesRules.new_ancient_run(8)
+	run.state.occupied = ["scholar", "trade", "scholar"]
+	run.state.sci_bonus_pct = 0.10
+	run.state.gold_bonus_pct = 0.08
+	var br: Dictionary = run.income_breakdown()
+	if int(br["occupy_total"]) != 3:
+		return false
+	if int(br["occupy_counts"]["scholar"]) != 2:
+		return false
+	if int(br["occupy_per_fight"]["science"]) <= 0:
+		return false
+	if int(br["occupy_per_fight"]["gold"]) <= 0:
+		return false
+	var deck: Dictionary = run.deck_summary()
+	return int(deck["total"]) == run.state.deck_kinds.size()
 
 
 func _run_fixture_file(path: String) -> int:

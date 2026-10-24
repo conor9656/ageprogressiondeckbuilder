@@ -25,6 +25,8 @@ var _hand_row: HBoxContainer
 var _lbl_defence: Label
 var _lbl_preview: Label
 var _chk_builder: CheckBox
+var _bp_option: OptionButton
+var _lbl_builder_strip: Label
 
 
 func _ready() -> void:
@@ -109,6 +111,8 @@ func _clear_panel() -> void:
 	_lbl_defence = null
 	_lbl_preview = null
 	_chk_builder = null
+	_bp_option = null
+	_lbl_builder_strip = null
 	_card_buttons.clear()
 
 
@@ -242,13 +246,75 @@ func _show_fight() -> void:
 	b_h.pressed.connect(_on_hint)
 	actions.add_child(b_h)
 
-	_chk_builder = CheckBox.new()
-	_chk_builder.text = "Use Builder"
-	_chk_builder.button_pressed = true
-	_chk_builder.toggled.connect(func(_v): _update_preview())
-	actions.add_child(_chk_builder)
-
+	_build_builder_strip()
 	_refresh_fight()
+
+
+func _build_builder_strip() -> void:
+	var fight = run.active_fight
+	var strip := VBoxContainer.new()
+	strip.name = "BuilderStrip"
+	strip.add_theme_constant_override("separation", 4)
+	_panel.add_child(strip)
+
+	_lbl_builder_strip = Label.new()
+	_lbl_builder_strip.add_theme_color_override("font_color", Color("e8d5a3"))
+	strip.add_child(_lbl_builder_strip)
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	strip.add_child(row)
+
+	_chk_builder = CheckBox.new()
+	_chk_builder.text = "Apply Builder"
+	_chk_builder.button_pressed = fight != null and fight.charges.can_use_builder() and not fight.blueprints.is_empty()
+	_chk_builder.toggled.connect(func(_v): _update_preview())
+	row.add_child(_chk_builder)
+
+	_bp_option = OptionButton.new()
+	_bp_option.custom_minimum_size = Vector2(220, 0)
+	_bp_option.item_selected.connect(func(i):
+		if run.active_fight != null:
+			run.active_fight.active_blueprint_index = i
+		_update_preview()
+	)
+	row.add_child(_bp_option)
+
+	var tip := Label.new()
+	tip.text = "Toggle Builder on/off to see preview delta. Pick which Blueprint fires."
+	tip.add_theme_color_override("font_color", Color("888888"))
+	strip.add_child(tip)
+
+
+func _refresh_builder_strip() -> void:
+	var fight = run.active_fight
+	if fight == null or _chk_builder == null:
+		return
+	var free_note := " (free slot)" if fight.free_builder_slot() else " (uses a formation slot)"
+	var bps: Array = fight.blueprints
+	var bp_parts: PackedStringArray = PackedStringArray()
+	for b in bps:
+		bp_parts.append(str(b))
+	var bp_txt := "none equipped" if bp_parts.is_empty() else ", ".join(bp_parts)
+	_lbl_builder_strip.text = (
+		"Builder %d/%d · scale ×%.1f%s · Blueprints: %s"
+		% [fight.charges.builder_left, fight.charges.builder_max, fight.builder_scale, free_note, bp_txt]
+	)
+	_chk_builder.disabled = (not fight.charges.can_use_builder()) or bps.is_empty()
+	if _chk_builder.disabled:
+		_chk_builder.button_pressed = false
+	if _bp_option:
+		_bp_option.clear()
+		if bps.is_empty():
+			_bp_option.add_item("(no Blueprint)")
+			_bp_option.disabled = true
+		else:
+			_bp_option.disabled = false
+			for i in bps.size():
+				_bp_option.add_item(str(bps[i]))
+			var idx: int = clampi(fight.active_blueprint_index, 0, bps.size() - 1)
+			_bp_option.select(idx)
+			fight.active_blueprint_index = idx
 
 
 func _refresh_fight() -> void:
@@ -259,15 +325,15 @@ func _refresh_fight() -> void:
 	_lbl_defence.text = "Defence %d / %d%s" % [maxi(0, fight.defence_left), fight.defence, wall]
 	var res: Label = _panel.get_node_or_null("FightRes") as Label
 	if res:
-		res.text = "Assaults %d   Regroups %d   Builder %d   Hand %d/%d" % [
-			fight.assaults_left, fight.regroups_left, fight.charges.builder_left,
+		res.text = "Assaults %d   Regroups %d   Builder %d/%d   Missionary %d/%d   Hand %d/%d" % [
+			fight.assaults_left, fight.regroups_left,
+			fight.charges.builder_left, fight.charges.builder_max,
+			fight.charges.missionary_left, fight.charges.missionary_max,
 			fight.piles.hand.size(), fight.hand_size,
 		]
+	_refresh_builder_strip()
 	_rebuild_hand()
 	_update_preview()
-	_chk_builder.disabled = not fight.charges.can_use_builder()
-	if not fight.charges.can_use_builder():
-		_chk_builder.button_pressed = false
 
 
 func _rebuild_hand() -> void:
@@ -359,6 +425,27 @@ func _clear_selection() -> void:
 	_update_preview()
 
 
+func _preview_damage(kinds: Array, use_b: bool) -> Dictionary:
+	var fight = run.active_fight
+	var opts_ignore: bool = fight.ignore_walls_next
+	var walls_gone: bool = fight.walls_removed
+	var bp0 := ""
+	if use_b and not fight.blueprints.is_empty():
+		bp0 = fight.selected_blueprint()
+		if bp0 in ["scaffolding", "ignore_walls_next", "battering_ram"]:
+			opts_ignore = true
+		if bp0 in ["siege_tower", "remove_walls"]:
+			walls_gone = true
+	var ev: Dictionary = AgesRules.evaluate_kinds(kinds, {
+		"era": fight.era, "sci_level": fight.sci_level, "tiers": fight.tiers,
+		"walls": fight.walls, "garrison": fight.garrison,
+		"walls_removed": walls_gone, "ignore_walls": opts_ignore,
+		"faith_combat_mom": fight.faith_combat_mom,
+	})
+	ev["blueprint"] = bp0
+	return ev
+
+
 func _update_preview() -> void:
 	if _lbl_preview == null or run.active_fight == null:
 		return
@@ -370,22 +457,19 @@ func _update_preview() -> void:
 	for c in cards:
 		kinds.append(c.kind)
 	var fight = run.active_fight
-	var use_b: bool = _chk_builder.button_pressed and fight.charges.can_use_builder()
-	var opts_ignore: bool = fight.ignore_walls_next
-	var walls_gone: bool = fight.walls_removed
-	if use_b and not fight.blueprints.is_empty():
-		var bp0: String = str(fight.blueprints[0])
-		if bp0 in ["scaffolding", "ignore_walls_next"]:
-			opts_ignore = true
-		if bp0 in ["siege_tower", "remove_walls"]:
-			walls_gone = true
-	var ev: Dictionary = AgesRules.evaluate_kinds(kinds, {
-		"era": fight.era, "sci_level": fight.sci_level, "tiers": fight.tiers,
-		"walls": fight.walls, "garrison": fight.garrison,
-		"walls_removed": walls_gone, "ignore_walls": opts_ignore,
-	})
+	var can_b: bool = _chk_builder != null and _chk_builder.button_pressed and fight.charges.can_use_builder() and not fight.blueprints.is_empty()
+	var with_b: Dictionary = _preview_damage(kinds, can_b)
+	var without: Dictionary = _preview_damage(kinds, false)
+	var delta: int = int(with_b["damage"]) - int(without["damage"])
+	var bp_note := ""
+	if can_b:
+		bp_note = " · BP %s ×%.1f" % [str(with_b.get("blueprint", "?")), fight.builder_scale]
+		if delta != 0:
+			bp_note += " (Δ %+d vs off)" % delta
+		elif fight.walls and not fight.walls_removed:
+			bp_note += " (wall help)"
 	_lbl_preview.text = "Preview: %s (rank %d) → %d damage%s" % [
-		ev["form"], int(ev["rank"]), int(ev["damage"]), " + Builder" if use_b else "",
+		with_b["form"], int(with_b["rank"]), int(with_b["damage"]), bp_note,
 	]
 
 
@@ -397,13 +481,18 @@ func _on_assault() -> void:
 	if cards.is_empty():
 		_append("[i]Select cards first.[/i]")
 		return
-	var use_b: bool = _chk_builder.button_pressed and fight.charges.can_use_builder()
+	if _bp_option and not fight.blueprints.is_empty():
+		fight.active_blueprint_index = _bp_option.selected
+	var use_b: bool = _chk_builder != null and _chk_builder.button_pressed and fight.charges.can_use_builder() and not fight.blueprints.is_empty()
 	var r: Dictionary = fight.do_assault(cards, use_b, false)
 	if not bool(r.get("ok", false)):
 		_append("[color=#ff8888]Assault failed.[/color]")
 		return
 	var entry: Dictionary = r["entry"]
-	_append("Assault — %s for %d · left %d" % [entry["form"], int(entry["dmg"]), int(entry["left"])])
+	var bp_bit := ""
+	if bool(entry.get("used_builder", false)):
+		bp_bit = " · Builder→%s" % str(entry.get("blueprint", "?"))
+	_append("Assault — %s for %d · left %d%s" % [entry["form"], int(entry["dmg"]), int(entry["left"]), bp_bit])
 	_selected.clear()
 	_refresh_fight()
 	if fight.is_over():
@@ -584,41 +673,58 @@ func _show_shop() -> void:
 	_clear_panel()
 	_refresh_resources()
 	run.open_shop()
-	_lbl_banner.text = "Shop — Treasury (Gold) & Synod (Faith)"
+	_lbl_banner.text = "Shop — Treasury · Synod · Wonder · Loadout"
 	_rebuild_shop_panel()
 
 
 func _rebuild_shop_panel() -> void:
 	_clear_panel()
 	_refresh_resources()
-	_lbl_banner.text = "Shop — Treasury (Gold) & Synod (Faith)"
+	_lbl_banner.text = "Shop — Treasury · Synod · Wonder · Loadout"
+
+	## Scrollable body so Leave→march stays reachable when packs grow.
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.custom_minimum_size = Vector2(0, 220)
+	_panel.add_child(scroll)
+
+	var body := VBoxContainer.new()
+	body.name = "ShopBody"
+	body.add_theme_constant_override("separation", 8)
+	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(body)
 
 	var help_box := Label.new()
 	help_box.name = "ShopHelp"
 	help_box.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	help_box.add_theme_color_override("font_color", Color("9ec9ff"))
-	help_box.text = "Tap (i) for what an offer does. Packs never repeat the same item."
-	_panel.add_child(help_box)
+	help_box.text = "Tap (i) for details. Unequip Blueprints/Doctrines below to free slots. Leave→march stays in the footer."
+	body.add_child(help_box)
+
+	_add_income_panel(body)
+	_add_loadout_panel(body, help_box)
+	_add_deck_panel(body)
+	_add_wonder_panel(body, help_box)
 
 	var tre_l := Label.new()
-	tre_l.text = "Treasury"
+	tre_l.text = "Treasury (Gold)"
 	tre_l.add_theme_color_override("font_color", Color("e8d5a3"))
-	_panel.add_child(tre_l)
-
+	body.add_child(tre_l)
 	for i in run.shop_treasury.size():
-		_add_shop_row("treasury", i, run.shop_treasury[i])
+		_add_shop_row(body, help_box, "treasury", i, run.shop_treasury[i])
 
 	var syn_l := Label.new()
-	syn_l.text = "Synod"
+	syn_l.text = "Synod (Faith)"
 	syn_l.add_theme_color_override("font_color", Color("e8d5a3"))
-	_panel.add_child(syn_l)
-
+	body.add_child(syn_l)
 	for i in run.shop_synod.size():
-		_add_shop_row("synod", i, run.shop_synod[i])
+		_add_shop_row(body, help_box, "synod", i, run.shop_synod[i])
 
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
-	_panel.add_child(row)
+	## Sticky footer — always visible under the scroll.
+	var footer := HBoxContainer.new()
+	footer.add_theme_constant_override("separation", 12)
+	_panel.add_child(footer)
 
 	var reroll := Button.new()
 	reroll.text = "Reroll Treasury (%d Gold)" % run.state.reroll_cost
@@ -628,32 +734,260 @@ func _rebuild_shop_panel() -> void:
 			_append("Rerolled Treasury.")
 			_rebuild_shop_panel()
 	)
-	row.add_child(reroll)
+	footer.add_child(reroll)
 
 	var done := Button.new()
 	done.text = "Leave shop → march"
-	done.custom_minimum_size = Vector2(200, 44)
+	done.custom_minimum_size = Vector2(220, 44)
 	done.pressed.connect(_leave_shop)
-	row.add_child(done)
+	footer.add_child(done)
 
 
-func _add_shop_row(pack: String, index: int, offer: Dictionary) -> void:
+func _add_income_panel(parent: Control) -> void:
+	var br: Dictionary = run.income_breakdown()
+	var occ: Dictionary = br["occupy_counts"]
+	var yield_pf: Dictionary = br["occupy_per_fight"]
+	var bonus: Dictionary = br["bonus_pct"]
+	var era_m: Dictionary = br["era_mult"]
+	var base: Dictionary = br["base_raw"]
+
+	var title := Label.new()
+	title.text = "Income / bonuses (testing breakdown)"
+	title.add_theme_color_override("font_color", Color("e8d5a3"))
+	parent.add_child(title)
+
+	var info := Label.new()
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.add_theme_color_override("font_color", Color("a8c5b5"))
+	info.text = (
+		"Base win (raw): Gold %d · Sci %d · Cul %d · Faith %d  (+unused Assaults to Gold; Raze +%d)\n"
+		+ "Era mults: Gold×%.2f Sci×%.2f Cul×%.2f Faith×%.2f\n"
+		+ "%% bonuses: Gold +%.0f%% · Sci +%.0f%% · Cul +%.0f%% · Faith +%.0f%%\n"
+		+ "Occupied %d — Scholar %d · Artisan %d · Temple %d · Trade %d\n"
+		+ "Sticky yield / fight from occupy: Gold %d · Sci %d · Cul %d · Faith %d\n"
+		+ "Builder tier %d (scale ×%.1f) · Wonder: %s"
+	) % [
+		int(base["gold"]), int(base["science"]), int(base["culture"]), int(base["faith"]),
+		int(base["raze_gold"]),
+		float(era_m["gold"]), float(era_m["science"]), float(era_m["culture"]), float(era_m["faith"]),
+		float(bonus["gold"]) * 100.0, float(bonus["science"]) * 100.0,
+		float(bonus["culture"]) * 100.0, float(bonus["faith"]) * 100.0,
+		int(br["occupy_total"]),
+		int(occ.get("scholar", 0)), int(occ.get("artisan", 0)),
+		int(occ.get("temple", 0)), int(occ.get("trade", 0)),
+		int(yield_pf["gold"]), int(yield_pf["science"]),
+		int(yield_pf["culture"]), int(yield_pf["faith"]),
+		int(br["builder_tier"]), float(br["builder_scale"]),
+		str(br["wonder"]) if str(br["wonder"]) != "" else "(none)",
+	]
+	parent.add_child(info)
+
+	var last: Dictionary = br.get("last_reward", {})
+	if not last.is_empty():
+		var last_l := Label.new()
+		last_l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		last_l.add_theme_color_override("font_color", Color("9ec9ff"))
+		var ylds: Dictionary = last.get("yields", {})
+		last_l.text = "Last payout (%s): base G%d/S%d/C%d/F%d · raze %d · interest %d · occupy yields G%d/S%d/C%d/F%d" % [
+			str(last.get("choice", "?")),
+			int(last.get("base", {}).get("gold", 0)),
+			int(last.get("base", {}).get("science", 0)),
+			int(last.get("base", {}).get("culture", 0)),
+			int(last.get("base", {}).get("faith", 0)),
+			int(last.get("raze_gold", 0)), int(last.get("interest", 0)),
+			int(ylds.get("gold", 0)), int(ylds.get("science", 0)),
+			int(ylds.get("culture", 0)), int(ylds.get("faith", 0)),
+		]
+		parent.add_child(last_l)
+
+
+func _add_loadout_panel(parent: Control, help_box: Label) -> void:
+	var title := Label.new()
+	title.text = "Loadout — Blueprints %d/%d · Doctrines %d/%d · Policies %d/%d" % [
+		run.state.blueprints.size(), run.state.blueprint_slots,
+		run.state.doctrines.size(), run.state.doctrine_slots,
+		run.state.policies.size(), run.state.policy_slots,
+	]
+	title.add_theme_color_override("font_color", Color("e8d5a3"))
+	parent.add_child(title)
+
+	if run.state.blueprints.is_empty():
+		var empty_bp := Label.new()
+		empty_bp.text = "Blueprints: (empty — buy from Treasury)"
+		empty_bp.add_theme_color_override("font_color", Color("888888"))
+		parent.add_child(empty_bp)
+	else:
+		for i in run.state.blueprints.size():
+			var id: String = str(run.state.blueprints[i])
+			var row := HBoxContainer.new()
+			row.add_theme_constant_override("separation", 8)
+			parent.add_child(row)
+			var lbl := Label.new()
+			lbl.text = "BP %s" % id
+			lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			lbl.add_theme_color_override("font_color", Color("f2f2f2"))
+			row.add_child(lbl)
+			row.add_child(_make_info_button(run._blueprint_help(id), help_box))
+			var uneq := Button.new()
+			uneq.text = "Unequip"
+			uneq.pressed.connect(_on_unequip_blueprint.bind(i, id))
+			row.add_child(uneq)
+
+	if run.state.doctrines.is_empty():
+		var empty_doc := Label.new()
+		empty_doc.text = "Doctrines: (empty — buy from Synod; Theology adds slots)"
+		empty_doc.add_theme_color_override("font_color", Color("888888"))
+		parent.add_child(empty_doc)
+	else:
+		for j in run.state.doctrines.size():
+			var did: String = str(run.state.doctrines[j])
+			var drow := HBoxContainer.new()
+			drow.add_theme_constant_override("separation", 8)
+			parent.add_child(drow)
+			var dlbl := Label.new()
+			dlbl.text = "Doc %s" % did
+			dlbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			dlbl.add_theme_color_override("font_color", Color("f2f2f2"))
+			drow.add_child(dlbl)
+			drow.add_child(_make_info_button(run._doctrine_help(did), help_box))
+			var duneq := Button.new()
+			duneq.text = "Unequip"
+			duneq.pressed.connect(_on_unequip_doctrine.bind(j, did))
+			drow.add_child(duneq)
+
+	if not run.state.policies.is_empty():
+		var pol := Label.new()
+		pol.text = "Policies: %s" % ", ".join(PackedStringArray(run.state.policies))
+		pol.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		pol.add_theme_color_override("font_color", Color("a8c5b5"))
+		parent.add_child(pol)
+
+
+func _add_deck_panel(parent: Control) -> void:
+	var sum: Dictionary = run.deck_summary()
+	var counts: Dictionary = sum["counts"]
+	var title := Label.new()
+	title.text = "Deck & promotions"
+	title.add_theme_color_override("font_color", Color("e8d5a3"))
+	parent.add_child(title)
+
+	var deck_l := Label.new()
+	deck_l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	deck_l.add_theme_color_override("font_color", Color("f2f2f2"))
+	deck_l.text = "Deck %d — M×%d (T%d) · R×%d (T%d) · C×%d (T%d) · S×%d (T%d) · Builder charges %d · Missionary %d" % [
+		int(sum["total"]),
+		int(counts.get("M", 0)), int(sum["tiers"].get("M", 1)),
+		int(counts.get("R", 0)), int(sum["tiers"].get("R", 1)),
+		int(counts.get("C", 0)), int(sum["tiers"].get("C", 1)),
+		int(counts.get("S", 0)), int(sum["tiers"].get("S", 1)),
+		int(sum["builder_charges"]), int(sum["missionary_charges"]),
+	]
+	parent.add_child(deck_l)
+
+	var promos: Array = sum.get("promotions", [])
+	var promo_l := Label.new()
+	promo_l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	promo_l.add_theme_color_override("font_color", Color("a8c5b5"))
+	if promos.is_empty():
+		promo_l.text = "Promotions owned: (none yet — buy from Treasury; per-card attach still greybox)"
+	else:
+		var bits: PackedStringArray = PackedStringArray()
+		for p in promos:
+			bits.append("%s — %s" % [str(p), run._promotion_help(str(p))])
+		promo_l.text = "Promotions owned:\n- " + "\n- ".join(bits)
+	parent.add_child(promo_l)
+
+	var forms: Dictionary = sum.get("form_levels", {})
+	if not forms.is_empty():
+		var fl := Label.new()
+		fl.text = "Formation levels: %s" % str(forms)
+		fl.add_theme_color_override("font_color", Color("888888"))
+		parent.add_child(fl)
+
+
+func _add_wonder_panel(parent: Control, help_box: Label) -> void:
+	var title := Label.new()
+	title.text = "Wonder (1 / run)"
+	title.add_theme_color_override("font_color", Color("e8d5a3"))
+	parent.add_child(title)
+
+	if run.state.wonder != "":
+		var owned_row := HBoxContainer.new()
+		owned_row.add_theme_constant_override("separation", 8)
+		parent.add_child(owned_row)
+		var owned := Label.new()
+		owned.text = "Owned: %s" % run.state.wonder.replace("_", " ").capitalize()
+		owned.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		owned.add_theme_color_override("font_color", Color("8dffb0"))
+		owned_row.add_child(owned)
+		owned_row.add_child(_make_info_button(run._wonder_help(run.state.wonder), help_box))
+		return
+
+	if run.shop_wonder.is_empty():
+		var none := Label.new()
+		none.text = "(no Wonder offer — catalog empty?)"
+		none.add_theme_color_override("font_color", Color("888888"))
+		parent.add_child(none)
+		return
+
+	var offer: Dictionary = run.shop_wonder
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
-	_panel.add_child(row)
+	parent.add_child(row)
+	var lbl := Label.new()
+	lbl.text = "%s — %d Gold" % [str(offer.get("label", "?")), int(offer.get("cost", 0))]
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lbl.add_theme_color_override("font_color", Color("f2f2f2"))
+	row.add_child(lbl)
+	row.add_child(_make_info_button(run.shop_offer_help(offer), help_box))
+
+	var buy := Button.new()
+	buy.text = "Buy Wonder"
+	buy.disabled = bool(offer.get("bought", false)) or run.state.gold < int(offer.get("cost", 0))
+	buy.pressed.connect(func():
+		var r: Dictionary = run.buy_wonder()
+		if bool(r.get("ok", false)):
+			_append("Built Wonder [b]%s[/b]." % str(offer.get("id", "")))
+		else:
+			_append("[i]Wonder buy failed (%s).[/i]" % str(r.get("reason", "?")))
+		_rebuild_shop_panel()
+	)
+	row.add_child(buy)
+
+	var rr := Button.new()
+	var rr_cost: int = preload("res://rules/run_tables.gd").wonder_reroll_cost()
+	rr.text = "Reroll Wonder (%d Gold, %d left)" % [rr_cost, run.state.shop_wonder_rerolls_left]
+	rr.disabled = run.state.shop_wonder_rerolls_left <= 0 or run.state.gold < rr_cost
+	rr.pressed.connect(func():
+		if run.reroll_wonder():
+			_append("Rerolled Wonder offer.")
+			_rebuild_shop_panel()
+	)
+	parent.add_child(rr)
+
+
+func _add_shop_row(parent: Control, help_box: Label, pack: String, index: int, offer: Dictionary) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	parent.add_child(row)
 	var lbl := Label.new()
 	var bought: bool = bool(offer.get("bought", false))
 	var cur: String = "Gold" if pack == "treasury" else "Faith"
-	lbl.text = "%s — %d %s%s" % [
+	var slot_note := ""
+	if not bought and str(offer.get("cat", "")) == "blueprint" and run.state.blueprints.size() >= run.state.blueprint_slots:
+		slot_note = "  [slots full — unequip first]"
+	elif not bought and str(offer.get("cat", "")) == "doctrine" and run.state.doctrines.size() >= run.state.doctrine_slots:
+		slot_note = "  [slots full — unequip first]"
+	lbl.text = "%s — %d %s%s%s" % [
 		str(offer.get("label", offer.get("id", "?"))),
 		int(offer.get("cost", 0)), cur,
 		"  (bought)" if bought else "",
+		slot_note,
 	]
 	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	lbl.add_theme_color_override("font_color", Color("888888") if bought else Color("f2f2f2"))
 	lbl.tooltip_text = run.shop_offer_help(offer)
 	row.add_child(lbl)
-	var help_box: Label = _panel.get_node_or_null("ShopHelp") as Label
 	row.add_child(_make_info_button(run.shop_offer_help(offer), help_box))
 	var btn := Button.new()
 	btn.text = "Buy"
@@ -667,6 +1001,18 @@ func _add_shop_row(pack: String, index: int, offer: Dictionary) -> void:
 		_rebuild_shop_panel()
 	)
 	row.add_child(btn)
+
+
+func _on_unequip_blueprint(index: int, id: String) -> void:
+	if run.unequip_blueprint(index):
+		_append("Unequipped Blueprint %s." % id)
+		_rebuild_shop_panel()
+
+
+func _on_unequip_doctrine(index: int, id: String) -> void:
+	if run.unequip_doctrine(index):
+		_append("Unequipped Doctrine %s." % id)
+		_rebuild_shop_panel()
 
 
 func _leave_shop() -> void:

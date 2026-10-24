@@ -150,5 +150,34 @@
   "civic_effects": {
     "treasury_windfall_gold": 22,
     "fairground_toll_flat": 2
-  }
+  },
+  "prophets": {
+    "sow_dissent": { "rarity": "C", "cost": 15, "gold": 5 },
+    "tithe_collector": { "rarity": "C", "cost": 15, "gold": 8 },
+    "street_preacher": { "rarity": "C", "cost": 12, "gold": 4 },
+    "relic_broker": { "rarity": "U", "cost": 18, "gold": 12 },
+    "blessing": { "rarity": "U", "cost": 20, "gold": 0 },
+    "conversion": { "rarity": "U", "cost": 22, "gold": 0 },
+    "holy_revolt": { "rarity": "R", "cost": 30, "gold": 0 },
+    "revelation": { "rarity": "R", "cost": 28, "gold": 0 }
+  },
+  "wonders": {
+    "colosseum": { "cost": 70, "effect": "plus_assault" },
+    "pyramids": { "cost": 70, "effect": "builder_scale" },
+    "hanging_gardens": { "cost": 65, "effect": "hand_size" },
+    "stonehenge": { "cost": 65, "effect": "faith_burst" },
+    "great_library": { "cost": 70, "effect": "free_sci_level" },
+    "machu_picchu": { "cost": 80, "effect": "support_free_slots" },
+    "hagia_sophia": { "cost": 80, "effect": "float_supports" },
+    "oracle_of_delphi": { "cost": 70, "effect": "sci_cost_cut" },
+    "museum_of_alexandria": { "cost": 75, "effect": "sci_gain_pct" },
+    "petra": { "cost": 75, "effect": "occupy_x2" },
+    "terracotta_army": { "cost": 75, "effect": "replace_troop" },
+    "parade_grounds": { "cost": 80, "effect": "parade_grounds" },
+    "theater_of_war": { "cost": 80, "effect": "theater_of_war" },
+    "safe_conduct": { "cost": 55, "effect": "safe_conduct" },
+    "christ_the_redeemer": { "cost": 70, "effect": "christ_clutch" }
+  },
+  "wonder_reroll_cost": 5,
+  "builder_scale_by_tier": { "1": 1.0, "2": 1.5, "3": 2.0, "4": 2.5 }
 }

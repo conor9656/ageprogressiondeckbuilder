@@ -134,6 +134,27 @@ static func promotions() -> Dictionary:
 	return _data["promotions"]
 
 
+static func prophets() -> Dictionary:
+	ensure_loaded()
+	return _data.get("prophets", {})
+
+
+static func wonders() -> Dictionary:
+	ensure_loaded()
+	return _data.get("wonders", {})
+
+
+static func wonder_reroll_cost() -> int:
+	ensure_loaded()
+	return int(_data.get("wonder_reroll_cost", 5))
+
+
+static func builder_scale_for_tier(tier: int) -> float:
+	ensure_loaded()
+	var table: Dictionary = _data.get("builder_scale_by_tier", {})
+	return float(table.get(str(tier), 1.0))
+
+
 static func policy_commons() -> Array:
 	ensure_loaded()
 	return _data["policy_commons"]
