@@ -100,9 +100,23 @@ func _test_manual_loop() -> bool:
 		"assaults": 4,
 		"regroups": 2,
 	})
-	if not fight.do_regroup(2):
+	var keep_ids: Dictionary = {}
+	var dump: Array = []
+	for i in mini(2, fight.piles.hand.size()):
+		dump.append(fight.piles.hand[i])
+	for c in fight.piles.hand:
+		if not dump.has(c):
+			keep_ids[c.get_instance_id()] = true
+	if not fight.do_regroup(dump):
 		return false
 	if fight.regroups_left != 1:
+		return false
+	## Unselected cards must still be in hand
+	for c in fight.piles.hand:
+		if keep_ids.has(c.get_instance_id()):
+			keep_ids.erase(c.get_instance_id())
+	if not keep_ids.is_empty():
+		print("  regroup dropped unselected cards")
 		return false
 	var choice: Dictionary = fight.choose_assault_ai()
 	if choice["cards"].is_empty():

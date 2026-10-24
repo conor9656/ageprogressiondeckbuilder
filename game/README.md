@@ -13,7 +13,7 @@ Design: [`../GAME_SNAPSHOT.md`](../GAME_SNAPSHOT.md) · Tracker: [`../BUILD_PROG
 
 Between fights: **Occupy / Raze** → Science 1-of-4 / Civics 1-of-3 (when you can afford) → **Treasury / Synod** shop → march on.
 
-**Keys in fight:** `A` Assault · `R` Regroup · `Esc` clear · `H` hint
+**Keys in fight:** `A` Assault · `R` Regroup (discards **selected** cards only) · `Esc` clear · `H` hint
 
 Solo fight (no run meta) is still available from the menu for quick combat checks.
 

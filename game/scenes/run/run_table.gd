@@ -194,7 +194,7 @@ func _show_fight() -> void:
 	_panel.add_child(_lbl_preview)
 
 	var hand_l := Label.new()
-	hand_l.text = "Hand (click to select) — A Assault · R Regroup · Esc clear · H hint"
+	hand_l.text = "Hand (click to select) — A Assault · R Regroup selected only · Esc clear · H hint"
 	hand_l.add_theme_color_override("font_color", Color("cfcfcf"))
 	_panel.add_child(hand_l)
 
@@ -409,10 +409,17 @@ func _on_regroup() -> void:
 	var fight = run.active_fight
 	if fight == null or fight.is_over():
 		return
-	if not fight.do_regroup(3):
-		_append("[i]No Regroups left.[/i]")
+	var cards := _selected_cards()
+	if cards.is_empty():
+		_append("[i]Select 1–5 cards to discard, then Regroup. Unselected cards stay.[/i]")
 		return
-	_append("Regroup — %d left" % fight.regroups_left)
+	if cards.size() > 5:
+		_append("[i]Regroup discards at most 5 cards.[/i]")
+		return
+	if not fight.do_regroup(cards):
+		_append("[i]Regroup failed (none left, or bad selection).[/i]")
+		return
+	_append("Regroup — discarded %d, kept the rest. %d left" % [cards.size(), fight.regroups_left])
 	_selected.clear()
 	_refresh_fight()
 
