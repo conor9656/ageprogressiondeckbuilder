@@ -1,0 +1,35 @@
+name: Rules CI
+
+# Godot headless is the only automated rules gate.
+# The Python balance twin under sim/ is research-only and is not run here.
+
+on:
+  push:
+    branches: [main, "cursor/**"]
+  pull_request:
+
+jobs:
+  godot-rules:
+    name: Godot canonical rules
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Godot 4.7.2 binary
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/bin/godot4
+          key: godot-4.7.2-stable-linux-x86_64
+
+      - name: Install Godot if needed
+        run: |
+          if [[ ! -x /usr/local/bin/godot4 ]]; then
+            bash scripts/install_godot.sh
+          else
+            godot4 --version
+          fi
+
+      - name: Run canonical rules suite
+        run: bash scripts/ci_rules.sh

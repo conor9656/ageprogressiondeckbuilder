@@ -11,8 +11,9 @@
 | `GAME_DESIGN.md` | Living design notes (may lag this snapshot) |
 | `SCIENCE_UPGRADES.md`, `POLICIES.md`, `BLUEPRINTS.md`, `DOCTRINES.md` | Offer pools & card lists |
 | `CONTENT_CATALOG.md` | Draft IDs / paper checks |
-| `sim/era1_sim.py` | Executable rules twin (Python) |
-| `sim/results/ERAS_6_8_EASE.md` | Latest full-curve balance evidence |
+| `game/` | **Canonical rules + client** (Godot 4.7.2) — CI gate |
+| `sim/era1_sim.py` | Research balance twin (Python) — **not CI** |
+| `sim/results/ERAS_6_8_EASE.md` | Historical full-curve balance evidence |
 
 ---
 
@@ -24,7 +25,7 @@
 | Core combat rules | **Locked enough to build** |
 | Content pools (Policies / BP / Docs) | Drafted; numbers provisional |
 | Balance (Defence, rewards, growth) | **Sim-backed through era 8** — good enough to start the game; fine-tune later |
-| Game client (Godot) | **Not started** |
+| Game client (Godot) | **Ancient greybox playable** (W1–W5) |
 | Art / audio / Steam | Not started |
 
 **Verdict:** Design + Monte Carlo have done their job for a first vertical slice. Smaller balance tweaks can wait until something is playable. **Next major work is game code**, after this snapshot.
@@ -337,7 +338,7 @@ Aligned with `TECH_STACK.md` §9, updated for where we are now:
 | **2** | **Vertical slice UI** | One settlement: draw → Assault/Regroup → damage numbers → win/lose | Playable greybox fight without shop |
 | **3** | **Run loop + shop (era 1)** | Rewards, occupy/raze, Treasury/Synod packs, Science/Civics 1-of-N | Full Ancient era playable greybox |
 | **4** | **Content data import** | JSON/resources for units, formations, BP/Doc/Policy stubs | Swap numbers without code changes |
-| **5** | **Retire or dual-run Python sim** | Avoid rules drift — either call Godot headless from CI or keep Python as oracle with parity tests | One canonical rules path |
+| **5** | **Retire or dual-run Python sim** | Avoid rules drift — Godot headless in CI; Python kept as research oracle | ✅ One canonical rules path (`scripts/ci_rules.sh`) |
 | **6** | **Art pipeline spike** | One unit class: silhouette → animate → in-engine | Style locked enough to expand |
 | **7** | **Multi-era + meta** | Eras 2–8 systems already designed; wire Breakthrough, Toolkit, Wonders | Full Domination run greybox |
 | **8** | **Steam smoke** | Export + placeholder achievements / Cloud | Store-page-ready binary later |

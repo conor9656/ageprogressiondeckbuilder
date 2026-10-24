@@ -8,7 +8,7 @@ const Formation := preload("res://rules/formation.gd")
 const SettlementFight := preload("res://rules/settlement_fight.gd")
 const AncientRun := preload("res://rules/ancient_run.gd")
 
-const VERSION := "0.5.0-w4-content-data"
+const VERSION := "0.6.0-w5-canonical-ci"
 
 
 static func engine_tag() -> String:
