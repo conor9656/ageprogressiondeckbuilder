@@ -1,0 +1,5 @@
+{
+  "name": "ages-godot",
+  "install": "bash scripts/install_godot.sh",
+  "start": ""
+}

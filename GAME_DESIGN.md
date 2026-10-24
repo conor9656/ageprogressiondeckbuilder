@@ -1,6 +1,7 @@
 # Game Design Document — "Ages" (working title)
 
-> Status: concept locked, all numbers **provisional** (to be tuned by simulation later).
+> **Build source of truth:** `GAME_SNAPSHOT.md` (frozen 2026-10-22). Prefer that file when this doc lags.
+> Status: concept locked; Defence/rewards sim-backed through era 8 — remaining numbers still provisional.
 > This document describes the game only — not the technical implementation.
 > Design risks: §14. Stack: `TECH_STACK.md`. Modes: `CARD_MODES.md`. Pools: `POLICIES.md`, `BLUEPRINTS.md`, `DOCTRINES.md`. Science/Civics offers: `SCIENCE_UPGRADES.md`. Sim: `SIMULATION.md`.
 
