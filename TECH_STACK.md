@@ -10,7 +10,7 @@
 
 | Layer | Choice | Why |
 |---|---|---|
-| **Game engine** | **Godot 4** (GDScript + typed dictionaries / classes) | Best agent fit: text scenes, strong 2D, free, CLI export, Steam-ready |
+| **Game engine** | **Godot 4.7.2** (GDScript + typed dictionaries / classes) | Locked 2026-10-23; best agent fit: text scenes, strong 2D, free, CLI export, Steam-ready |
 | **Language** | GDScript first; C# only if a library forces it | Agents are fluent; fast iteration; no compile tax for card logic |
 | **Card / sim core** | Pure data + logic modules (no scene tree required) | Headless balance sims and unit tests without booting UI |
 | **Art stills** | AI image gen → human cleanup in **Aseprite** or **Krita** | Gen for ideation / base plates; authoring tool owns the final asset |
@@ -149,7 +149,7 @@ Agents struggle when: assets are only editable inside a closed GUI, logic lives 
 Updated 2026-10-22 — Python balance twin (`sim/era1_sim.py`) already covers step 2 research. Full milestone table: `GAME_SNAPSHOT.md` §11.
 
 0. **Game snapshot** — `GAME_SNAPSHOT.md` ✅  
-1. **Godot rules module + unit tests** — port formations, Might×Mom, walls/garrisons, support charges; golden-seed parity vs Python.  
+1. **Godot rules module + unit tests** — port formations, Might×Mom, walls/garrisons, support charges; golden-seed parity vs Python. Tracker: `BUILD_PROGRESS.md` (W1).  
 2. **Vertical slice UI** — one settlement fight (draw / Assault / Regroup / damage).  
 3. **Shop + Ancient-era run loop** — rewards, packs, Science/Civics; greybox.  
 4. **Content as data** — JSON/resources for units & modifier stubs.  
