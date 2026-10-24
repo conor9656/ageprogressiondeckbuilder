@@ -6,91 +6,7 @@ const CombatTables := preload("res://rules/combat_tables.gd")
 const AgesRules := preload("res://rules/ages_rules.gd")
 const RunState := preload("res://rules/run_state.gd")
 const SupportCharges := preload("res://rules/support_charges.gd")
-
-const REWARD_GOLD := 38
-const REWARD_SCIENCE := 16
-const REWARD_CULTURE := 16
-const REWARD_FAITH := 12
-const RAZE_GOLD := 28
-const CITY_YIELD := 7
-const PACK_SIZE := 5
-const SCIENCE_OFFER_COUNT := 4
-const CIVIC_OFFER_COUNT := 3
-
-const SCIENCE_COSTS: Array = [
-	8, 12, 16, 22, 28, 36, 46, 58, 72, 88, 106, 126, 148, 172, 198,
-]
-
-const ERA_BASE := 665
-
-## E1 drills + progression node ids
-const E1_DRILLS: Array = [
-	"battle_line_drill", "skirmish_drill", "combined_arms_primer", "writing", "surveying",
-]
-
-const E1_PROG: Array = [
-	["edu_scribal_schools", "sci_pct", 0.10],
-	["bank_markets", "gold_pct", 0.08],
-	["dev_shrines", "faith_pct", 0.08],
-	["art_festivals", "cul_pct", 0.08],
-	["eng_apprenticeship", "eng", "draw_on_builder"],
-	["pro_alms", "pro", "faith_on_missionary"],
-]
-
-## id, rarity weight proxy, family, once
-const E1_CIVICS: Array = [
-	["code_of_laws", "C", "slot", true],
-	["craftsmanship", "C", "draft", false],
-	["early_empire", "C", "slot", true],
-	["theology", "C", "slot", true],
-	["military_training", "C", "qol", true],
-	["literacy", "U", "draft", false],
-	["treasury_windfall", "U", "econ", true],
-	["stall_permits", "C", "shop", true],
-	["fairground_toll", "C", "shop", true],
-	["corvee_exemption", "C", "works", true],
-	["lay_preachers", "C", "ministry", true],
-]
-
-const BLUEPRINTS: Dictionary = {
-	"battering_ram": ["C", 10],
-	"scaffolding": ["C", 10],
-	"supply_lines": ["C", 10],
-	"watchtower": ["C", 10],
-	"forge": ["U", 22],
-	"siege_tower": ["U", 22],
-	"roads": ["U", 22],
-	"magazine": ["U", 22],
-	"aqueduct": ["R", 45],
-	"arsenal": ["R", 45],
-}
-
-const DOCTRINES: Dictionary = {
-	"tithe": ["C", 8],
-	"scriptorium": ["C", 8],
-	"pilgrimage": ["C", 8],
-	"alms": ["C", 8],
-	"zeal": ["U", 18],
-	"relic_hunt": ["U", 18],
-	"crusade": ["U", 18],
-	"scholastic_order": ["U", 18],
-	"missionary_zeal": ["R", 35],
-	"mercenaries": ["R", 35],
-}
-
-const PROMOTIONS: Dictionary = {
-	"master_drill": ["C", 12],
-	"skirmish_doctrine": ["C", 12],
-	"shock_drill": ["U", 20],
-	"banner_carrier": ["U", 22],
-	"thinking_soldier": ["U", 20],
-	"heroic": ["R", 40],
-}
-
-const POLICY_COMMONS: Array = [
-	"agoge", "drill_manual", "horse_breeding", "sappers",
-	"militia_act", "line_officers", "research_corps",
-]
+const RunTables := preload("res://rules/run_tables.gd")
 
 var state: RefCounted
 var current_settlement: Dictionary = {}
@@ -105,6 +21,7 @@ var pending_levelup: Dictionary = {}
 
 func start(seed: int = 1) -> void:
 	CombatTables.ensure_loaded()
+	RunTables.ensure_loaded()
 	state = RunState.new()
 	state.setup(seed)
 	current_settlement = {}
@@ -127,20 +44,22 @@ func _make_next_settlement() -> void:
 
 static func make_settlement(kind: String, rng: RandomNumberGenerator, era: int = 1) -> Dictionary:
 	CombatTables.ensure_loaded()
+	RunTables.ensure_loaded()
 	var base: int = CombatTables.era_base_defence(era)
-	if base <= 0:
-		base = ERA_BASE
-	var mult := {"village": 1.0, "town": 1.5, "capital": 2.5}
-	var defence: int = int(base * float(mult.get(kind, 1.0)))
+	var defence: int = int(float(base) * RunTables.kind_mult(kind))
+	var sett: Dictionary = RunTables.settlement()
 	var walls := false
 	var garrison := "militia"
 	if kind == "town":
-		walls = rng.randf() < 0.50
-		garrison = ["pikemen", "archers", "horsemen", "militia"][rng.randi() % 4]
+		walls = rng.randf() < float(sett["town_walls_chance"])
+		var tg: Array = sett["town_garrisons"]
+		garrison = str(tg[rng.randi() % tg.size()])
 	elif kind == "capital":
-		walls = rng.randf() < 0.80
-		garrison = ["pikemen", "archers", "horsemen"][rng.randi() % 3]
-	var city_type: String = ["scholar", "artisan", "temple", "trade"][rng.randi() % 4]
+		walls = rng.randf() < float(sett["capital_walls_chance"])
+		var cg: Array = sett["capital_garrisons"]
+		garrison = str(cg[rng.randi() % cg.size()])
+	var types: Array = sett["city_types"]
+	var city_type: String = str(types[rng.randi() % types.size()])
 	return {
 		"kind": kind,
 		"era": era,
@@ -184,10 +103,10 @@ func compute_base_rewards(assaults_used: int) -> Dictionary:
 	var sci_m: float = state.income_mult("sci")
 	var cul_m: float = state.income_mult("cul")
 	var faith_m: float = state.income_mult("faith")
-	var g: int = int((REWARD_GOLD + unused) * (1.0 + state.gold_bonus_pct) * gold_m)
-	var s: int = int(REWARD_SCIENCE * (1.0 + state.sci_bonus_pct) * sci_m)
-	var c: int = int(REWARD_CULTURE * (1.0 + state.cul_bonus_pct) * cul_m)
-	var f: int = int(REWARD_FAITH * (1.0 + state.faith_bonus_pct) * faith_m)
+	var g: int = int((RunTables.reward("gold") + unused) * (1.0 + state.gold_bonus_pct) * gold_m)
+	var s: int = int(RunTables.reward("science") * (1.0 + state.sci_bonus_pct) * sci_m)
+	var c: int = int(RunTables.reward("culture") * (1.0 + state.cul_bonus_pct) * cul_m)
+	var f: int = int(RunTables.reward("faith") * (1.0 + state.faith_bonus_pct) * faith_m)
 	return {"gold": g, "science": s, "culture": c, "faith": f, "unused_assaults": unused}
 
 
@@ -202,7 +121,7 @@ func apply_victory_payout(assaults_used: int, choice: String) -> Dictionary:
 	var occupied_type := ""
 	var raze_gold := 0
 	if choice == "raze":
-		raze_gold = int(RAZE_GOLD * (1.0 + state.gold_bonus_pct))
+		raze_gold = int(RunTables.reward("raze_gold") * (1.0 + state.gold_bonus_pct))
 		state.gold += raze_gold
 	else:
 		occupied_type = str(current_settlement.get("city_type", "trade"))
@@ -228,23 +147,24 @@ func apply_victory_payout(assaults_used: int, choice: String) -> Dictionary:
 
 func _apply_city_yields() -> Dictionary:
 	var out := {"gold": 0, "science": 0, "culture": 0, "faith": 0}
+	var y: int = RunTables.reward("city_yield")
 	for t in state.occupied:
-		var amt: int = int(CITY_YIELD)
+		var amt: int = y
 		match str(t):
 			"scholar":
-				amt = int(CITY_YIELD * (1.0 + state.sci_bonus_pct) * state.income_mult("sci"))
+				amt = int(y * (1.0 + state.sci_bonus_pct) * state.income_mult("sci"))
 				state.science += amt
 				out["science"] += amt
 			"artisan":
-				amt = int(CITY_YIELD * (1.0 + state.cul_bonus_pct) * state.income_mult("cul"))
+				amt = int(y * (1.0 + state.cul_bonus_pct) * state.income_mult("cul"))
 				state.culture += amt
 				out["culture"] += amt
 			"temple":
-				amt = int(CITY_YIELD * (1.0 + state.faith_bonus_pct) * state.income_mult("faith"))
+				amt = int(y * (1.0 + state.faith_bonus_pct) * state.income_mult("faith"))
 				state.faith += amt
 				out["faith"] += amt
 			"trade":
-				amt = int(CITY_YIELD * (1.0 + state.gold_bonus_pct) * state.income_mult("gold"))
+				amt = int(y * (1.0 + state.gold_bonus_pct) * state.income_mult("gold"))
 				state.gold += amt
 				out["gold"] += amt
 	return out
@@ -253,23 +173,19 @@ func _apply_city_yields() -> Dictionary:
 ## --- Level-ups ---------------------------------------------------------------
 
 func science_cost() -> int:
-	if state.sci_level >= SCIENCE_COSTS.size():
-		return 99999
-	return maxi(1, int(SCIENCE_COSTS[state.sci_level]))
+	return maxi(1, RunTables.science_cost(state.sci_level))
 
 
 func civic_cost() -> int:
-	if state.civ_level >= SCIENCE_COSTS.size():
-		return 99999
-	return maxi(1, int(SCIENCE_COSTS[state.civ_level]))
+	return maxi(1, RunTables.science_cost(state.civ_level))
 
 
 func can_afford_science() -> bool:
-	return state.science >= science_cost() and state.sci_level < SCIENCE_COSTS.size()
+	return state.science >= science_cost() and state.sci_level < RunTables.science_cost_count()
 
 
 func can_afford_civic() -> bool:
-	return state.culture >= civic_cost() and state.civ_level < SCIENCE_COSTS.size()
+	return state.culture >= civic_cost() and state.civ_level < RunTables.science_cost_count()
 
 
 func begin_science_levelup() -> Dictionary:
@@ -314,37 +230,38 @@ func pick_levelup(offer_id: String) -> bool:
 
 
 func roll_science_offers() -> Array:
-	var t_count: int = 1 if state.rng.randf() < 0.55 else 2
+	var offer_n: int = RunTables.science_offer_count()
+	var t_count: int = 1 if state.rng.randf() < RunTables.pack_float("science_one_troop_chance") else 2
 	var troops: Array = _weighted_troop_offers(t_count)
 	var pool: Array = []
-	for d in E1_DRILLS:
+	for d in RunTables.drills():
 		pool.append(d)
-	for row in E1_PROG:
-		var nid: String = str(row[0])
+	for row in RunTables.progression():
+		var nid: String = str(row["id"])
 		if not state.owned_prog.has(nid):
 			pool.append(nid)
-	if _can_upgrade_support("B") and state.rng.randf() < 0.40:
+	var sch: float = RunTables.pack_float("support_charge_offer_chance")
+	if _can_upgrade_support("B") and state.rng.randf() < sch:
 		pool.append("support_charge_B")
-	if _can_upgrade_support("Y") and state.rng.randf() < 0.40:
+	if _can_upgrade_support("Y") and state.rng.randf() < sch:
 		pool.append("support_charge_Y")
 	_shuffle(pool)
 	var non: Array = []
-	while troops.size() + non.size() < SCIENCE_OFFER_COUNT and not pool.is_empty():
+	while troops.size() + non.size() < offer_n and not pool.is_empty():
 		var n: String = str(pool.pop_back())
 		if not non.has(n) and not troops.has(n):
 			non.append(n)
 	## Unique fillers only — never pad with duplicates
-	var fillers: Array = [
-		"battle_line_drill", "skirmish_drill", "combined_arms_primer",
-		"writing", "surveying", "edu_scribal_schools", "bank_markets",
-	]
+	var fillers: Array = RunTables.drills().duplicate()
+	for row2 in RunTables.progression():
+		fillers.append(str(row2["id"]))
 	for f in fillers:
-		if troops.size() + non.size() >= SCIENCE_OFFER_COUNT:
+		if troops.size() + non.size() >= offer_n:
 			break
 		if not non.has(f) and not troops.has(f):
 			non.append(f)
 	var out: Array = troops + non
-	return out.slice(0, mini(SCIENCE_OFFER_COUNT, out.size()))
+	return out.slice(0, mini(offer_n, out.size()))
 
 
 func _weighted_troop_offers(n: int) -> Array:
@@ -409,12 +326,12 @@ func apply_science(pick: String) -> void:
 	if pick == "support_charge_Y":
 		state.missionary_charges_max = mini(CombatTables.support_charge_cap(), state.missionary_charges_max + 1)
 		return
-	for row in E1_PROG:
-		if pick != str(row[0]):
+	for row in RunTables.progression():
+		if pick != str(row["id"]):
 			continue
 		state.owned_prog[pick] = true
-		var kind: String = str(row[1])
-		var val = row[2]
+		var kind: String = str(row["kind"])
+		var val = row["value"]
 		match kind:
 			"sci_pct":
 				state.sci_bonus_pct += float(val)
@@ -444,23 +361,23 @@ func apply_science(pick: String) -> void:
 
 
 func roll_civic_offers() -> Array:
+	var offer_n: int = RunTables.civic_offer_count()
 	var candidates: Array = []
 	var weights: Array = []
-	for row in E1_CIVICS:
-		var cid: String = str(row[0])
-		var rarity: String = str(row[1])
-		var once: bool = bool(row[3])
+	for row in RunTables.civics():
+		var cid: String = str(row["id"])
+		var rarity: String = str(row["rarity"])
+		var once: bool = bool(row["once"])
 		if once and state.owned_civics.has(cid):
 			continue
 		if not _civic_legal(cid):
 			continue
-		var w: float = {"C": 10.0, "U": 4.0, "R": 1.0}.get(rarity, 1.0)
 		candidates.append(cid)
-		weights.append(w)
+		weights.append(RunTables.rarity_weight(rarity))
 	if candidates.is_empty():
 		return ["craftsmanship", "military_training", "fairground_toll"]
 	var offers: Array = []
-	while offers.size() < CIVIC_OFFER_COUNT and not candidates.is_empty():
+	while offers.size() < offer_n and not candidates.is_empty():
 		var total: float = 0.0
 		for w in weights:
 			total += float(w)
@@ -477,7 +394,7 @@ func roll_civic_offers() -> Array:
 		weights.remove_at(chosen_i)
 		if not offers.has(cid2):
 			offers.append(cid2)
-	while offers.size() < CIVIC_OFFER_COUNT:
+	while offers.size() < offer_n:
 		offers.append("craftsmanship")
 	return offers
 
@@ -493,8 +410,8 @@ func _civic_legal(cid: String) -> bool:
 
 
 func apply_civic(pick: String) -> void:
-	for row in E1_CIVICS:
-		if str(row[0]) == pick and bool(row[3]):
+	for row in RunTables.civics():
+		if str(row["id"]) == pick and bool(row["once"]):
 			state.owned_civics[pick] = true
 			break
 	match pick:
@@ -511,20 +428,20 @@ func apply_civic(pick: String) -> void:
 		"stall_permits":
 			state.pack_bonus = mini(2, state.pack_bonus + 1)
 		"fairground_toll":
-			state.unit_cost_flat = maxi(state.unit_cost_flat, 2)
+			state.unit_cost_flat = maxi(state.unit_cost_flat, RunTables.civic_effect_int("fairground_toll_flat"))
 		"corvee_exemption":
 			state.eng_flags["builder_free_slot"] = true
 		"lay_preachers":
 			state.pro_flags["missionary_free_slot"] = true
 		"treasury_windfall":
-			state.gold += int(22 * (1.0 + state.gold_bonus_pct))
+			state.gold += int(RunTables.civic_effect_int("treasury_windfall_gold") * (1.0 + state.gold_bonus_pct))
 
 
 func _draft_policy() -> void:
 	if state.policies.size() >= state.policy_slots:
 		return
 	var pool: Array = []
-	for p in POLICY_COMMONS:
+	for p in RunTables.policy_commons():
 		if not state.policies.has(p):
 			pool.append(p)
 	if pool.is_empty():
@@ -536,7 +453,7 @@ func _draft_policy() -> void:
 
 func open_shop() -> Dictionary:
 	shop_rerolled = false
-	var n: int = PACK_SIZE + state.pack_bonus
+	var n: int = RunTables.pack_size() + state.pack_bonus
 	shop_treasury = _roll_unique_pack(n, true)
 	shop_synod = _roll_unique_pack(n, false)
 	return {"treasury": shop_treasury.duplicate(true), "synod": shop_synod.duplicate(true)}
@@ -547,7 +464,7 @@ func reroll_treasury() -> bool:
 		return false
 	state.gold -= state.reroll_cost
 	shop_rerolled = true
-	var n: int = PACK_SIZE + state.pack_bonus
+	var n: int = RunTables.pack_size() + state.pack_bonus
 	shop_treasury = _roll_unique_pack(n, true)
 	return true
 
@@ -577,7 +494,7 @@ func _roll_unique_pack(n: int, treasury: bool) -> Array:
 			var key2 := "unit:%s" % kind
 			if seen.has(key2):
 				continue
-			var cost: int = {1: 8, 2: 12, 3: 18, 4: 28}.get(int(state.tiers.get(kind, 1)), 8)
+			var cost: int = RunTables.unit_tier_cost(int(state.tiers.get(kind, 1)))
 			cost = maxi(1, cost - state.unit_cost_flat)
 			var o := {"cat": "unit", "id": kind, "cost": cost, "label": "Unit %s" % kind}
 			seen[key2] = true
@@ -589,66 +506,92 @@ func _roll_unique_pack(n: int, treasury: bool) -> Array:
 	return out
 
 
+func _unit_offer(kind: String) -> Dictionary:
+	var cost: int = RunTables.unit_tier_cost(int(state.tiers.get(kind, 1)))
+	cost = maxi(1, cost - state.unit_cost_flat)
+	return {"cat": "unit", "id": kind, "cost": cost, "label": "Unit %s" % kind}
+
+
+func _prophet_offer(id: String = "sow_dissent") -> Dictionary:
+	var cost: int = RunTables.pack_int("prophet_cost")
+	return {"cat": "prophet", "id": id, "cost": cost, "label": "Prophet %s" % id}
+
+
 func roll_treasury_offer(exclude: Dictionary = {}) -> Dictionary:
 	## exclude: set of "cat:id" keys already in the pack.
+	var unit_band: float = RunTables.pack_float("treasury_unit_band")
+	var bp_band: float = RunTables.pack_float("treasury_blueprint_band")
+	var promo_band: float = RunTables.pack_float("treasury_promo_band")
 	for _try in 16:
 		var r: float = state.rng.randf()
 		var offer: Dictionary
-		if r < 0.36:
+		if r < unit_band:
 			var kind: String = ["M", "R", "C", "S"][state.rng.randi() % 4]
-			var cost: int = {1: 8, 2: 12, 3: 18, 4: 28}.get(int(state.tiers.get(kind, 1)), 8)
-			cost = maxi(1, cost - state.unit_cost_flat)
-			offer = {"cat": "unit", "id": kind, "cost": cost, "label": "Unit %s" % kind}
-		elif r < 0.64:
-			var name: String = _weighted_from(BLUEPRINTS, exclude, "blueprint")
+			offer = _unit_offer(kind)
+		elif r < bp_band:
+			var name: String = _weighted_from(RunTables.blueprints(), exclude, "blueprint")
 			if name == "":
 				continue
-			offer = {"cat": "blueprint", "id": name, "cost": int(BLUEPRINTS[name][1]), "label": "BP %s" % name}
-		elif r < 0.92:
-			var pname: String = _weighted_from(PROMOTIONS, exclude, "promotion")
+			offer = {
+				"cat": "blueprint", "id": name,
+				"cost": RunTables.catalog_cost(RunTables.blueprints(), name),
+				"label": "BP %s" % name,
+			}
+		elif r < promo_band:
+			var pname: String = _weighted_from(RunTables.promotions(), exclude, "promotion")
 			if pname == "":
 				continue
-			offer = {"cat": "promotion", "id": pname, "cost": int(PROMOTIONS[pname][1]), "label": "Promo %s" % pname}
+			offer = {
+				"cat": "promotion", "id": pname,
+				"cost": RunTables.catalog_cost(RunTables.promotions(), pname),
+				"label": "Promo %s" % pname,
+			}
 		else:
 			var kind2: String = ["M", "R", "C", "S"][state.rng.randi() % 4]
-			offer = {"cat": "unit", "id": kind2, "cost": maxi(1, 8 - state.unit_cost_flat), "label": "Unit %s" % kind2}
+			offer = _unit_offer(kind2)
 		if not exclude.has(_offer_key(offer)):
 			return offer
-	## Last resort unit not yet seen
 	for kind3 in ["M", "R", "C", "S"]:
 		var key := "unit:%s" % kind3
 		if exclude.has(key):
 			continue
-		return {"cat": "unit", "id": kind3, "cost": maxi(1, 8 - state.unit_cost_flat), "label": "Unit %s" % kind3}
-	return {"cat": "unit", "id": "M", "cost": 8, "label": "Unit M"}
+		return _unit_offer(kind3)
+	return _unit_offer("M")
 
 
 func roll_synod_offer(exclude: Dictionary = {}) -> Dictionary:
+	var doc_chance: float = RunTables.pack_float("synod_doctrine_chance")
 	for _try in 16:
 		var offer: Dictionary
-		if state.rng.randf() < 0.55:
-			var name: String = _weighted_from(DOCTRINES, exclude, "doctrine")
+		if state.rng.randf() < doc_chance:
+			var name: String = _weighted_from(RunTables.doctrines(), exclude, "doctrine")
 			if name == "":
-				offer = {"cat": "prophet", "id": "sow_dissent", "cost": 15, "label": "Prophet sow_dissent"}
+				offer = _prophet_offer()
 			else:
-				offer = {"cat": "doctrine", "id": name, "cost": int(DOCTRINES[name][1]), "label": "Doc %s" % name}
+				offer = {
+					"cat": "doctrine", "id": name,
+					"cost": RunTables.catalog_cost(RunTables.doctrines(), name),
+					"label": "Doc %s" % name,
+				}
 		else:
-			offer = {"cat": "prophet", "id": "sow_dissent", "cost": 15, "label": "Prophet sow_dissent"}
+			offer = _prophet_offer()
 		if not exclude.has(_offer_key(offer)):
 			return offer
-	## Prefer any unused doctrine, then a unit-like faith stub
-	var doc: String = _weighted_from(DOCTRINES, exclude, "doctrine")
+	var doc: String = _weighted_from(RunTables.doctrines(), exclude, "doctrine")
 	if doc != "":
-		return {"cat": "doctrine", "id": doc, "cost": int(DOCTRINES[doc][1]), "label": "Doc %s" % doc}
+		return {
+			"cat": "doctrine", "id": doc,
+			"cost": RunTables.catalog_cost(RunTables.doctrines(), doc),
+			"label": "Doc %s" % doc,
+		}
 	if not exclude.has("prophet:sow_dissent"):
-		return {"cat": "prophet", "id": "sow_dissent", "cost": 15, "label": "Prophet sow_dissent"}
-	## Extra prophet variants so Synod can still fill uniquely if needed
+		return _prophet_offer()
 	for alt in ["tithe_collector", "street_preacher", "relic_broker"]:
 		var key := "prophet:%s" % alt
 		if exclude.has(key):
 			continue
-		return {"cat": "prophet", "id": alt, "cost": 15, "label": "Prophet %s" % alt}
-	return {"cat": "prophet", "id": "sow_dissent", "cost": 15, "label": "Prophet sow_dissent"}
+		return _prophet_offer(alt)
+	return _prophet_offer()
 
 
 func _weighted_from(table: Dictionary, exclude: Dictionary, cat: String) -> String:
@@ -657,13 +600,12 @@ func _weighted_from(table: Dictionary, exclude: Dictionary, cat: String) -> Stri
 		var key := "%s:%s" % [cat, str(k)]
 		if exclude.has(key):
 			continue
-		## Already owned unique gear shouldn't reappear
 		if cat == "blueprint" and state.blueprints.has(str(k)):
 			continue
 		if cat == "doctrine" and state.doctrines.has(str(k)):
 			continue
-		var rar: String = str(table[k][0])
-		var n: int = 3 if rar == "C" else (2 if rar == "U" else 1)
+		var rar: String = RunTables.catalog_rarity(table, str(k))
+		var n: int = RunTables.rarity_bag_count(rar)
 		for _i in n:
 			bag.append(k)
 	if bag.is_empty():
@@ -710,7 +652,7 @@ func buy_offer(pack: String, index: int) -> Dictionary:
 			state.gold += 2
 		"prophet":
 			## Greybox prophets: immediate Gold payout
-			state.gold += 5
+			state.gold += RunTables.pack_int("prophet_gold_payout")
 	offer["bought"] = true
 	list[index] = offer
 	state.log.append({"op": "buy", "pack": pack, "offer": offer.duplicate()})

@@ -23,6 +23,8 @@ func _initialize() -> void:
 	failed += _check("shop_buy_unit", _test_shop())
 	failed += _check("shop_no_duplicates", _test_shop_unique())
 	failed += _check("offer_help_text", _test_offer_help())
+	failed += _check("content_tables_load", _test_content_tables())
+	failed += _check("content_reward_from_json", _test_reward_from_json())
 	failed += _check("ancient_run_auto_era", _test_auto_era())
 
 	if failed == 0:
@@ -163,9 +165,11 @@ func _test_ui_scripts_compile() -> bool:
 	var fight_script: GDScript = load("res://scenes/fight/fight_table.gd") as GDScript
 	var run_script: GDScript = load("res://scenes/run/run_table.gd") as GDScript
 	var rules_script: GDScript = load("res://rules/ancient_run.gd") as GDScript
+	var tables_script: GDScript = load("res://rules/run_tables.gd") as GDScript
 	return (
 		menu_script != null and fight_script != null
 		and run_script != null and rules_script != null
+		and tables_script != null
 	)
 
 
@@ -302,6 +306,41 @@ func _test_offer_help() -> bool:
 		if run.shop_offer_help(o).length() < 12:
 			return false
 	return true
+
+
+func _test_content_tables() -> bool:
+	var RunTables = preload("res://rules/run_tables.gd")
+	RunTables.ensure_loaded()
+	CombatTables.ensure_loaded()
+	if RunTables.reward("gold") != 38:
+		return false
+	if RunTables.pack_size() != 5:
+		return false
+	if RunTables.blueprints().is_empty() or RunTables.doctrines().is_empty():
+		return false
+	if CombatTables.walls_damage_mult() != 0.5:
+		return false
+	if CombatTables.age_power_era_min() != 4:
+		return false
+	if not CombatTables.garrison_mods().has("pikemen"):
+		return false
+	return true
+
+
+func _test_reward_from_json() -> bool:
+	## Proves victory gold comes from JSON reward table (not a stale const).
+	var RunTables = preload("res://rules/run_tables.gd")
+	RunTables.ensure_loaded()
+	var expected_base: int = RunTables.reward("gold")
+	var run = AgesRules.new_ancient_run(42)
+	run.begin_fight()
+	var r: Dictionary = run.compute_base_rewards(4)  ## unused assaults = 0
+	if int(r["gold"]) != expected_base:
+		print("  gold got=%s expect=%s" % [r["gold"], expected_base])
+		return false
+	var raze_expect: int = RunTables.reward("raze_gold")
+	var full: Dictionary = run.apply_victory_payout(4, "raze")
+	return int(full["raze_gold"]) == raze_expect
 
 
 func _test_auto_era() -> bool:

@@ -44,6 +44,11 @@ static func evaluate(kinds: Array, tiers_by_kind: Dictionary, opts: Dictionary =
 			has_siege_played = true
 			break
 
+	var gmods: Dictionary = CombatTables.garrison_mods().get(garrison, {})
+	var zero_might: Array = gmods.get("zero_might", [])
+	var half_might: Array = gmods.get("half_might", [])
+	var zero_mom: Array = gmods.get("zero_mom", [])
+
 	for j in scoring.size():
 		var idx: int = scoring[j]
 		var kind: String = combat_kinds[idx]
@@ -51,11 +56,11 @@ static func evaluate(kinds: Array, tiers_by_kind: Dictionary, opts: Dictionary =
 		var um := float(CombatTables.unit_might(kind, tier))
 		var uo := float(CombatTables.unit_mom(kind, tier))
 
-		if garrison == "pikemen" and kind == "C":
+		if zero_might.has(kind):
 			um = 0.0
-		if garrison == "archers" and kind == "M":
+		if half_might.has(kind):
 			um = um / 2.0
-		if garrison == "horsemen" and kind == "R":
+		if zero_mom.has(kind):
 			uo = 0.0
 
 		might += um
@@ -63,12 +68,12 @@ static func evaluate(kinds: Array, tiers_by_kind: Dictionary, opts: Dictionary =
 
 	mom *= 1.0 + CombatTables.tech_literacy() * sci
 
-	if era >= 4 and sci > 0:
+	if era >= CombatTables.age_power_era_min() and sci > 0:
 		might *= 1.0 + CombatTables.age_power() * sci
 
 	var dmg := might * mom
 	if walls and not has_siege_played and not ignore_walls:
-		dmg *= 0.5
+		dmg *= CombatTables.walls_damage_mult()
 
 	return {
 		"form": form_id,

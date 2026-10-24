@@ -33,5 +33,8 @@ Expect `AGES_TESTS_OK`.
 | `scenes/boot/` | Main menu |
 | `scenes/run/` | Ancient era hub / fight / post / shop |
 | `scenes/fight/` | Solo settlement fight (debug) |
-| `content/` | JSON tables |
+| `content/combat_tables.json` | Unit/formation numbers, Defence, walls, garrisons |
+| `content/ancient_run.json` | Rewards, Sci/Civ catalogs, shop packs, starter deck |
 | `tests/` | Headless suite + fixtures |
+
+Balance knobs live in those JSON files — change a number, re-run tests / Play; no GDScript edit needed for catalogs.

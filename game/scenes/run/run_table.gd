@@ -451,12 +451,12 @@ func _show_post() -> void:
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	info.text = (
 		"Base payout ≈ Gold %d · Sci %d · Cul %d · Faith %d  (unused Assaults +%d Gold)\n"
-		+ "City type: %s — Occupy keeps sticky +7/settlement; Raze gives +%d Gold now."
+		+ 		"City type: %s — Occupy keeps sticky yield; Raze gives +%d Gold now."
 	) % [
 		int(preview["gold"]), int(preview["science"]), int(preview["culture"]), int(preview["faith"]),
 		int(preview["unused_assaults"]),
 		str(run.current_settlement["city_type"]),
-		28,
+		int(preload("res://rules/run_tables.gd").reward("raze_gold")),
 	]
 	info.add_theme_color_override("font_color", Color("f2f2f2"))
 	_panel.add_child(info)

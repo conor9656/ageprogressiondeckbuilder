@@ -39,7 +39,7 @@ Install helper for agents/CI: `scripts/install_godot.sh`.
 | **W1** | Godot rules module + tests | `in_progress` (core combat green) | Agent | W0; Godot 4.7.2 | Headless tests + parity vs Python golden seeds |
 | **W2** | Vertical slice UI (one settlement) | `done` | Agent | W1 | Playable greybox fight |
 | **W3** | Ancient run loop + shop | `done` | Agent | W2 | Full Ancient era greybox |
-| **W4** | Content as data (JSON/resources) | `not_started` | Agent | W1 (can overlap W2–3) | Numbers swappable without code edits |
+| **W4** | Content as data (JSON/resources) | `done` | Agent | W1 (can overlap W2–3) | Numbers swappable without code edits |
 | **W5** | Unify rules (Godot canonical) | `not_started` | Agent | W1 + stable slice | One rules path in CI |
 | **W6** | Art pipeline spike | `not_started` | Human+Agent | W2 feel locked | One class in-engine |
 | **W7** | Multi-era systems | `not_started` | Agent | W3 | Domination greybox |
@@ -49,13 +49,14 @@ Install helper for agents/CI: `scripts/install_godot.sh`.
 
 ## Current focus
 
-**W3 done** — full Ancient era greybox (Village → Town → Capital + rewards/shop).  
-**Next natural stop / start:** W4 (content as data) or light W3 feel tweaks from playtests.
+**W4 done** — combat + Ancient run catalogs live in JSON under `game/content/`.  
+**Next natural stop / start:** W5 (unify rules / CI oracle) or playtest balance via JSON edits.
 
-`bash scripts/run_game_tests.sh` → all green (combat fixtures + fight + Ancient run meta).  
-Still open for full W1: richer BP/Doc effect table (stubs OK for greybox).
+`bash scripts/run_game_tests.sh` → all green.  
+Still open for full W1: richer BP/Doc *effect* wiring (ids/costs already data-driven).
 
-**You:** Godot **4.7.2** → open `game/` → Play → **Start Ancient run**.
+**You:** Godot **4.7.2** → open `game/` → Play → **Start Ancient run**.  
+Tweak `content/ancient_run.json` / `combat_tables.json` to rebalance without code.
 
 ---
 
@@ -205,7 +206,26 @@ Art bible, Spine, Steam App ID, balance evening — not needed now.
 | 2026-10-24 | (i) help on Sci/Civ/shop offers; shop packs unique (no duplicate items). |
 | 2026-10-23 | `ancient_run` + `run_table`; menu starts Ancient run; auto-era clears seed 1. |
 
-### W4–W8
+### W4 — Content as data
+
+**Status:** `done`  
+**Done when:** Numbers / catalogs swappable without code edits.
+
+#### Acceptance
+
+- [x] `content/combat_tables.json` — units, formations, Defence, walls mult, garrison mods
+- [x] `content/ancient_run.json` — rewards, Sci costs, drills/prog/civics, BP/Doc/Promo, packs, starter deck
+- [x] Loaders: `CombatTables` + `RunTables` (mirror pattern)
+- [x] `ancient_run.gd` / `run_state.gd` / `damage.gd` read tables (no catalog consts)
+- [x] Headless proves JSON reward values drive victory payouts
+
+#### Log
+
+| Date | Note |
+|---|---|
+| 2026-10-24 | Extracted Ancient run + combat knobs to JSON; tests green. |
+
+### W5–W8
 - See board; detail when each becomes current.
 
 ---
@@ -214,6 +234,7 @@ Art bible, Spine, Steam App ID, balance evening — not needed now.
 
 | Date | Change |
 |---|---|
+| 2026-10-24 | W4 content-as-data — JSON catalogs for combat + Ancient run |
 | 2026-10-23 | W3 Ancient run + shop greybox done |
 | 2026-10-23 | W2 greybox fight UI done — playable Ancient Village slice |
 | 2026-10-23 | Locked 4.7.2 + `game/`; scaffold; W1 in progress; clarified local install = you @ W2 |
