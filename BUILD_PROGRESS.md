@@ -202,6 +202,7 @@ Art bible, Spine, Steam App ID, balance evening — not needed now.
 
 | Date | Note |
 |---|---|
+| 2026-10-24 | (i) help on Sci/Civ/shop offers; shop packs unique (no duplicate items). |
 | 2026-10-23 | `ancient_run` + `run_table`; menu starts Ancient run; auto-era clears seed 1. |
 
 ### W4–W8
