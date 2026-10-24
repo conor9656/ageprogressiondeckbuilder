@@ -32,6 +32,7 @@ var form_levels: Dictionary = {}
 ## Equipped modifiers (minimal for W1)
 var blueprints: Array = []  ## e.g. ["scaffolding"]
 var doctrines: Array = []
+var faith_combat_mom: int = 0  ## Industrial Revival Tent, etc.
 var ignore_walls_next: bool = false
 var walls_removed: bool = false
 
@@ -62,6 +63,7 @@ func setup(opts: Dictionary) -> void:
 	form_levels = opts.get("form_levels", {})
 	blueprints = opts.get("blueprints", [])
 	doctrines = opts.get("doctrines", [])
+	faith_combat_mom = int(opts.get("faith_combat_mom", 0))
 	ignore_walls_next = false
 	walls_removed = false
 	total_damage = 0
@@ -110,6 +112,7 @@ func evaluate_kinds_now(kinds: Array) -> Dictionary:
 		"garrison": garrison,
 		"walls_removed": walls_removed,
 		"ignore_walls": ignore_walls_next,
+		"faith_combat_mom": faith_combat_mom,
 	})
 
 
@@ -264,9 +267,11 @@ func choose_assault_ai() -> Dictionary:
 					walls_gone = true
 				var ev: Dictionary = AgesRules.evaluate_kinds(kinds, {
 					"era": era, "sci_level": sci_level, "tiers": tiers,
+					"form_levels": form_levels,
 					"walls": walls, "garrison": garrison,
 					"walls_removed": walls_gone,
 					"ignore_walls": opts_ignore,
+					"faith_combat_mom": faith_combat_mom,
 				})
 				var score: int = int(ev["damage"])
 				if use_b:

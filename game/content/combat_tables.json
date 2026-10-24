@@ -42,6 +42,11 @@
   "age_power_might_per_sci": 0.015,
   "age_power_era_min": 4,
   "walls_damage_mult": 0.5,
+  "line_era_min": 5,
+  "line_era_flat_mom": 2,
+  "line_era_mom_per_form_lv": 1,
+  "line_era_mom_form_cap": 3,
+  "line_era_forms": ["battle_line", "combined_arms", "phalanx"],
   "garrison_mods": {
     "pikemen": { "zero_might": ["C"] },
     "archers": { "half_might": ["M"] },

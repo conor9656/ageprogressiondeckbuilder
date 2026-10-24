@@ -150,3 +150,51 @@ static func catalog_cost(table: Dictionary, id: String) -> int:
 static func civic_effect_int(key: String) -> int:
 	ensure_loaded()
 	return int(_data["civic_effects"][key])
+
+
+static func era_name(era: int) -> String:
+	ensure_loaded()
+	return str(_data.get("eras", {}).get(str(era), "Era %d" % era))
+
+
+static func max_era() -> int:
+	ensure_loaded()
+	return int(_data.get("max_era", 8))
+
+
+static func income_mult(era: int, kind: String) -> float:
+	ensure_loaded()
+	if kind in ["gold", "faith"]:
+		return float(_data["era_gold_faith_mult"].get(str(era), 1.0))
+	return float(_data["era_income_mult"].get(str(era), 1.0))
+
+
+static func midgame_bar_discount() -> float:
+	ensure_loaded()
+	return float(_data.get("midgame_bar_discount", 0.15))
+
+
+static func breakthrough_era_min() -> int:
+	ensure_loaded()
+	return int(_data.get("breakthrough_era_min", 4))
+
+
+static func industrial_era_min() -> int:
+	ensure_loaded()
+	return int(_data.get("industrial_era_min", 5))
+
+
+static func industrial_assault_bonus() -> int:
+	ensure_loaded()
+	return int(_data.get("industrial_assault_bonus", 1))
+
+
+static func industrial_toolkit_offers() -> Array:
+	ensure_loaded()
+	return _data.get("industrial_toolkit", [])
+
+
+static func reload() -> void:
+	## Drop cache so JSON edits apply (editor / tests).
+	_data = {}
+	ensure_loaded()

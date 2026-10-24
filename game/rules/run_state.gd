@@ -1,7 +1,8 @@
 extends RefCounted
-## Persistent Ancient-era run state. Pure data + small helpers — no UI.
+## Persistent Domination-run state (eras 1–8). Pure data + small helpers — no UI.
 
 const RunTables := preload("res://rules/run_tables.gd")
+const CombatTables := preload("res://rules/combat_tables.gd")
 
 
 var rng: RandomNumberGenerator
@@ -9,6 +10,7 @@ var rng: RandomNumberGenerator
 var era: int = 1
 var settlement_index: int = 0  ## 0 village, 1 town, 2 capital
 var kind_order: Array = ["village", "town", "capital"]
+var eras_cleared: int = 0  ## Capitals conquered
 
 var gold: int = 0
 var science: int = 0
@@ -17,7 +19,7 @@ var faith: int = 0
 var sci_level: int = 0
 var civ_level: int = 0
 
-var deck_kinds: Array = []  ## Array of kind strings for fights (editions ignored in W3 greybox)
+var deck_kinds: Array = []  ## Array of kind strings for fights
 var next_cid: int = 1
 var tiers: Dictionary = {"M": 1, "R": 1, "C": 1, "S": 1, "B": 1}
 var form_levels: Dictionary = {}
@@ -53,6 +55,12 @@ var reroll_cost: int = 3
 var eng_flags: Dictionary = {}
 var pro_flags: Dictionary = {}
 
+## Multi-era growth
+var industrial_assault_granted: bool = false
+var industrial_toolkit: String = ""
+var faith_combat_mom: int = 0
+var foundry_bp_mult: float = 1.0
+
 var log: Array = []
 var run_won: bool = false
 var run_lost: bool = false
@@ -63,6 +71,7 @@ func setup(seed: int = 1) -> void:
 	rng.seed = seed
 	era = 1
 	settlement_index = 0
+	eras_cleared = 0
 	gold = 0
 	science = 0
 	culture = 0
@@ -74,7 +83,8 @@ func setup(seed: int = 1) -> void:
 	blueprints.clear()
 	doctrines.clear()
 	policies.clear()
-	RunTables.ensure_loaded()
+	RunTables.reload()
+	CombatTables.ensure_loaded()
 	blueprint_slots = RunTables.default_int("blueprint_slots")
 	doctrine_slots = RunTables.default_int("doctrine_slots")
 	policy_slots = RunTables.default_int("policy_slots")
@@ -98,6 +108,10 @@ func setup(seed: int = 1) -> void:
 	reroll_cost = RunTables.default_int("reroll_cost")
 	eng_flags.clear()
 	pro_flags.clear()
+	industrial_assault_granted = false
+	industrial_toolkit = ""
+	faith_combat_mom = 0
+	foundry_bp_mult = 1.0
 	log.clear()
 	run_won = false
 	run_lost = false
@@ -116,17 +130,29 @@ func current_kind() -> String:
 
 
 func soft_cap() -> int:
-	## E1 = II
-	return 2
+	CombatTables.ensure_loaded()
+	return CombatTables.soft_cap(era)
 
 
 func income_mult(kind: String) -> float:
-	## Ancient only for W3
+	return RunTables.income_mult(era, kind)
+
+
+func bar_cost_mult() -> float:
+	if era >= RunTables.breakthrough_era_min():
+		return 1.0 - RunTables.midgame_bar_discount()
 	return 1.0
+
+
+func era_label() -> String:
+	return RunTables.era_name(era)
 
 
 func snapshot() -> Dictionary:
 	return {
+		"era": era,
+		"era_name": era_label(),
+		"eras_cleared": eras_cleared,
 		"gold": gold,
 		"science": science,
 		"culture": culture,
@@ -148,4 +174,6 @@ func snapshot() -> Dictionary:
 		"form_levels": form_levels.duplicate(),
 		"pack_bonus": pack_bonus,
 		"writing": writing,
+		"industrial_toolkit": industrial_toolkit,
+		"faith_combat_mom": faith_combat_mom,
 	}

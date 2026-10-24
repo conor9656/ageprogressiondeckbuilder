@@ -101,3 +101,33 @@ static func classes() -> Array:
 static func support_charge_cap() -> int:
 	ensure_loaded()
 	return int(_data["support_charge_cap"])
+
+
+static func line_era_min() -> int:
+	ensure_loaded()
+	return int(_data.get("line_era_min", 5))
+
+
+static func line_era_flat_mom() -> int:
+	ensure_loaded()
+	return int(_data.get("line_era_flat_mom", 2))
+
+
+static func line_era_mom_per_form_lv() -> int:
+	ensure_loaded()
+	return int(_data.get("line_era_mom_per_form_lv", 1))
+
+
+static func line_era_mom_form_cap() -> int:
+	ensure_loaded()
+	return int(_data.get("line_era_mom_form_cap", 3))
+
+
+static func line_era_forms() -> Array:
+	ensure_loaded()
+	return _data.get("line_era_forms", [])
+
+
+static func reload() -> void:
+	_data = {}
+	ensure_loaded()

@@ -340,7 +340,7 @@ Aligned with `TECH_STACK.md` §9, updated for where we are now:
 | **4** | **Content data import** | JSON/resources for units, formations, BP/Doc/Policy stubs | Swap numbers without code changes |
 | **5** | **Retire or dual-run Python sim** | Avoid rules drift — Godot headless in CI; Python kept as research oracle | ✅ One canonical rules path (`scripts/ci_rules.sh`) |
 | **6** | **Art pipeline spike** | One unit class: silhouette → animate → in-engine | Style locked enough to expand |
-| **7** | **Multi-era + meta** | Eras 2–8 systems already designed; wire Breakthrough, Toolkit, Wonders | Full Domination run greybox |
+| **7** | **Multi-era + meta** | Eras 2–8 systems already designed; wire Breakthrough, Toolkit, Wonders | ✅ Domination greybox (Wonders still stubbed) |
 | **8** | **Steam smoke** | Export + placeholder achievements / Cloud | Store-page-ready binary later |
 
 ### Explicitly **not** first
