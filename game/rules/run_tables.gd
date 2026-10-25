@@ -155,6 +155,37 @@ static func builder_scale_for_tier(tier: int) -> float:
 	return float(table.get(str(tier), 1.0))
 
 
+static func edition_chance() -> float:
+	ensure_loaded()
+	return float(_data.get("edition_chance", 0.30))
+
+
+static func edition_pool() -> Array:
+	ensure_loaded()
+	return _data.get("edition_pool", [])
+
+
+static func disband_start_cost() -> int:
+	ensure_loaded()
+	return int(_data.get("disband_start_cost", 5))
+
+
+static func wonder_shop_chance() -> float:
+	ensure_loaded()
+	return float(_data.get("wonder_shop_chance", 0.04))
+
+
+static func wall_blueprints() -> Array:
+	ensure_loaded()
+	return _data.get("wall_blueprints", ["battering_ram", "scaffolding", "siege_tower"])
+
+
+static func catalog_effect(table: Dictionary, id: String) -> String:
+	if not table.has(id):
+		return ""
+	return str(table[id].get("effect", ""))
+
+
 static func policy_commons() -> Array:
 	ensure_loaded()
 	return _data["policy_commons"]

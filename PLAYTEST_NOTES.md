@@ -65,12 +65,12 @@ Needs a dedicated economy pass after shop/Wonder/loadout are visible.
 | See / swap equipped BP & Docs | Loadout + Unequip | Done |
 | See deck + promotions | Deck panel in shop | Done |
 | Occupy yield readout | Income breakdown panel | Done |
-| Gold charge upgrades (50/80/120) | Missing | Noted |
-| Disband (rising Gold) | Missing | Noted |
-| Editions on units | Missing | Noted |
-| Rival skips Wonder | Missing | Noted |
+| Gold charge upgrades (50/80/120) | Shop buttons (Sci gate) | Done |
+| Disband (rising Gold) | Per-card Disband in deck panel | Done (costs tunable later) |
+| Editions on units | ~30% stamp + combat/on-score | Done |
+| Rival skips Wonder | Leave shop skips offered Wonder | Done |
 | Policy board visibility | Listed in loadout | Partial |
-| Per-card promotion attach | Tracked as owned list only | Greybox |
+| Per-card promotion attach | Pick target card in shop | Done |
 
 ---
 

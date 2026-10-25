@@ -5,6 +5,7 @@ extends Control
 const AgesRules := preload("res://rules/ages_rules.gd")
 const CombatTables := preload("res://rules/combat_tables.gd")
 const RunTables := preload("res://rules/run_tables.gd")
+const AgesCard := preload("res://rules/card.gd")
 
 enum Phase { HUB, FIGHT, POST, LEVELUP, TOOLKIT, SHOP, END }
 
@@ -25,8 +26,11 @@ var _hand_row: HBoxContainer
 var _lbl_defence: Label
 var _lbl_preview: Label
 var _chk_builder: CheckBox
+var _chk_missionary: CheckBox
 var _bp_option: OptionButton
+var _doc_option: OptionButton
 var _lbl_builder_strip: Label
+var _pending_promo: Dictionary = {}  ## {pack, index} while picking a deck target
 
 
 func _ready() -> void:
@@ -111,7 +115,9 @@ func _clear_panel() -> void:
 	_lbl_defence = null
 	_lbl_preview = null
 	_chk_builder = null
+	_chk_missionary = null
 	_bp_option = null
+	_doc_option = null
 	_lbl_builder_strip = null
 	_card_buttons.clear()
 
@@ -123,7 +129,7 @@ func _refresh_resources() -> void:
 		% [
 			s.era_label(), s.era, RunTables.max_era(),
 			s.gold, s.science, s.culture, s.faith,
-			s.sci_level, s.civ_level, s.deck_kinds.size(), s.eras_cleared,
+			s.sci_level, s.civ_level, s.deck_size(), s.eras_cleared,
 		]
 	)
 
@@ -272,7 +278,7 @@ func _build_builder_strip() -> void:
 	row.add_child(_chk_builder)
 
 	_bp_option = OptionButton.new()
-	_bp_option.custom_minimum_size = Vector2(220, 0)
+	_bp_option.custom_minimum_size = Vector2(200, 0)
 	_bp_option.item_selected.connect(func(i):
 		if run.active_fight != null:
 			run.active_fight.active_blueprint_index = i
@@ -280,8 +286,23 @@ func _build_builder_strip() -> void:
 	)
 	row.add_child(_bp_option)
 
+	_chk_missionary = CheckBox.new()
+	_chk_missionary.text = "Arm Missionary"
+	_chk_missionary.button_pressed = false
+	_chk_missionary.toggled.connect(func(_v): _update_preview())
+	row.add_child(_chk_missionary)
+
+	_doc_option = OptionButton.new()
+	_doc_option.custom_minimum_size = Vector2(200, 0)
+	_doc_option.item_selected.connect(func(i):
+		if run.active_fight != null:
+			run.active_fight.active_doctrine_index = i
+		_update_preview()
+	)
+	row.add_child(_doc_option)
+
 	var tip := Label.new()
-	tip.text = "Toggle Builder on/off to see preview delta. Pick which Blueprint fires."
+	tip.text = "Builder fires a Blueprint now. Missionary arms a Doctrine that pays on win."
 	tip.add_theme_color_override("font_color", Color("888888"))
 	strip.add_child(tip)
 
@@ -315,6 +336,23 @@ func _refresh_builder_strip() -> void:
 			var idx: int = clampi(fight.active_blueprint_index, 0, bps.size() - 1)
 			_bp_option.select(idx)
 			fight.active_blueprint_index = idx
+	var docs: Array = fight.doctrines
+	if _chk_missionary:
+		_chk_missionary.disabled = (not fight.charges.can_use_missionary()) or docs.is_empty()
+		if _chk_missionary.disabled:
+			_chk_missionary.button_pressed = false
+	if _doc_option:
+		_doc_option.clear()
+		if docs.is_empty():
+			_doc_option.add_item("(no Doctrine)")
+			_doc_option.disabled = true
+		else:
+			_doc_option.disabled = false
+			for i in docs.size():
+				_doc_option.add_item(str(docs[i]))
+			var di: int = clampi(fight.active_doctrine_index, 0, docs.size() - 1)
+			_doc_option.select(di)
+			fight.active_doctrine_index = di
 
 
 func _refresh_fight() -> void:
@@ -483,16 +521,21 @@ func _on_assault() -> void:
 		return
 	if _bp_option and not fight.blueprints.is_empty():
 		fight.active_blueprint_index = _bp_option.selected
+	if _doc_option and not fight.doctrines.is_empty():
+		fight.active_doctrine_index = _doc_option.selected
 	var use_b: bool = _chk_builder != null and _chk_builder.button_pressed and fight.charges.can_use_builder() and not fight.blueprints.is_empty()
-	var r: Dictionary = fight.do_assault(cards, use_b, false)
+	var use_y: bool = _chk_missionary != null and _chk_missionary.button_pressed and fight.charges.can_use_missionary() and not fight.doctrines.is_empty()
+	var r: Dictionary = fight.do_assault(cards, use_b, use_y)
 	if not bool(r.get("ok", false)):
 		_append("[color=#ff8888]Assault failed.[/color]")
 		return
 	var entry: Dictionary = r["entry"]
-	var bp_bit := ""
+	var bits := ""
 	if bool(entry.get("used_builder", false)):
-		bp_bit = " · Builder→%s" % str(entry.get("blueprint", "?"))
-	_append("Assault — %s for %d · left %d%s" % [entry["form"], int(entry["dmg"]), int(entry["left"]), bp_bit])
+		bits += " · Builder→%s" % str(entry.get("blueprint", "?"))
+	if bool(entry.get("used_missionary", false)):
+		bits += " · Missionary→%s" % str(entry.get("doctrine", "?"))
+	_append("Assault — %s for %d · left %d%s" % [entry["form"], int(entry["dmg"]), int(entry["left"]), bits])
 	_selected.clear()
 	_refresh_fight()
 	if fight.is_over():
@@ -867,35 +910,63 @@ func _add_deck_panel(parent: Control) -> void:
 	var sum: Dictionary = run.deck_summary()
 	var counts: Dictionary = sum["counts"]
 	var title := Label.new()
-	title.text = "Deck & promotions"
+	title.text = "Deck (Editions / Promotions / Disband)"
 	title.add_theme_color_override("font_color", Color("e8d5a3"))
 	parent.add_child(title)
 
 	var deck_l := Label.new()
 	deck_l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	deck_l.add_theme_color_override("font_color", Color("f2f2f2"))
-	deck_l.text = "Deck %d — M×%d (T%d) · R×%d (T%d) · C×%d (T%d) · S×%d (T%d) · Builder charges %d · Missionary %d" % [
+	deck_l.text = "Deck %d — M×%d (T%d) · R×%d (T%d) · C×%d (T%d) · S×%d (T%d) · Builder charges %d · Missionary %d · Disband costs %d Gold" % [
 		int(sum["total"]),
 		int(counts.get("M", 0)), int(sum["tiers"].get("M", 1)),
 		int(counts.get("R", 0)), int(sum["tiers"].get("R", 1)),
 		int(counts.get("C", 0)), int(sum["tiers"].get("C", 1)),
 		int(counts.get("S", 0)), int(sum["tiers"].get("S", 1)),
 		int(sum["builder_charges"]), int(sum["missionary_charges"]),
+		int(sum.get("disband_cost", 5)),
 	]
 	parent.add_child(deck_l)
 
-	var promos: Array = sum.get("promotions", [])
-	var promo_l := Label.new()
-	promo_l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	promo_l.add_theme_color_override("font_color", Color("a8c5b5"))
-	if promos.is_empty():
-		promo_l.text = "Promotions owned: (none yet — buy from Treasury; per-card attach still greybox)"
-	else:
-		var bits: PackedStringArray = PackedStringArray()
-		for p in promos:
-			bits.append("%s — %s" % [str(p), run._promotion_help(str(p))])
-		promo_l.text = "Promotions owned:\n- " + "\n- ".join(bits)
-	parent.add_child(promo_l)
+	## Gold charge upgrades
+	var charge_row := HBoxContainer.new()
+	charge_row.add_theme_constant_override("separation", 8)
+	parent.add_child(charge_row)
+	for kind in ["B", "Y"]:
+		var label_k := "Builder" if kind == "B" else "Missionary"
+		var btn := Button.new()
+		var locked: bool = not run.can_buy_support_charge(kind)
+		var cost: int = run.support_charge_gold_cost(kind) if not locked else 0
+		if locked:
+			btn.text = "+1 %s charge (locked — need Sci)" % label_k
+			btn.disabled = true
+		else:
+			btn.text = "+1 %s charge (%d Gold)" % [label_k, cost]
+			btn.disabled = run.state.gold < cost
+			btn.pressed.connect(_on_buy_charge.bind(kind))
+		charge_row.add_child(btn)
+
+	var cards: Array = sum.get("cards", [])
+	for i in cards.size():
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 8)
+		parent.add_child(row)
+		var lbl := Label.new()
+		lbl.text = str(cards[i].get("label", "?"))
+		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		lbl.add_theme_color_override("font_color", Color("f2f2f2"))
+		row.add_child(lbl)
+		var db := Button.new()
+		db.text = "Disband (%dG)" % int(run.state.disband_cost)
+		db.disabled = run.state.deck_cards.size() <= 8 or run.state.gold < run.state.disband_cost
+		db.pressed.connect(_on_disband.bind(i))
+		row.add_child(db)
+
+	if not _pending_promo.is_empty():
+		var tip := Label.new()
+		tip.text = "Pick a card above? Use Buy on the promo, then choose target from the popup list below."
+		tip.add_theme_color_override("font_color", Color("9ec9ff"))
+		parent.add_child(tip)
 
 	var forms: Dictionary = sum.get("form_levels", {})
 	if not forms.is_empty():
@@ -903,6 +974,28 @@ func _add_deck_panel(parent: Control) -> void:
 		fl.text = "Formation levels: %s" % str(forms)
 		fl.add_theme_color_override("font_color", Color("888888"))
 		parent.add_child(fl)
+
+
+func _on_buy_charge(kind: String) -> void:
+	var r: Dictionary = run.buy_support_charge_gold(kind)
+	if bool(r.get("ok", false)):
+		_append("Bought +1 %s charge for %d Gold." % [
+			"Builder" if kind == "B" else "Missionary", int(r.get("cost", 0)),
+		])
+	else:
+		_append("[i]Charge buy failed (%s).[/i]" % str(r.get("reason", "?")))
+	_rebuild_shop_panel()
+
+
+func _on_disband(index: int) -> void:
+	var r: Dictionary = run.disband_card(index)
+	if bool(r.get("ok", false)):
+		_append("Disbanded a card for %d Gold (next disband %d)." % [
+			int(r.get("cost", 0)), int(r.get("next_cost", 0)),
+		])
+	else:
+		_append("[i]Disband failed (%s).[/i]" % str(r.get("reason", "?")))
+	_rebuild_shop_panel()
 
 
 func _add_wonder_panel(parent: Control, help_box: Label) -> void:
@@ -973,11 +1066,14 @@ func _add_shop_row(parent: Control, help_box: Label, pack: String, index: int, o
 	var lbl := Label.new()
 	var bought: bool = bool(offer.get("bought", false))
 	var cur: String = "Gold" if pack == "treasury" else "Faith"
+	var cat: String = str(offer.get("cat", ""))
 	var slot_note := ""
-	if not bought and str(offer.get("cat", "")) == "blueprint" and run.state.blueprints.size() >= run.state.blueprint_slots:
+	if not bought and cat == "blueprint" and run.state.blueprints.size() >= run.state.blueprint_slots:
 		slot_note = "  [slots full — unequip first]"
-	elif not bought and str(offer.get("cat", "")) == "doctrine" and run.state.doctrines.size() >= run.state.doctrine_slots:
+	elif not bought and cat == "doctrine" and run.state.doctrines.size() >= run.state.doctrine_slots:
 		slot_note = "  [slots full — unequip first]"
+	elif not bought and cat == "promotion":
+		slot_note = "  [pick a deck card]"
 	lbl.text = "%s — %d %s%s%s" % [
 		str(offer.get("label", offer.get("id", "?"))),
 		int(offer.get("cost", 0)), cur,
@@ -992,15 +1088,63 @@ func _add_shop_row(parent: Control, help_box: Label, pack: String, index: int, o
 	var btn := Button.new()
 	btn.text = "Buy"
 	btn.disabled = bought
-	btn.pressed.connect(func():
-		var r: Dictionary = run.buy_offer(pack, index)
-		if bool(r.get("ok", false)):
-			_append("Bought %s." % str(offer.get("label", "")))
-		else:
-			_append("[i]Could not buy (%s).[/i]" % str(r.get("reason", "?")))
+	if cat == "promotion" and not bought:
+		btn.pressed.connect(_on_promo_buy_start.bind(pack, index, offer))
+	else:
+		btn.pressed.connect(_on_shop_buy.bind(pack, index, -1, str(offer.get("label", ""))))
+	row.add_child(btn)
+
+
+func _on_shop_buy(pack: String, index: int, target: int, label: String) -> void:
+	var r: Dictionary = run.buy_offer(pack, index, target)
+	if bool(r.get("ok", false)):
+		_append("Bought %s." % label)
+	else:
+		_append("[i]Could not buy (%s).[/i]" % str(r.get("reason", "?")))
+	_pending_promo.clear()
+	_rebuild_shop_panel()
+
+
+func _on_promo_buy_start(pack: String, index: int, offer: Dictionary) -> void:
+	_pending_promo = {"pack": pack, "index": index, "label": str(offer.get("label", ""))}
+	_append("Choose which deck card receives [b]%s[/b]…" % str(offer.get("id", "")))
+	_rebuild_shop_panel_with_promo_targets()
+
+
+func _rebuild_shop_panel_with_promo_targets() -> void:
+	_rebuild_shop_panel()
+	if _pending_promo.is_empty():
+		return
+	var body: VBoxContainer = _panel.get_node_or_null("ShopBody") as VBoxContainer
+	## ShopBody is inside ScrollContainer — find it
+	var scroll: ScrollContainer = null
+	for c in _panel.get_children():
+		if c is ScrollContainer:
+			scroll = c
+			break
+	if scroll and scroll.get_child_count() > 0:
+		body = scroll.get_child(0) as VBoxContainer
+	if body == null:
+		return
+	var title := Label.new()
+	title.text = "Apply promotion to which card?"
+	title.add_theme_color_override("font_color", Color("9ec9ff"))
+	body.add_child(title)
+	var cards: Array = run.deck_summary().get("cards", [])
+	for i in cards.size():
+		var btn := Button.new()
+		btn.text = "Apply to %s" % str(cards[i].get("label", "#%d" % i))
+		btn.pressed.connect(_on_shop_buy.bind(
+			str(_pending_promo["pack"]), int(_pending_promo["index"]), i, str(_pending_promo["label"])
+		))
+		body.add_child(btn)
+	var cancel := Button.new()
+	cancel.text = "Cancel promotion"
+	cancel.pressed.connect(func():
+		_pending_promo.clear()
 		_rebuild_shop_panel()
 	)
-	row.add_child(btn)
+	body.add_child(cancel)
 
 
 func _on_unequip_blueprint(index: int, id: String) -> void:
