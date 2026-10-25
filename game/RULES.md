@@ -6,7 +6,7 @@
 |---|---|
 | Combat / run code | `rules/*.gd` |
 | Tunable numbers & catalogs | `content/*.json` |
-| Headless suite | `tests/run_tests.gd` |
+| Headless suite | `tests/run_tests.gd` (run with `-s`, not as a scene) |
 | One-command CI | `../scripts/ci_rules.sh` |
 
 Python under `../sim/` is a **research twin** only — not used by the game client or Rules CI.

@@ -25,7 +25,17 @@ func _initialize() -> void:
 	failed += _check("offer_help_text", _test_offer_help())
 	failed += _check("content_tables_load", _test_content_tables())
 	failed += _check("content_reward_from_json", _test_reward_from_json())
+	failed += _check("multi_era_soft_cap_income", _test_multi_era_tables())
+	failed += _check("multi_era_line_mom", _test_line_mom())
 	failed += _check("ancient_run_auto_era", _test_auto_era())
+	failed += _check("domination_reaches_e2", _test_domination_reaches_e2())
+	failed += _check("corvee_free_builder_slot", _test_corvee_free_slot())
+	failed += _check("builder_scale_upgrade", _test_builder_scale())
+	failed += _check("shop_unequip_and_wonder", _test_shop_unequip_wonder())
+	failed += _check("income_breakdown", _test_income_breakdown())
+	failed += _check("editions_promotions_disband", _test_editions_promotions_disband())
+	failed += _check("gold_charges_and_doctrine", _test_gold_charges_and_doctrine())
+	failed += _check("wonder_rival_skip", _test_wonder_rival_skip())
 
 	if failed == 0:
 		print("AGES_TESTS_OK failed=0")
@@ -238,7 +248,7 @@ func _test_shop() -> bool:
 	run.open_shop()
 	if run.shop_treasury.size() != 5 or run.shop_synod.size() != 5:
 		return false
-	var before: int = run.state.deck_kinds.size()
+	var before: int = run.state.deck_cards.size()
 	# Find a unit offer and buy it
 	var bought := false
 	for i in run.shop_treasury.size():
@@ -249,10 +259,10 @@ func _test_shop() -> bool:
 				break
 	if not bought:
 		# Force a cheap unit into slot 0
-		run.shop_treasury[0] = {"cat": "unit", "id": "M", "cost": 8, "label": "Unit M"}
+		run.shop_treasury[0] = {"cat": "unit", "id": "M", "cost": 8, "label": "Unit M", "edition": "standard"}
 		var r2: Dictionary = run.buy_offer("treasury", 0)
 		bought = bool(r2.get("ok", false))
-	return bought and run.state.deck_kinds.size() == before + 1
+	return bought and run.state.deck_cards.size() == before + 1
 
 
 func _test_shop_unique() -> bool:
@@ -343,6 +353,49 @@ func _test_reward_from_json() -> bool:
 	return int(full["raze_gold"]) == raze_expect
 
 
+func _test_multi_era_tables() -> bool:
+	var RunTables = preload("res://rules/run_tables.gd")
+	RunTables.reload()
+	CombatTables.reload()
+	var run = AgesRules.new_ancient_run(1)
+	if run.state.soft_cap() != 2:
+		return false
+	run.state.era = 5
+	if run.state.soft_cap() != 5:
+		print("  soft_cap e5 got=%d" % run.state.soft_cap())
+		return false
+	if abs(run.state.income_mult("sci") - 1.95) > 0.001:
+		print("  income sci e5 got=%s" % run.state.income_mult("sci"))
+		return false
+	if abs(run.state.bar_cost_mult() - 0.85) > 0.001:
+		return false
+	## Industrial assault once
+	run.state.era = 5
+	run._queue_era_start_hooks()
+	if run.state.base_assaults != 5 or not run.state.industrial_assault_granted:
+		print("  industrial assaults=%d" % run.state.base_assaults)
+		return false
+	return RunTables.era_name(8) == "Information"
+
+
+func _test_line_mom() -> bool:
+	## E5 Battle Line should out-damage E1 same hand (Line Mom).
+	var e1: Dictionary = AgesRules.evaluate_kinds(["M", "M", "R", "R"], {
+		"era": 1, "sci_level": 0, "tiers": {"M": 2, "R": 2, "C": 1, "S": 1},
+		"form_levels": {"battle_line": 1},
+	})
+	var e5: Dictionary = AgesRules.evaluate_kinds(["M", "M", "R", "R"], {
+		"era": 5, "sci_level": 0, "tiers": {"M": 2, "R": 2, "C": 1, "S": 1},
+		"form_levels": {"battle_line": 1},
+	})
+	if str(e1["form"]) != "battle_line" or str(e5["form"]) != "battle_line":
+		return false
+	if int(e5["damage"]) <= int(e1["damage"]):
+		print("  line mom e5=%s e1=%s" % [e5["damage"], e1["damage"]])
+		return false
+	return true
+
+
 func _test_auto_era() -> bool:
 	## Seed hunt: at least one seed in a small range should clear Ancient with AI.
 	var cleared := false
@@ -353,13 +406,213 @@ func _test_auto_era() -> bool:
 		last_snap = res.get("snapshot", {})
 		if bool(res["won"]):
 			cleared = true
-			print("  auto_era cleared sid=%d fights=%d sci=%d" % [
-				sid, int(res["fights"]), int(last_snap.get("sci_level", 0)),
+			print("  auto_era cleared sid=%d fights=%d era_now=%d sci=%d" % [
+				sid, int(res["fights"]), int(last_snap.get("era", 0)),
+				int(last_snap.get("sci_level", 0)),
 			])
 			break
 	if not cleared:
 		print("  auto_era no clear in seeds 1..40 last=%s" % last_snap)
 	return cleared
+
+
+func _test_domination_reaches_e2() -> bool:
+	## At least one seed should clear Ancient Capital and enter Classical.
+	for sid in range(1, 61):
+		var run = AgesRules.new_ancient_run(sid)
+		var res: Dictionary = run.run_auto_domination(3)
+		var snap: Dictionary = res.get("snapshot", {})
+		if int(snap.get("eras_cleared", 0)) >= 1 and int(snap.get("era", 1)) >= 2:
+			print("  domination sid=%d eras_cleared=%d era=%d fights=%d" % [
+				sid, int(snap["eras_cleared"]), int(snap["era"]), int(res["fights"]),
+			])
+			return true
+		if bool(res["won"]):
+			print("  domination full win sid=%d" % sid)
+			return true
+	print("  no seed reached E2 in 1..60")
+	return false
+
+
+func _test_corvee_free_slot() -> bool:
+	## Corvée Exemption must let Builder attach on a full 5-card formation.
+	var run = AgesRules.new_ancient_run(5)
+	run.apply_civic("corvee_exemption")
+	if not bool(run.state.eng_flags.get("builder_free_slot", false)):
+		print("  corvee flag missing")
+		return false
+	run.state.blueprints = ["scaffolding"]
+	run.begin_fight()
+	var fight = run.active_fight
+	if not fight.free_builder_slot():
+		print("  fight missing free_builder_slot")
+		return false
+	## Build a 5-combat hand if needed
+	var combat: Array = fight.combat_in_hand()
+	if combat.size() < 5:
+		## Force by replacing hand kinds via direct assault size check
+		if not SupportCharges.attach_ok(5, true, false, true, false):
+			return false
+		if SupportCharges.attach_ok(5, true, false, false, false):
+			print("  free_b should be required for 5+builder")
+			return false
+		return true
+	var cards: Array = combat.slice(0, 5)
+	var r: Dictionary = fight.do_assault(cards, true, false)
+	if not bool(r.get("ok", false)):
+		print("  assault with corvee+5 failed")
+		return false
+	if not bool(r["entry"].get("used_builder", false)):
+		print("  builder not used with corvee")
+		return false
+	return true
+
+
+func _test_builder_scale() -> bool:
+	var RunTables = preload("res://rules/run_tables.gd")
+	var run = AgesRules.new_ancient_run(2)
+	if abs(run.state.builder_scale - 1.0) > 0.001:
+		return false
+	run.apply_science("upgrade_B")
+	if int(run.state.tiers["B"]) != 2:
+		return false
+	if abs(run.state.builder_scale - RunTables.builder_scale_for_tier(2)) > 0.001:
+		print("  scale got=%s" % run.state.builder_scale)
+		return false
+	run.apply_science("upgrade_B")
+	if abs(run.state.builder_scale - 2.0) > 0.001:
+		return false
+	return true
+
+
+func _test_shop_unequip_wonder() -> bool:
+	var run = AgesRules.new_ancient_run(11)
+	run.state.gold = 500
+	run.state.faith = 200
+	run.state.blueprints = ["scaffolding", "siege_tower"]
+	run.state.blueprint_slots = 2
+	run.state.doctrines = ["tithe"]
+	run.state.doctrine_slots = 1
+	if not run.unequip_blueprint(0):
+		return false
+	if run.state.blueprints.size() != 1 or str(run.state.blueprints[0]) != "siege_tower":
+		return false
+	if not run.unequip_doctrine(0):
+		return false
+	if not run.state.doctrines.is_empty():
+		return false
+	run.open_shop()
+	if run.shop_wonder.is_empty():
+		print("  missing wonder offer")
+		return false
+	if str(run.shop_wonder.get("cat", "")) != "wonder":
+		return false
+	var help: String = run.shop_offer_help(run.shop_wonder)
+	if help.length() < 12:
+		return false
+	## Buy wonder
+	run.shop_wonder["cost"] = 10
+	var before_gold: int = run.state.gold
+	var br: Dictionary = run.buy_wonder()
+	if not bool(br.get("ok", false)):
+		print("  buy_wonder failed %s" % br)
+		return false
+	if run.state.wonder == "":
+		return false
+	if run.state.gold >= before_gold:
+		return false
+	## Second wonder blocked
+	run._roll_wonder_offer()
+	if not run.shop_wonder.is_empty():
+		print("  wonder still offered after own")
+		return false
+	return true
+
+
+func _test_income_breakdown() -> bool:
+	var run = AgesRules.new_ancient_run(8)
+	run.state.occupied = ["scholar", "trade", "scholar"]
+	run.state.sci_bonus_pct = 0.10
+	run.state.gold_bonus_pct = 0.08
+	var br: Dictionary = run.income_breakdown()
+	if int(br["occupy_total"]) != 3:
+		return false
+	if int(br["occupy_counts"]["scholar"]) != 2:
+		return false
+	if int(br["occupy_per_fight"]["science"]) <= 0:
+		return false
+	if int(br["occupy_per_fight"]["gold"]) <= 0:
+		return false
+	var deck: Dictionary = run.deck_summary()
+	return int(deck["total"]) == run.state.deck_cards.size()
+
+
+func _test_editions_promotions_disband() -> bool:
+	var run = AgesRules.new_ancient_run(15)
+	run.state.gold = 500
+	var before: int = run.state.deck_cards.size()
+	run.state.add_unit_card("M", "gilded")
+	if run.state.deck_cards.size() != before + 1:
+		return false
+	var last: Dictionary = run.state.deck_cards[run.state.deck_cards.size() - 1]
+	if int(last.get("bonus_might", 0)) < 3:
+		print("  gilded might missing")
+		return false
+	run._apply_promotion_to_deck(run.state.deck_cards.size() - 1, "heroic")
+	last = run.state.deck_cards[run.state.deck_cards.size() - 1]
+	if float(last.get("might_mult", 1.0)) < 1.74:
+		print("  heroic mult missing")
+		return false
+	var cost0: int = run.state.disband_cost
+	var dr: Dictionary = run.disband_card(run.state.deck_cards.size() - 1)
+	if not bool(dr.get("ok", false)):
+		print("  disband failed %s" % dr)
+		return false
+	if run.state.disband_cost != cost0 + 1:
+		return false
+	return true
+
+
+func _test_gold_charges_and_doctrine() -> bool:
+	var run = AgesRules.new_ancient_run(21)
+	run.state.gold = 500
+	run.state.sci_level = 2
+	if not run.can_buy_support_charge("B"):
+		print("  charge locked at sci2")
+		return false
+	var br: Dictionary = run.buy_support_charge_gold("B")
+	if not bool(br.get("ok", false)) or run.state.builder_charges_max != 2:
+		print("  charge buy %s" % br)
+		return false
+	## Doctrine on-win
+	run.state.doctrines = ["tithe"]
+	run.state.blueprints = ["watchtower"]
+	run.begin_fight()
+	run.active_fight.doctrines_fired = ["tithe"]
+	run.active_fight.total_damage = 200
+	var before_g: int = run.state.gold
+	var pay: Dictionary = run._apply_doctrine_rewards()
+	if int(pay.get("gold", 0)) <= 0 or run.state.gold <= before_g:
+		print("  doctrine pay %s" % pay)
+		return false
+	return true
+
+
+func _test_wonder_rival_skip() -> bool:
+	var run = AgesRules.new_ancient_run(33)
+	run.open_shop()
+	if run.shop_wonder.is_empty():
+		return false
+	var wid: String = str(run.shop_wonder["id"])
+	run.skip_wonder_on_leave()
+	if not run.state.skipped_wonders.has(wid):
+		print("  skip not recorded")
+		return false
+	run.open_shop()
+	if str(run.shop_wonder.get("id", "")) == wid:
+		print("  skipped wonder reappeared as dedicated offer")
+		return false
+	return true
 
 
 func _run_fixture_file(path: String) -> int:

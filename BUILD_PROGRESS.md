@@ -42,23 +42,22 @@ Install helper for agents/CI: `scripts/install_godot.sh`.
 | **W4** | Content as data (JSON/resources) | `done` | Agent | W1 (can overlap W2–3) | Numbers swappable without code edits |
 | **W5** | Unify rules (Godot canonical) | `done` | Agent | W1 + stable slice | One rules path in CI |
 | **W6** | Art pipeline spike | `not_started` | Human+Agent | W2 feel locked | One class in-engine |
-| **W7** | Multi-era systems | `not_started` | Agent | W3 | Domination greybox |
+| **W7** | Multi-era systems | `done` | Agent | W3 | Domination greybox |
 | **W8** | Steam smoke export | `not_started` | Agent | W7-ish | Windows build + stub Steam |
 
 ---
 
 ## Current focus
 
-**W5 done** — Godot headless is the **only** automated rules gate (`scripts/ci_rules.sh` + GitHub Actions).  
-Python `sim/` stays as a research twin; it is not CI.
-
-**Next natural stop / start:** W6 (art pipeline spike) or W7 (multi-era), or balance via JSON.
+**W7 done** — full Domination greybox (8 eras).  
+**Sim-parity systems** — Editions, Promotions (per-card), Disband, Gold charges, BP/Doc scale + on-win, Wonder rival-skip.  
+Art (W6) waits until humans have poked the multi-era + sim-parity loop.
 
 ```bash
 bash scripts/ci_rules.sh   # canonical
 ```
 
-**You:** Godot **4.7.2** → open `game/` → Play → **Start Ancient run**.
+**You:** Godot **4.7.2** → open `game/` → Play → **Start Domination run**.
 
 ---
 
@@ -246,8 +245,30 @@ Art bible, Spine, Steam App ID, balance evening — not needed now.
 |---|---|
 | 2026-10-24 | Rules CI workflow + ci_rules.sh; Python demoted to oracle. |
 
-### W6–W8
-- See board; detail when each becomes current.
+### W7 — Multi-era systems
+
+**Status:** `done`  
+**Done when:** Full Domination run playable greybox (Ancient→Information).
+
+#### Acceptance
+
+- [x] 8 eras × Village/Town/Capital; Capital advances era (E8 wins Domination)
+- [x] Soft-caps + Sci/Cul/Gold/Faith income mults from JSON
+- [x] Midgame Sci/Civ bar discount (−15% from E4)
+- [x] Breakthrough free Sci + Civ at era start (E4+)
+- [x] Industrial +1 Assault + Toolkit pick (E5)
+- [x] Line Mom on Battle Line / Combined Arms / Phalanx (E5+)
+- [x] Greybox UI eras + hooks; headless reaches E2+
+
+#### Log
+
+| Date | Note |
+|---|---|
+| 2026-10-24 | Domination loop wired; auto seed 1 clears E1 → Classical. |
+
+### W6 / W8
+- W6 art spike — after human multi-era feel check  
+- W8 Steam smoke — later
 
 ---
 
@@ -255,6 +276,7 @@ Art bible, Spine, Steam App ID, balance evening — not needed now.
 
 | Date | Change |
 |---|---|
+| 2026-10-24 | W7 multi-era Domination greybox (before art) |
 | 2026-10-24 | W5 Godot canonical rules CI — one path in Actions |
 | 2026-10-24 | W4 content-as-data — JSON catalogs for combat + Ancient run |
 | 2026-10-23 | W3 Ancient run + shop greybox done |
