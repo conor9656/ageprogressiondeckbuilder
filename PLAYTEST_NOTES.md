@@ -65,12 +65,12 @@ Needs a dedicated economy pass after shop/Wonder/loadout are visible.
 | See / swap equipped BP & Docs | Loadout + Unequip | Done |
 | See deck + promotions | Deck panel in shop | Done |
 | Occupy yield readout | Income breakdown panel | Done |
-| Gold charge upgrades (50/80/120) | Missing | Noted |
-| Disband (rising Gold) | Missing | Noted |
-| Editions on units | Missing | Noted |
-| Rival skips Wonder | Missing | Noted |
+| Gold charge upgrades (50/80/120) | Shop buttons (Sci gate) | Done |
+| Disband (rising Gold) | Per-card Disband in deck panel | Done (costs tunable later) |
+| Editions on units | ~30% stamp + combat/on-score | Done |
+| Rival skips Wonder | Leave shop skips offered Wonder | Done |
 | Policy board visibility | Listed in loadout | Partial |
-| Per-card promotion attach | Tracked as owned list only | Greybox |
+| Per-card promotion attach | Pick target card in shop | Done |
 
 ---
 
@@ -81,7 +81,7 @@ Needs a dedicated economy pass after shop/Wonder/loadout are visible.
 | Builder as clickable support | Toggle + Blueprint picker + scale/slot strip |
 | Preview with/without Builder + chosen BP | Δ damage vs Builder off |
 | See equipped Blueprints | Shown on Builder strip |
-| Missionary / Doctrine arm | Still thin — next pass |
+| Missionary / Doctrine arm | Toggle + Doctrine picker; pays on win | Done |
 
 ---
 
@@ -93,19 +93,17 @@ Leave shop → march scrolled off-screen when packs/lists grew. **Fixed:** shop 
 
 ## Still missing / next
 
-1. Economy pass (Gold/Faith sinks: richer Synod effects, disband, charge gold buys, Wonder costs vs income)
-2. Defence seam (E_n Village vs E_{n-1} Capital)
-3. Real Blueprint/Doctrine numeric effects × Builder tier
-4. Missionary arm + Doctrine on-win payout UI
-5. Disband / Editions / Wonder spill in pack RNG
-6. Art (W6) only once the loop feels fair
+1. **Economy / Disband cost tuning** (rise rate; charge prices vs Gold income) — separate conversation  
+2. Defence seam (E_n Village vs E_{n-1} Capital)  
+3. Full Wonder combat passives (parade Mom tracking, Safe Conduct skip — several are flags)  
+4. Broader Policy combat effects  
+5. Art (W6) only once the loop feels fair  
 
 ---
 
-## Suggested priority after this fix pack
+## Suggested priority after sim-parity
 
-1. Play again with loadout / deck / Builder UX / Wonder visible  
-2. Economy pass  
+1. Play a full Domination run with Editions / Disband / charges / Doctrine / Wonder skip  
+2. Economy + Disband cost conversation  
 3. Defence seam discussion  
-4. Real BP/Doc numbers  
-5. Art  
+4. Art  

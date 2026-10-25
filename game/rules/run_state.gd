@@ -3,6 +3,7 @@ extends RefCounted
 
 const RunTables := preload("res://rules/run_tables.gd")
 const CombatTables := preload("res://rules/combat_tables.gd")
+const AgesCard := preload("res://rules/card.gd")
 
 
 var rng: RandomNumberGenerator
@@ -19,7 +20,7 @@ var faith: int = 0
 var sci_level: int = 0
 var civ_level: int = 0
 
-var deck_kinds: Array = []  ## Array of kind strings for fights
+var deck_cards: Array = []  ## Array of card Dictionaries (AgesCard.to_dict)
 var next_cid: int = 1
 var tiers: Dictionary = {"M": 1, "R": 1, "C": 1, "S": 1, "B": 1}
 var form_levels: Dictionary = {}
@@ -27,7 +28,6 @@ var form_levels: Dictionary = {}
 var blueprints: Array = []
 var doctrines: Array = []
 var policies: Array = []
-var owned_promotions: Array = []  ## greybox: purchased promo ids (not yet per-card)
 var blueprint_slots: int = 2
 var doctrine_slots: int = 1
 var policy_slots: int = 2
@@ -39,10 +39,14 @@ var base_regroups: int = 3
 var builder_charges_max: int = 1
 var missionary_charges_max: int = 1
 var builder_scale: float = 1.0  ## Blueprint numeric mult from Builder tier
+var missionary_scale: float = 1.0  ## Doctrine payout mult (same table as Builder)
 
 var wonder: String = ""  ## owned Wonder id (one / run) or ""
 var shop_wonder_offer: String = ""  ## dedicated Wonder row this visit
 var shop_wonder_rerolls_left: int = 1
+var skipped_wonders: Dictionary = {}  ## id -> true (rival built it)
+var all_units_editions: bool = false  ## Eiffel
+var promo_cost_pct: float = 0.0  ## Eiffel −30% etc.
 
 var occupied: Array = []  ## scholar / artisan / temple / trade
 var writing: bool = false
@@ -54,10 +58,19 @@ var sci_bonus_pct: float = 0.0
 var gold_bonus_pct: float = 0.0
 var faith_bonus_pct: float = 0.0
 var cul_bonus_pct: float = 0.0
+var doctrine_payout_pct: float = 0.0
+var victory_gold_pct: float = 0.0
+var capital_might_bonus: float = 0.0
+var zeal_settlements_left: int = 0
+var zeal_might_pct: float = 0.20
+var missionary_zeal_gold: int = 15
+var missionary_zeal_faith: int = 8
+var chichen_mom: int = 0
 var interest_cap: int = 5
 var pack_bonus: int = 0
 var unit_cost_flat: int = 0
 var reroll_cost: int = 3
+var disband_cost: int = 5
 var eng_flags: Dictionary = {}
 var pro_flags: Dictionary = {}
 
@@ -89,7 +102,6 @@ func setup(seed: int = 1) -> void:
 	blueprints.clear()
 	doctrines.clear()
 	policies.clear()
-	owned_promotions.clear()
 	RunTables.reload()
 	CombatTables.ensure_loaded()
 	blueprint_slots = RunTables.default_int("blueprint_slots")
@@ -101,9 +113,13 @@ func setup(seed: int = 1) -> void:
 	builder_charges_max = RunTables.default_int("builder_charges_max")
 	missionary_charges_max = RunTables.default_int("missionary_charges_max")
 	builder_scale = RunTables.builder_scale_for_tier(1)
+	missionary_scale = RunTables.builder_scale_for_tier(1)
 	wonder = ""
 	shop_wonder_offer = ""
 	shop_wonder_rerolls_left = 1
+	skipped_wonders.clear()
+	all_units_editions = false
+	promo_cost_pct = 0.0
 	occupied.clear()
 	writing = false
 	last_troop_upgrade = ""
@@ -113,10 +129,19 @@ func setup(seed: int = 1) -> void:
 	gold_bonus_pct = 0.0
 	faith_bonus_pct = 0.0
 	cul_bonus_pct = 0.0
+	doctrine_payout_pct = 0.0
+	victory_gold_pct = 0.0
+	capital_might_bonus = 0.0
+	zeal_settlements_left = 0
+	zeal_might_pct = 0.20
+	missionary_zeal_gold = 15
+	missionary_zeal_faith = 8
+	chichen_mom = 0
 	interest_cap = RunTables.default_int("interest_cap")
 	pack_bonus = 0
 	unit_cost_flat = 0
 	reroll_cost = RunTables.default_int("reroll_cost")
+	disband_cost = RunTables.disband_start_cost()
 	eng_flags.clear()
 	pro_flags.clear()
 	industrial_assault_granted = false
@@ -126,12 +151,35 @@ func setup(seed: int = 1) -> void:
 	log.clear()
 	run_won = false
 	run_lost = false
-	deck_kinds.clear()
+	deck_cards.clear()
 	next_cid = 1
 	var starter: Dictionary = RunTables.starting_deck_counts()
 	for kind in ["M", "R", "C", "S"]:
 		for _i in int(starter.get(kind, 0)):
-			deck_kinds.append(kind)
+			add_unit_card(str(kind), "standard")
+
+
+func add_unit_card(kind: String, edition: String = "standard") -> Dictionary:
+	var c: RefCounted = AgesCard.new(kind, next_cid)
+	next_cid += 1
+	if edition != "" and edition != "standard":
+		c.apply_edition(edition)
+	else:
+		c.edition = "standard"
+	var d: Dictionary = c.to_dict()
+	deck_cards.append(d)
+	return d
+
+
+func deck_kinds() -> Array:
+	var out: Array = []
+	for d in deck_cards:
+		out.append(str(d.get("kind", "M")))
+	return out
+
+
+func deck_size() -> int:
+	return deck_cards.size()
 
 
 func current_kind() -> String:
@@ -150,9 +198,12 @@ func income_mult(kind: String) -> float:
 
 
 func bar_cost_mult() -> float:
+	var m: float = 1.0
 	if era >= RunTables.breakthrough_era_min():
-		return 1.0 - RunTables.midgame_bar_discount()
-	return 1.0
+		m = 1.0 - RunTables.midgame_bar_discount()
+	if bool(eng_flags.get("sci_cost_cut", false)):
+		m *= 0.75
+	return m
 
 
 func era_label() -> String:
@@ -171,11 +222,11 @@ func snapshot() -> Dictionary:
 		"sci_level": sci_level,
 		"civ_level": civ_level,
 		"tiers": tiers.duplicate(),
-		"deck_size": deck_kinds.size(),
+		"deck_size": deck_cards.size(),
+		"deck_cards": deck_cards.duplicate(true),
 		"blueprints": blueprints.duplicate(),
 		"doctrines": doctrines.duplicate(),
 		"policies": policies.duplicate(),
-		"owned_promotions": owned_promotions.duplicate(),
 		"occupied": occupied.duplicate(),
 		"settlement_index": settlement_index,
 		"hand_size": hand_size,
@@ -184,8 +235,11 @@ func snapshot() -> Dictionary:
 		"builder_charges_max": builder_charges_max,
 		"missionary_charges_max": missionary_charges_max,
 		"builder_scale": builder_scale,
+		"missionary_scale": missionary_scale,
 		"builder_tier": int(tiers.get("B", 1)),
 		"wonder": wonder,
+		"skipped_wonders": skipped_wonders.keys(),
+		"disband_cost": disband_cost,
 		"form_levels": form_levels.duplicate(),
 		"pack_bonus": pack_bonus,
 		"writing": writing,

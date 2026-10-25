@@ -49,8 +49,9 @@ Install helper for agents/CI: `scripts/install_godot.sh`.
 
 ## Current focus
 
-**W7 done** — full Domination greybox (8 eras). Play it and compare feel vs sim clear rates.  
-Art (W6) waits until humans have poked the multi-era curve.
+**W7 done** — full Domination greybox (8 eras).  
+**Sim-parity systems** — Editions, Promotions (per-card), Disband, Gold charges, BP/Doc scale + on-win, Wonder rival-skip.  
+Art (W6) waits until humans have poked the multi-era + sim-parity loop.
 
 ```bash
 bash scripts/ci_rules.sh   # canonical

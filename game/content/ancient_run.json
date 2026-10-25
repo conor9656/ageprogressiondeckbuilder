@@ -106,37 +106,50 @@
     { "id": "lay_preachers", "rarity": "C", "family": "ministry", "once": true }
   ],
   "rarity_weights": { "C": 10, "U": 4, "R": 1 },
+  "edition_chance": 0.30,
+  "edition_pool": [
+    "gilded", "scholarly", "devout", "mercantile",
+    "berserker", "hawk_eyed", "savant", "zealot", "plated"
+  ],
+  "disband_start_cost": 5,
+  "wonder_shop_chance": 0.04,
   "blueprints": {
-    "battering_ram": { "rarity": "C", "cost": 10 },
-    "scaffolding": { "rarity": "C", "cost": 10 },
-    "supply_lines": { "rarity": "C", "cost": 10 },
-    "watchtower": { "rarity": "C", "cost": 10 },
-    "forge": { "rarity": "U", "cost": 22 },
-    "siege_tower": { "rarity": "U", "cost": 22 },
-    "roads": { "rarity": "U", "cost": 22 },
-    "magazine": { "rarity": "U", "cost": 22 },
-    "aqueduct": { "rarity": "R", "cost": 45 },
-    "arsenal": { "rarity": "R", "cost": 45 }
+    "battering_ram": { "rarity": "C", "cost": 10, "effect": "siege_might" },
+    "scaffolding": { "rarity": "C", "cost": 10, "effect": "ignore_walls_next" },
+    "supply_lines": { "rarity": "C", "cost": 10, "effect": "draw2" },
+    "watchtower": { "rarity": "C", "cost": 10, "effect": "next_might10" },
+    "forge": { "rarity": "U", "cost": 22, "effect": "next_unit_might_50" },
+    "siege_tower": { "rarity": "U", "cost": 22, "effect": "remove_walls" },
+    "roads": { "rarity": "U", "cost": 22, "effect": "plus_regroup" },
+    "magazine": { "rarity": "U", "cost": 22, "effect": "next_mom2" },
+    "aqueduct": { "rarity": "R", "cost": 45, "effect": "plus_assault" },
+    "arsenal": { "rarity": "R", "cost": 45, "effect": "next_unit_might_25" },
+    "helping_hand": { "rarity": "R", "cost": 45, "effect": "helping_hand" }
   },
   "doctrines": {
-    "tithe": { "rarity": "C", "cost": 8 },
-    "scriptorium": { "rarity": "C", "cost": 8 },
-    "pilgrimage": { "rarity": "C", "cost": 8 },
-    "alms": { "rarity": "C", "cost": 8 },
-    "zeal": { "rarity": "U", "cost": 18 },
-    "relic_hunt": { "rarity": "U", "cost": 18 },
-    "crusade": { "rarity": "U", "cost": 18 },
-    "scholastic_order": { "rarity": "U", "cost": 18 },
-    "missionary_zeal": { "rarity": "R", "cost": 35 },
-    "mercenaries": { "rarity": "R", "cost": 35 }
+    "tithe": { "rarity": "C", "cost": 8, "effect": "gold35" },
+    "scriptorium": { "rarity": "C", "cost": 8, "effect": "sci_pct" },
+    "pilgrimage": { "rarity": "C", "cost": 8, "effect": "faith22" },
+    "alms": { "rarity": "C", "cost": 8, "effect": "cul18" },
+    "zeal": { "rarity": "U", "cost": 18, "effect": "might20_2" },
+    "relic_hunt": { "rarity": "U", "cost": 18, "effect": "prophet" },
+    "crusade": { "rarity": "U", "cost": 18, "effect": "capital_might20" },
+    "scholastic_order": { "rarity": "U", "cost": 18, "effect": "sci30_cul10" },
+    "missionary_zeal": { "rarity": "R", "cost": 35, "effect": "scale_gold_faith" },
+    "mercenaries": { "rarity": "R", "cost": 35, "effect": "merc_might" },
+    "war_psalm": { "rarity": "U", "cost": 18, "effect": "war_psalm" },
+    "spoils_liturgy": { "rarity": "U", "cost": 18, "effect": "spoils_x15" }
   },
   "promotions": {
-    "master_drill": { "rarity": "C", "cost": 12 },
-    "skirmish_doctrine": { "rarity": "C", "cost": 12 },
-    "shock_drill": { "rarity": "U", "cost": 20 },
-    "banner_carrier": { "rarity": "U", "cost": 22 },
-    "thinking_soldier": { "rarity": "U", "cost": 20 },
-    "heroic": { "rarity": "R", "cost": 40 }
+    "master_drill": { "rarity": "C", "cost": 12, "effect": "might5" },
+    "skirmish_doctrine": { "rarity": "C", "cost": 12, "effect": "mom2" },
+    "shock_drill": { "rarity": "U", "cost": 20, "effect": "might3_mom1" },
+    "banner_carrier": { "rarity": "U", "cost": 22, "effect": "banner12" },
+    "thinking_soldier": { "rarity": "U", "cost": 20, "effect": "sci10" },
+    "tithe_sergeant": { "rarity": "U", "cost": 20, "effect": "gold8" },
+    "zealots_mark": { "rarity": "U", "cost": 20, "effect": "faith8" },
+    "heroic": { "rarity": "R", "cost": 40, "effect": "mult175" },
+    "relentless": { "rarity": "R", "cost": 40, "effect": "score_twice" }
   },
   "policy_commons": [
     "agoge",
@@ -173,11 +186,20 @@
     "museum_of_alexandria": { "cost": 75, "effect": "sci_gain_pct" },
     "petra": { "cost": 75, "effect": "occupy_x2" },
     "terracotta_army": { "cost": 75, "effect": "replace_troop" },
+    "big_ben": { "cost": 75, "effect": "interest" },
+    "forbidden_palace": { "cost": 70, "effect": "policy_slot" },
+    "grand_bazaar": { "cost": 75, "effect": "cheap_units" },
     "parade_grounds": { "cost": 80, "effect": "parade_grounds" },
     "theater_of_war": { "cost": 80, "effect": "theater_of_war" },
+    "scriptoria_spire": { "cost": 85, "effect": "scriptoria_spire" },
     "safe_conduct": { "cost": 55, "effect": "safe_conduct" },
-    "christ_the_redeemer": { "cost": 70, "effect": "christ_clutch" }
+    "christ_the_redeemer": { "cost": 70, "effect": "christ_clutch" },
+    "taj_mahal": { "cost": 75, "effect": "victory_gold_pct" },
+    "angkor_wat": { "cost": 75, "effect": "faith_doc_pct" },
+    "chichen_itza": { "cost": 75, "effect": "formation_mom2" },
+    "eiffel_tower": { "cost": 85, "effect": "mint_of_heroes" }
   },
   "wonder_reroll_cost": 5,
-  "builder_scale_by_tier": { "1": 1.0, "2": 1.5, "3": 2.0, "4": 2.5 }
+  "builder_scale_by_tier": { "1": 1.0, "2": 1.5, "3": 2.0, "4": 2.5 },
+  "wall_blueprints": ["battering_ram", "scaffolding", "siege_tower"]
 }

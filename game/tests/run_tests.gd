@@ -33,6 +33,9 @@ func _initialize() -> void:
 	failed += _check("builder_scale_upgrade", _test_builder_scale())
 	failed += _check("shop_unequip_and_wonder", _test_shop_unequip_wonder())
 	failed += _check("income_breakdown", _test_income_breakdown())
+	failed += _check("editions_promotions_disband", _test_editions_promotions_disband())
+	failed += _check("gold_charges_and_doctrine", _test_gold_charges_and_doctrine())
+	failed += _check("wonder_rival_skip", _test_wonder_rival_skip())
 
 	if failed == 0:
 		print("AGES_TESTS_OK failed=0")
@@ -245,7 +248,7 @@ func _test_shop() -> bool:
 	run.open_shop()
 	if run.shop_treasury.size() != 5 or run.shop_synod.size() != 5:
 		return false
-	var before: int = run.state.deck_kinds.size()
+	var before: int = run.state.deck_cards.size()
 	# Find a unit offer and buy it
 	var bought := false
 	for i in run.shop_treasury.size():
@@ -256,10 +259,10 @@ func _test_shop() -> bool:
 				break
 	if not bought:
 		# Force a cheap unit into slot 0
-		run.shop_treasury[0] = {"cat": "unit", "id": "M", "cost": 8, "label": "Unit M"}
+		run.shop_treasury[0] = {"cat": "unit", "id": "M", "cost": 8, "label": "Unit M", "edition": "standard"}
 		var r2: Dictionary = run.buy_offer("treasury", 0)
 		bought = bool(r2.get("ok", false))
-	return bought and run.state.deck_kinds.size() == before + 1
+	return bought and run.state.deck_cards.size() == before + 1
 
 
 func _test_shop_unique() -> bool:
@@ -541,7 +544,75 @@ func _test_income_breakdown() -> bool:
 	if int(br["occupy_per_fight"]["gold"]) <= 0:
 		return false
 	var deck: Dictionary = run.deck_summary()
-	return int(deck["total"]) == run.state.deck_kinds.size()
+	return int(deck["total"]) == run.state.deck_cards.size()
+
+
+func _test_editions_promotions_disband() -> bool:
+	var run = AgesRules.new_ancient_run(15)
+	run.state.gold = 500
+	var before: int = run.state.deck_cards.size()
+	run.state.add_unit_card("M", "gilded")
+	if run.state.deck_cards.size() != before + 1:
+		return false
+	var last: Dictionary = run.state.deck_cards[run.state.deck_cards.size() - 1]
+	if int(last.get("bonus_might", 0)) < 3:
+		print("  gilded might missing")
+		return false
+	run._apply_promotion_to_deck(run.state.deck_cards.size() - 1, "heroic")
+	last = run.state.deck_cards[run.state.deck_cards.size() - 1]
+	if float(last.get("might_mult", 1.0)) < 1.74:
+		print("  heroic mult missing")
+		return false
+	var cost0: int = run.state.disband_cost
+	var dr: Dictionary = run.disband_card(run.state.deck_cards.size() - 1)
+	if not bool(dr.get("ok", false)):
+		print("  disband failed %s" % dr)
+		return false
+	if run.state.disband_cost != cost0 + 1:
+		return false
+	return true
+
+
+func _test_gold_charges_and_doctrine() -> bool:
+	var run = AgesRules.new_ancient_run(21)
+	run.state.gold = 500
+	run.state.sci_level = 2
+	if not run.can_buy_support_charge("B"):
+		print("  charge locked at sci2")
+		return false
+	var br: Dictionary = run.buy_support_charge_gold("B")
+	if not bool(br.get("ok", false)) or run.state.builder_charges_max != 2:
+		print("  charge buy %s" % br)
+		return false
+	## Doctrine on-win
+	run.state.doctrines = ["tithe"]
+	run.state.blueprints = ["watchtower"]
+	run.begin_fight()
+	run.active_fight.doctrines_fired = ["tithe"]
+	run.active_fight.total_damage = 200
+	var before_g: int = run.state.gold
+	var pay: Dictionary = run._apply_doctrine_rewards()
+	if int(pay.get("gold", 0)) <= 0 or run.state.gold <= before_g:
+		print("  doctrine pay %s" % pay)
+		return false
+	return true
+
+
+func _test_wonder_rival_skip() -> bool:
+	var run = AgesRules.new_ancient_run(33)
+	run.open_shop()
+	if run.shop_wonder.is_empty():
+		return false
+	var wid: String = str(run.shop_wonder["id"])
+	run.skip_wonder_on_leave()
+	if not run.state.skipped_wonders.has(wid):
+		print("  skip not recorded")
+		return false
+	run.open_shop()
+	if str(run.shop_wonder.get("id", "")) == wid:
+		print("  skipped wonder reappeared as dedicated offer")
+		return false
+	return true
 
 
 func _run_fixture_file(path: String) -> int:
